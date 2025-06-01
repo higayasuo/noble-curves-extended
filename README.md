@@ -17,6 +17,16 @@ This project extends [@noble/curves](https://github.com/paulmillr/noble-curves) 
 npm install noble-curves-extended
 ```
 
+## Peer Dependencies
+
+This package requires the following peer dependencies:
+
+```bash
+npm install @noble/curves @noble/hashes
+```
+
+These dependencies are required because this package is a thin wrapper around `@noble/curves` and uses `@noble/hashes` for cryptographic operations.
+
 ## Usage
 
 ```typescript
