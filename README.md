@@ -9,7 +9,7 @@ This project extends [@noble/curves](https://github.com/paulmillr/noble-curves) 
   - Ed25519 (EdDSA signatures)
   - NIST curves (P256, P384, P521)
   - secp256k1 (Bitcoin's curve)
-  - BLS12-381
+  - BLS12-381 (Boneh-Lynn-Shacham signatures)
 
 ## Installation
 
@@ -57,9 +57,17 @@ type RandomBytes = (bytesLength?: number) => Uint8Array;
 - `createP256(randomBytes: RandomBytes)`: Creates NIST P256 curve instance
 - `createP384(randomBytes: RandomBytes)`: Creates NIST P384 curve instance
 - `createP521(randomBytes: RandomBytes)`: Creates NIST P521 curve instance
-- `createBls12381(randomBytes: RandomBytes)`: Creates BLS12-381 curve instance
+- `createBls12_381(randomBytes: RandomBytes)`: Creates BLS12-381 curve instance with custom random bytes generation
 
 Each curve instance provides the same API as its counterpart in `@noble/curves`.
+
+### BLS12-381 Specific
+
+The BLS12-381 implementation provides:
+
+- Custom random bytes generation through the `randomBytes` parameter
+- Field operations over the BLS12-381 scalar field (Fr)
+- Utility functions for key generation and management
 
 ## Security
 

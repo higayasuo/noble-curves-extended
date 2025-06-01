@@ -45,7 +45,7 @@
     "vitest": "^1.3.1"
   },
   "peerDependencies": {
-    "@noble/curves": "*",
-    "@noble/hashes": "*"
+    "@noble/curves": "^1.2.0",
+    "@noble/hashes": "^1.3.0"
   }
 }
