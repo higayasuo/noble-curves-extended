@@ -9,23 +9,23 @@ export default defineConfig({
         index: resolve(__dirname, 'src/index.ts'),
       },
       name: 'nobleCurvesExtended',
-      fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'mjs' : 'cjs'}`,
-      formats: ['es', 'cjs']
+      fileName: (format, entryName) =>
+        `${entryName}.${format === 'es' ? 'mjs' : 'cjs'}`,
+      formats: ['es', 'cjs'],
     },
     rollupOptions: {
-      external: [
-        /^@noble\/curves($|\/)/,
-        /^@noble\/hashes($|\/)/
-      ],
+      external: [/^@noble\/curves($|\/)/, /^@noble\/hashes($|\/)/, 'u8a-utils'],
       output: {
         globals: {
           '@noble/curves': 'nobleCurves',
-          '@noble/hashes': 'nobleHashes'
-        }
-      }
-    }
+          '@noble/hashes': 'nobleHashes',
+        },
+      },
+    },
   },
-  plugins: [dts({
-    rollupTypes: true,
-  })]
+  plugins: [
+    dts({
+      rollupTypes: true,
+    }),
+  ],
 });

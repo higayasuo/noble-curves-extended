@@ -79,7 +79,7 @@ The BLS12-381 implementation provides:
 - Field operations over the BLS12-381 scalar field (Fr)
 - Utility functions for key generation and management
 
-#### `createNistCurve(curveName: NistCurveName, randomBytes: RandomBytes)`
+### `createNistCurve(curveName: NistCurveName, randomBytes: RandomBytes)`
 
 Creates a NIST curve instance by name. This function allows you to select one of the supported NIST curves (`'P-256'`, `'P-384'`, or `'P-521'`) at runtime and inject your own random bytes function.
 
@@ -90,7 +90,10 @@ Creates a NIST curve instance by name. This function allows you to select one of
 
 **Returns:**
 
-- A curve instance with the same API as the corresponding `@noble/curves` curve.
+- A curve instance with the same API as the corresponding `@noble/curves` curve, and the following additional properties:
+  - `curveName`: The name of the curve.
+  - `toJwkPublicKey(publicKey: Uint8Array): Jwk`: Converts a public key to a JWK object.
+  - `toJwkPrivateKey(privateKey: Uint8Array): Jwk`: Converts a private key to a JWK object.
 
 **Example:**
 
@@ -102,6 +105,32 @@ const curveName = 'P-256';
 const curve = createNistCurve(curveName, randomBytes);
 const privateKey = curve.utils.randomPrivateKey();
 const publicKey = curve.getPublicKey(privateKey);
+
+// Convert to JWK
+const jwkPub = curve.toJwkPublicKey(publicKey);
+const jwkPriv = curve.toJwkPrivateKey(privateKey);
+
+// Use with Web Crypto API
+const importedPub = await crypto.subtle.importKey(
+  'jwk',
+  jwkPub,
+  {
+    name: 'ECDSA',
+    namedCurve: curve.curveName,
+  },
+  true,
+  ['verify'],
+);
+const importedPriv = await crypto.subtle.importKey(
+  'jwk',
+  jwkPriv,
+  {
+    name: 'ECDSA',
+    namedCurve: curve.curveName,
+  },
+  true,
+  ['sign'],
+);
 ```
 
 ## Security

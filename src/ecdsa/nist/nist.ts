@@ -9,10 +9,10 @@ import {
   createCurve,
   modifyCurve,
   type CurveFnWithCreate,
-} from './_shortw_utils';
+} from '../_shortw_utils';
 import { Field } from '@noble/curves/abstract/modular';
-import type { WeierstrassOpts } from '../abstract/_weierstrass';
-import { NistCurveName, type RandomBytes } from '../types';
+import type { WeierstrassOpts } from '../../abstract/_weierstrass';
+import { NistCurveName, type RandomBytes } from '../../types';
 
 // p = 2n**224n * (2n**32n-1n) + 2n**192n + 2n**96n - 1n
 // a = Fp256.create(BigInt('-3'));
@@ -124,28 +124,4 @@ export const createP521 = (randomBytes: RandomBytes): CurveFnWithCreate => {
   );
 
   return modifyCurve(curve);
-};
-
-/**
- * Creates a NIST curve instance based on the specified curve name.
- *
- * @param curveName - Name of the NIST curve to create. Must be one of: 'P-256', 'P-384', 'P-521'.
- * @param randomBytes - Function to generate random bytes for cryptographic operations.
- * @returns CurveFnWithCreate instance for the specified NIST curve.
- * @throws {Error} If an unsupported curve name is provided.
- */
-export const createNistCurve = (
-  curveName: NistCurveName,
-  randomBytes: RandomBytes,
-): CurveFnWithCreate => {
-  switch (curveName) {
-    case 'P-256':
-      return createP256(randomBytes);
-    case 'P-384':
-      return createP384(randomBytes);
-    case 'P-521':
-      return createP521(randomBytes);
-    default:
-      throw new Error(`Unsupported NIST curve: ${curveName}`);
-  }
 };
