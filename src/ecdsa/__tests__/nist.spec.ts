@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { createP256, createP384, createP521 } from '../nist';
+import { createP256, createP384, createP521, createNistCurve } from '../nist';
 import { p256 as nobleP256 } from '@noble/curves/p256';
 import { p384 as nobleP384 } from '@noble/curves/p384';
 import { p521 as nobleP521 } from '@noble/curves/p521';
 import { randomBytes } from '@noble/hashes/utils';
+import type { CurveFnWithCreate } from '../_shortw_utils';
+import type { NistCurveName } from '../../types';
 
 describe('nist', () => {
   describe('P256', () => {
@@ -104,6 +106,39 @@ describe('nist', () => {
 
       // Verify using noble-curves
       const isValid = nobleP521.verify(signature, nobleMessage, publicKey);
+      expect(isValid).toBe(true);
+    });
+  });
+
+  describe('createNistCurve', () => {
+    const curves: [NistCurveName, CurveFnWithCreate][] = [
+      ['P-256', nobleP256],
+      ['P-384', nobleP384],
+      ['P-521', nobleP521],
+    ];
+
+    it.each(curves)(
+      'should verify signature created by noble-curves %s',
+      (name, noble) => {
+        const customCurve = createNistCurve(name, randomBytes);
+        const privateKey = noble.utils.randomPrivateKey();
+        const publicKey = noble.getPublicKey(privateKey);
+        const message = new TextEncoder().encode('test message');
+        const nobleMessage = Uint8Array.from(message);
+        const signature = noble.sign(nobleMessage, privateKey);
+        const isValid = customCurve.verify(signature, message, publicKey);
+        expect(isValid).toBe(true);
+      },
+    );
+
+    it.each(curves)('should be verified by noble-curves %s', (name, noble) => {
+      const customCurve = createNistCurve(name, randomBytes);
+      const privateKey = customCurve.utils.randomPrivateKey();
+      const publicKey = customCurve.getPublicKey(privateKey);
+      const message = new TextEncoder().encode('test message');
+      const nobleMessage = Uint8Array.from(message);
+      const signature = customCurve.sign(message, privateKey);
+      const isValid = noble.verify(signature, nobleMessage, publicKey);
       expect(isValid).toBe(true);
     });
   });

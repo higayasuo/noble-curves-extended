@@ -79,6 +79,31 @@ The BLS12-381 implementation provides:
 - Field operations over the BLS12-381 scalar field (Fr)
 - Utility functions for key generation and management
 
+#### `createNistCurve(curveName: NistCurveName, randomBytes: RandomBytes)`
+
+Creates a NIST curve instance by name. This function allows you to select one of the supported NIST curves (`'P-256'`, `'P-384'`, or `'P-521'`) at runtime and inject your own random bytes function.
+
+**Parameters:**
+
+- `curveName`: The name of the NIST curve to create. Must be one of `'P-256'`, `'P-384'`, or `'P-521'`.
+- `randomBytes`: A function for generating cryptographically secure random bytes.
+
+**Returns:**
+
+- A curve instance with the same API as the corresponding `@noble/curves` curve.
+
+**Example:**
+
+```typescript
+import { createNistCurve } from 'noble-curves-extended';
+import { randomBytes } from '@noble/hashes/utils';
+
+const curveName = 'P-256';
+const curve = createNistCurve(curveName, randomBytes);
+const privateKey = curve.utils.randomPrivateKey();
+const publicKey = curve.getPublicKey(privateKey);
+```
+
 ## Security
 
 This library is a thin wrapper around `@noble/curves` and inherits its security properties. The only modification is the ability to inject a custom `randomBytes` function.
