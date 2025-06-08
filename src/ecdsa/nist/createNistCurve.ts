@@ -3,6 +3,8 @@ import { CurveFnWithCreate } from '../_shortw_utils';
 import { createP256, createP384, createP521 } from './nist';
 import { toJwkPrivateKey } from './toJwkPrivateKey';
 import { toJwkPublicKey } from './toJwkPublickKey';
+import { toRawPrivateKey } from './toRawPrivateKey';
+import { toRawPublicKey } from './toRawPublicKey';
 
 /**
  * Function type for converting a private key to a JWK object.
@@ -19,6 +21,21 @@ type ToJwkPrivateKey = (privateKey: Uint8Array) => Jwk;
 type ToJwkPublicKey = (publicKey: Uint8Array) => Jwk;
 
 /**
+ * Function type for converting a JWK private key to raw private key format.
+ * @param privateKey - The JWK private key containing x,y,d coordinates in base64url format
+ * @returns Uint8Array containing the raw private key
+ */
+type ToRawPrivateKey = (privateKey: Jwk) => Uint8Array;
+
+/**
+ * Function type for converting a JWK public key to raw uncompressed public key format.
+ * The resulting format is: 0x04 || x || y where x and y are coordinates.
+ * @param publicKey - The JWK public key containing x and y coordinates in base64url format
+ * @returns Uint8Array containing the raw uncompressed public key
+ */
+type ToRawPublicKey = (publicKey: Jwk) => Uint8Array;
+
+/**
  * Extended curve type for NIST curves, including curve name and JWK conversion helpers.
  * @property curveName - The name of the NIST curve ('P-256', 'P-384', or 'P-521')
  * @property toJwkPrivateKey - Converts a private key to a JWK object
@@ -27,10 +44,16 @@ type ToJwkPublicKey = (publicKey: Uint8Array) => Jwk;
 export type NistCurve = CurveFnWithCreate & {
   /** Name of the NIST curve */
   curveName: NistCurveName;
+  /** Function to generate random bytes for cryptographic operations */
+  randomBytes: RandomBytes;
   /** Converts a private key to a JWK object */
   toJwkPrivateKey: ToJwkPrivateKey;
   /** Converts a public key to a JWK object */
   toJwkPublicKey: ToJwkPublicKey;
+  /** Converts a JWK private key to raw private key format */
+  toRawPrivateKey: ToRawPrivateKey;
+  /** Converts a JWK public key to raw uncompressed public key format */
+  toRawPublicKey: ToRawPublicKey;
 };
 
 /**
@@ -61,9 +84,14 @@ export const createNistCurve = (
   return {
     ...curve,
     curveName,
+    randomBytes,
     toJwkPrivateKey: (privateKey: Uint8Array) =>
       toJwkPrivateKey({ curve, curveName, privateKey }),
     toJwkPublicKey: (publicKey: Uint8Array) =>
       toJwkPublicKey({ curve, curveName, publicKey }),
+    toRawPrivateKey: (jwkPrivateKey: Jwk) =>
+      toRawPrivateKey({ curve, jwkPrivateKey }),
+    toRawPublicKey: (jwkPublicKey: Jwk) =>
+      toRawPublicKey({ curve, jwkPublicKey }),
   };
 };

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2025-06-05
+
+### Added
+
+- Added `randomBytes` property to the `NistCurve` type returned by `createNistCurve` in `createNistCurve.ts`.
+- Added `toRawPrivateKey` and `toRawPublicKey` properties to the `NistCurve` type returned by `createNistCurve` in `createNistCurve.ts`.
+- Added utility functions for converting JWK keys back to raw format:
+  - `toRawPrivateKey.ts`: Converts JWK private keys to raw private key format
+  - `toRawPublicKey.ts`: Converts JWK public keys to raw uncompressed public key format
+
 ## [0.1.2] - 2025-06-05
 
 ### Added
