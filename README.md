@@ -94,6 +94,19 @@ Creates a NIST curve instance by name. This function allows you to select one of
   - `curveName`: The name of the curve.
   - `toJwkPublicKey(publicKey: Uint8Array): Jwk`: Converts a public key to a JWK object.
   - `toJwkPrivateKey(privateKey: Uint8Array): Jwk`: Converts a private key to a JWK object.
+  - `toRawPublicKey(jwkPublicKey: Jwk): Uint8Array`: Converts a JWK public key to a raw uncompressed public key.
+  - `toRawPrivateKey(jwkPrivateKey: Jwk): Uint8Array`: Converts a JWK private key to a raw private key.
+  - `isValidPublicKey(publicKey: Uint8Array): boolean`: Validates if a given public key is a valid point on the curve.
+
+**Additional Properties and Methods:**
+
+- `curveName`: The name of the NIST curve instance (e.g., `'P-256'`, `'P-384'`, `'P-521'`).
+- `randomBytes`: The random bytes function used for cryptographic operations.
+- `toJwkPublicKey(publicKey: Uint8Array): Jwk`: Converts a raw public key to a JWK object.
+- `toJwkPrivateKey(privateKey: Uint8Array): Jwk`: Converts a raw private key to a JWK object.
+- `toRawPublicKey(jwkPublicKey: Jwk): Uint8Array`: Converts a JWK public key to a raw uncompressed public key (0x04 || x || y).
+- `toRawPrivateKey(jwkPrivateKey: Jwk): Uint8Array`: Converts a JWK private key to a raw private key.
+- `isValidPublicKey(publicKey: Uint8Array): boolean`: Checks if the provided public key is a valid point on the curve. Returns `true` if valid, otherwise `false`.
 
 **Example:**
 
@@ -109,6 +122,14 @@ const publicKey = curve.getPublicKey(privateKey);
 // Convert to JWK
 const jwkPub = curve.toJwkPublicKey(publicKey);
 const jwkPriv = curve.toJwkPrivateKey(privateKey);
+
+// Convert from JWK back to raw
+const rawPub = curve.toRawPublicKey(jwkPub);
+const rawPriv = curve.toRawPrivateKey(jwkPriv);
+
+// Validate a public key
+const isValid = curve.isValidPublicKey(publicKey); // true
+const isValidInvalid = curve.isValidPublicKey(new Uint8Array([1, 2, 3])); // false
 
 // Use with Web Crypto API
 const importedPub = await crypto.subtle.importKey(

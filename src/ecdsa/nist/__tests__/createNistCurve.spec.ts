@@ -82,4 +82,21 @@ describe('createNistCurve', () => {
     // @ts-expect-error
     expect(() => createNistCurve('P-999', randomBytes)).toThrow();
   });
+
+  it.each(curves)(
+    'should validate public keys using isValidPublicKey (%s)',
+    (name) => {
+      const curve = createNistCurve(name, randomBytes);
+      const privateKey = curve.utils.randomPrivateKey();
+      const publicKey = curve.getPublicKey(privateKey, false);
+      // Valid key
+      expect(curve.isValidPublicKey(publicKey)).toBe(true);
+      // Obviously invalid key
+      expect(curve.isValidPublicKey(new Uint8Array([1, 2, 3]))).toBe(false);
+      // Mutated valid key
+      const mutated = new Uint8Array(publicKey);
+      mutated[mutated.length - 1] ^= 0xff;
+      expect(curve.isValidPublicKey(mutated)).toBe(false);
+    },
+  );
 });

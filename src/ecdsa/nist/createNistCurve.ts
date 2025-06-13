@@ -1,5 +1,6 @@
 import { Jwk, NistCurveName, RandomBytes } from '../../types';
 import { CurveFnWithCreate } from '../_shortw_utils';
+import { isValidPublicKey, IsValidPublicKeyParams } from './isValidPublicKey';
 import { createP256, createP384, createP521 } from './nist';
 import { toJwkPrivateKey } from './toJwkPrivateKey';
 import { toJwkPublicKey } from './toJwkPublickKey';
@@ -36,6 +37,13 @@ type ToRawPrivateKey = (privateKey: Jwk) => Uint8Array;
 type ToRawPublicKey = (publicKey: Jwk) => Uint8Array;
 
 /**
+ * Function type for validating a public key.
+ * @param publicKey - The public key as a Uint8Array
+ * @returns {boolean} - Returns true if the public key is valid, otherwise false.
+ */
+type IsValidPublicKey = (publicKey: Uint8Array) => boolean;
+
+/**
  * Extended curve type for NIST curves, including curve name and JWK conversion helpers.
  * @property curveName - The name of the NIST curve ('P-256', 'P-384', or 'P-521')
  * @property toJwkPrivateKey - Converts a private key to a JWK object
@@ -54,6 +62,8 @@ export type NistCurve = CurveFnWithCreate & {
   toRawPrivateKey: ToRawPrivateKey;
   /** Converts a JWK public key to raw uncompressed public key format */
   toRawPublicKey: ToRawPublicKey;
+  /** Validates a public key */
+  isValidPublicKey: IsValidPublicKey;
 };
 
 /**
@@ -93,5 +103,7 @@ export const createNistCurve = (
       toRawPrivateKey({ curve, jwkPrivateKey }),
     toRawPublicKey: (jwkPublicKey: Jwk) =>
       toRawPublicKey({ curve, jwkPublicKey }),
+    isValidPublicKey: (publicKey: Uint8Array) =>
+      isValidPublicKey({ curve, publicKey }),
   };
 };
