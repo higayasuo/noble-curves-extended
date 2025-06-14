@@ -23,7 +23,7 @@ const _1n = BigInt(1), _2n = BigInt(2), _5n = BigInt(5), _8n = BigInt(8);
 // d is -121665/121666 a.k.a. Fp.neg(121665 * Fp.inv(121666))
 // Finite field 2n**255n - 19n
 // Subgroup order 2n**252n + 27742317777372353535851937790883648493n;
-const ed25519_CURVE: EdwardsOpts = {
+export const ed25519_CURVE: EdwardsOpts = {
   p: BigInt(
     '0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffed',
   ),
@@ -45,7 +45,7 @@ const ed25519_CURVE: EdwardsOpts = {
   ),
 };
 
-function ed25519_pow_2_252_3(x: bigint) {
+export function ed25519_pow_2_252_3(x: bigint) {
   // prettier-ignore
   const _10n = BigInt(10), _20n = BigInt(20), _40n = BigInt(40), _80n = BigInt(80);
   const P = ed25519_CURVE.p;
@@ -65,7 +65,7 @@ function ed25519_pow_2_252_3(x: bigint) {
   return { pow_p_5_8, b2 };
 }
 
-function adjustScalarBytes(bytes: Uint8Array): Uint8Array {
+export function adjustScalarBytes(bytes: Uint8Array): Uint8Array {
   // Section 5: For X25519, in order to decode 32 random bytes as an integer scalar,
   // set the three least significant bits of the first byte
   bytes[0] &= 248; // 0b1111_1000
