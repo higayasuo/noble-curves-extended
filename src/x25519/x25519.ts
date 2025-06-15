@@ -15,7 +15,7 @@ const _3n = BigInt(3);
 export const x25519 = (randomBytes: RandomBytes): XCurveFn =>
   /* @__PURE__ */ (() => {
     const P = ed25519_CURVE.p;
-    return montgomery({
+    const curve = montgomery({
       P,
       type: 'x25519',
       powPminus2: (x: bigint): bigint => {
@@ -26,4 +26,15 @@ export const x25519 = (randomBytes: RandomBytes): XCurveFn =>
       adjustScalarBytes,
       randomBytes,
     });
+
+    return {
+      ...curve,
+      utils: {
+        ...curve.utils,
+        randomPrivateKey: () => {
+          const privateKey = curve.utils.randomPrivateKey();
+          return adjustScalarBytes(privateKey);
+        },
+      },
+    };
   })();

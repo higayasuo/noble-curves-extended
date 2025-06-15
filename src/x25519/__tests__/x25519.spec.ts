@@ -31,4 +31,18 @@ describe('x25519', () => {
     // Verify that both shared secrets are identical
     expect(aliceSharedSecret).toEqual(bobSharedSecret);
   });
+
+  it('should generate private keys with correct bit patterns after adjustScalarBytes', () => {
+    const curve = x25519(randomBytes);
+    const privateKey = curve.utils.randomPrivateKey();
+
+    // Check length
+    expect(privateKey.length).toBe(32);
+
+    // Check first byte (lower 3 bits should be 0)
+    expect(privateKey[0] & 0b00000111).toBe(0);
+
+    // Check last byte (upper 2 bits should be 01)
+    expect((privateKey[31] & 0b11000000) >>> 6).toBe(0b01);
+  });
 });
