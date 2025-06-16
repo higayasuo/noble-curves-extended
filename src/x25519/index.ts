@@ -1,1 +1,1 @@
-export { x25519 } from './x25519';
+export { createX25519 as x25519 } from './x25519';

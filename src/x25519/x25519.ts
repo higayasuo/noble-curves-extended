@@ -12,7 +12,7 @@ import { RandomBytes } from '../types';
 
 const _3n = BigInt(3);
 
-export const x25519 = (randomBytes: RandomBytes): XCurveFn =>
+export const createX25519 = (randomBytes: RandomBytes): XCurveFn =>
   /* @__PURE__ */ (() => {
     const P = ed25519_CURVE.p;
     const curve = montgomery({

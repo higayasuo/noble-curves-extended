@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { x25519ToJwkPublicKey } from '../x25519ToJwkPublicKey';
 import { importJWK } from 'jose';
-import { x25519 } from '../../../x25519/x25519';
+import { createX25519 } from '../../../x25519/x25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../../types';
 
@@ -10,7 +10,7 @@ const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
 };
 
 describe('x25519ToJwkPublicKey', () => {
-  const curve = x25519(randomBytes);
+  const curve = createX25519(randomBytes);
 
   // Test vectors from RFC 7748
   const publicKey = new Uint8Array([

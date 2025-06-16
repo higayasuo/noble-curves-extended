@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { x25519 } from '../x25519';
+import { createX25519 } from '../x25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../types';
 
@@ -9,7 +9,7 @@ const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
 
 describe('x25519', () => {
   it('should generate matching shared secrets between two key pairs', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
 
     // Generate two key pairs
     const alicePrivateKey = curve.utils.randomPrivateKey();
@@ -33,7 +33,7 @@ describe('x25519', () => {
   });
 
   it('should generate private keys with correct bit patterns after adjustScalarBytes', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
 
     // Check length

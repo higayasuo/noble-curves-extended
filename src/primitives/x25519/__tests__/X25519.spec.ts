@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { x25519 } from '../../../x25519/x25519';
+import { createX25519 } from '../../../x25519/x25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../../types';
 import { X25519 } from '../X25519';
@@ -9,7 +9,7 @@ const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
 };
 
 describe('X25519', () => {
-  const curve = x25519(randomBytes);
+  const curve = createX25519(randomBytes);
   const x25519Instance = new X25519(curve, randomBytes);
 
   it('should have correct curve and algorithm identifiers', () => {

@@ -13,6 +13,7 @@ import { type EdwardsOpts } from '../abstract/_edwards';
 import { Field, isNegativeLE, mod, pow2 } from '@noble/curves/abstract/modular';
 import { isBytes } from '@noble/hashes/utils';
 import { RandomBytes } from '../types';
+import { ensureUint8Array, isUint8Array } from 'u8a-utils';
 
 // prettier-ignore
 const _1n = BigInt(1), _2n = BigInt(2), _5n = BigInt(5), _8n = BigInt(8);
@@ -143,14 +144,8 @@ export const createEd25519 = (randomBytes: RandomBytes): CurveFn => {
   const modified: CurveFn = {
     ...curve,
     sign: (message: Hex, privateKey: Hex, options?: { context?: Hex }) => {
-      // const messageBytes = isBytes(message)
-      //   ? Uint8Array.from(message)
-      //   : message;
-      if (isBytes(message)) {
-        message = Uint8Array.from(message);
-      }
-      if (isBytes(privateKey)) {
-        privateKey = Uint8Array.from(privateKey);
+      if (isUint8Array(message)) {
+        message = ensureUint8Array(message);
       }
 
       return curve.sign(message, privateKey, options);
@@ -161,17 +156,18 @@ export const createEd25519 = (randomBytes: RandomBytes): CurveFn => {
       publicKey: Hex,
       options?: { context?: Hex; zip215: boolean },
     ) => {
-      if (isBytes(signature)) {
-        signature = Uint8Array.from(signature);
-      }
-      if (isBytes(message)) {
-        message = Uint8Array.from(message);
-      }
-      if (isBytes(publicKey)) {
-        publicKey = Uint8Array.from(publicKey);
+      if (isUint8Array(message)) {
+        message = ensureUint8Array(message);
       }
 
       return curve.verify(signature, message, publicKey, options);
+    },
+    utils: {
+      ...curve.utils,
+      randomPrivateKey: () => {
+        const privateKey = curve.utils.randomPrivateKey();
+        return adjustScalarBytes(privateKey);
+      },
     },
   };
 
