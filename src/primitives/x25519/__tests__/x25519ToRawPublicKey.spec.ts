@@ -96,7 +96,7 @@ describe('x25519ToRawPublicKey', () => {
       x: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     } as JwkPublicKey; // All zeros
     expect(() => x25519ToRawPublicKey(curve, invalidJwk)).toThrow(
-      'Invalid X25519 public key',
+      'X25519 public key is invalid',
     );
   });
 });
