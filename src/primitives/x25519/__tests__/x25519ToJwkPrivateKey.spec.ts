@@ -47,7 +47,7 @@ describe('x25519ToJwkPrivateKey', () => {
     const curve = createX25519(randomBytes);
     const invalidKey = new Uint8Array(16); // Too short
     expect(() => x25519ToJwkPrivateKey(curve, invalidKey)).toThrow(
-      'Invalid X25519 private key',
+      'X25519 private key is invalid',
     );
   });
 
@@ -55,7 +55,7 @@ describe('x25519ToJwkPrivateKey', () => {
     const curve = createX25519(randomBytes);
     const emptyKey = new Uint8Array(0);
     expect(() => x25519ToJwkPrivateKey(curve, emptyKey)).toThrow(
-      'Invalid X25519 private key',
+      'X25519 private key is invalid',
     );
   });
 
@@ -63,7 +63,7 @@ describe('x25519ToJwkPrivateKey', () => {
     const curve = createX25519(randomBytes);
     const oversizedKey = new Uint8Array(64); // Too long
     expect(() => x25519ToJwkPrivateKey(curve, oversizedKey)).toThrow(
-      'Invalid X25519 private key',
+      'X25519 private key is invalid',
     );
   });
 

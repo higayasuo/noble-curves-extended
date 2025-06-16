@@ -33,21 +33,21 @@ describe('x25519ToJwkPublicKey', () => {
   it('should throw an error for invalid public key length', () => {
     const invalidKey = new Uint8Array(16); // Too short
     expect(() => x25519ToJwkPublicKey(curve, invalidKey)).toThrow(
-      'Invalid X25519 public key',
+      'X25519 public key is invalid',
     );
   });
 
   it('should throw an error for empty public key', () => {
     const emptyKey = new Uint8Array(0);
     expect(() => x25519ToJwkPublicKey(curve, emptyKey)).toThrow(
-      'Invalid X25519 public key',
+      'X25519 public key is invalid',
     );
   });
 
   it('should throw an error for oversized public key', () => {
     const oversizedKey = new Uint8Array(64); // Too long
     expect(() => x25519ToJwkPublicKey(curve, oversizedKey)).toThrow(
-      'Invalid X25519 public key',
+      'X25519 public key is invalid',
     );
   });
 
