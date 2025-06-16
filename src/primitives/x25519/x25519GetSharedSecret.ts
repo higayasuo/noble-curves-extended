@@ -28,6 +28,7 @@ export const x25519GetSharedSecret = (
   try {
     return curve.getSharedSecret(privateKey, publicKey);
   } catch (error) {
+    console.error(error);
     throw new Error('Failed to compute shared secret');
   }
 };

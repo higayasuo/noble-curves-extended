@@ -13,7 +13,7 @@ describe('ed25519Sign', () => {
     const curve = createEd25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const message = new Uint8Array([1, 2, 3, 4, 5]);
-    const signature = ed25519Sign(curve, message, privateKey);
+    const signature = ed25519Sign(curve, { message, privateKey });
     expect(signature).toBeInstanceOf(Uint8Array);
     expect(signature.length).toBe(64);
   });
@@ -22,18 +22,18 @@ describe('ed25519Sign', () => {
     const curve = createEd25519(randomBytes);
     const invalidKey = new Uint8Array(16); // Too short
     const message = new Uint8Array([1, 2, 3, 4, 5]);
-    expect(() => ed25519Sign(curve, message, invalidKey)).toThrow(
-      'Ed25519 private key is invalid',
-    );
+    expect(() =>
+      ed25519Sign(curve, { message, privateKey: invalidKey }),
+    ).toThrow('Ed25519 private key is invalid');
   });
 
   it('should throw an error for all-zero private key', () => {
     const curve = createEd25519(randomBytes);
     const invalidKey = new Uint8Array(32); // All zeros
     const message = new Uint8Array([1, 2, 3, 4, 5]);
-    expect(() => ed25519Sign(curve, message, invalidKey)).toThrow(
-      'Ed25519 private key is invalid',
-    );
+    expect(() =>
+      ed25519Sign(curve, { message, privateKey: invalidKey }),
+    ).toThrow('Ed25519 private key is invalid');
   });
 
   it('should produce a signature that can be verified by Web Crypto API', async () => {
@@ -41,7 +41,7 @@ describe('ed25519Sign', () => {
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
     const message = new Uint8Array([1, 2, 3, 4, 5]);
-    const signature = ed25519Sign(curve, message, privateKey);
+    const signature = ed25519Sign(curve, { message, privateKey });
 
     // Import the public key into Web Crypto API
     const cryptoKey = await crypto.subtle.importKey(

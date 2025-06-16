@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { x25519RandomPrivateKey } from '../x25519RandomPrivateKey';
 import { createX25519 } from '../../../x25519/x25519';
+import { x25519RandomPrivateKey } from '../x25519RandomPrivateKey';
+import { adjustScalarBytes } from '../../../ed25519/ed25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../../types';
 
@@ -9,23 +10,23 @@ const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
 };
 
 describe('x25519RandomPrivateKey', () => {
-  it('should generate a valid private key', () => {
+  it('should generate a valid, adjusted private key', () => {
     const curve = createX25519(randomBytes);
     const privateKey = x25519RandomPrivateKey(curve);
-
-    // Check that the private key is a Uint8Array
     expect(privateKey).toBeInstanceOf(Uint8Array);
-
-    // Check that the private key has the correct length (32 bytes for x25519)
     expect(privateKey.length).toBe(32);
+    // MSB cleared, LSB set
+    expect((privateKey[0] & 0b11111000) === privateKey[0]).toBe(true);
+    expect((privateKey[31] & 0b01111111) === privateKey[31]).toBe(true);
+    expect((privateKey[31] & 0b01000000) !== 0).toBe(true);
+    // Not all zeros
+    expect(privateKey.some((b) => b !== 0)).toBe(true);
   });
 
-  it('should generate different private keys on each call', () => {
+  it('should generate different keys on each call', () => {
     const curve = createX25519(randomBytes);
-    const privateKey1 = x25519RandomPrivateKey(curve);
-    const privateKey2 = x25519RandomPrivateKey(curve);
-
-    // Check that the private keys are different
-    expect(privateKey1).not.toEqual(privateKey2);
+    const key1 = x25519RandomPrivateKey(curve);
+    const key2 = x25519RandomPrivateKey(curve);
+    expect(key1).not.toEqual(key2);
   });
 });

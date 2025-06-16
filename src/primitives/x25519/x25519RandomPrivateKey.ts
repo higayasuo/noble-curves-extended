@@ -1,11 +1,13 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
+import { adjustScalarBytes } from '../../ed25519/ed25519';
 
 /**
- * Generates a random private key for the x25519 curve.
+ * Generates a random private key for the x25519 curve, applying adjustScalarBytes for RFC 7748 compliance.
  *
  * @param {CurveFn} curve - The curve function used to generate the private key.
- * @returns {Uint8Array} A randomly generated private key.
+ * @returns {Uint8Array} A randomly generated and adjusted private key.
  */
 export const x25519RandomPrivateKey = (curve: CurveFn): Uint8Array => {
-  return curve.utils.randomPrivateKey();
+  const privateKey = curve.utils.randomPrivateKey();
+  return adjustScalarBytes(privateKey);
 };

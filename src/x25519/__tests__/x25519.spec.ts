@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createX25519 } from '../x25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../types';
+import { x25519 } from '@noble/curves/ed25519';
 
 const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
   return new Uint8Array(cryptoRandomBytes(bytesLength ?? 32));
@@ -32,17 +33,19 @@ describe('x25519', () => {
     expect(aliceSharedSecret).toEqual(bobSharedSecret);
   });
 
-  it('should generate private keys with correct bit patterns after adjustScalarBytes', () => {
-    const curve = createX25519(randomBytes);
-    const privateKey = curve.utils.randomPrivateKey();
+  it('should produce the same shared secret as noble implementation', () => {
+    // Our implementation
+    const ourCurve = createX25519(randomBytes);
+    const alicePriv = ourCurve.utils.randomPrivateKey();
+    const alicePub = ourCurve.getPublicKey(alicePriv);
+    const bobPriv = ourCurve.utils.randomPrivateKey();
+    const bobPub = ourCurve.getPublicKey(bobPriv);
+    const ourSecret = ourCurve.getSharedSecret(alicePriv, bobPub);
 
-    // Check length
-    expect(privateKey.length).toBe(32);
+    // Noble implementation
+    const nobleSecret = x25519.getSharedSecret(alicePriv, bobPub);
 
-    // Check first byte (lower 3 bits should be 0)
-    expect(privateKey[0] & 0b00000111).toBe(0);
-
-    // Check last byte (upper 2 bits should be 01)
-    expect((privateKey[31] & 0b11000000) >>> 6).toBe(0b01);
+    // Verify that both shared secrets are identical
+    expect(ourSecret).toEqual(nobleSecret);
   });
 });
