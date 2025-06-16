@@ -11,9 +11,7 @@ import { type CurveFn, twistedEdwards } from '@noble/curves/abstract/edwards';
 import { type Hex } from '@noble/curves/abstract/utils';
 import { type EdwardsOpts } from '../abstract/_edwards';
 import { Field, isNegativeLE, mod, pow2 } from '@noble/curves/abstract/modular';
-import { isBytes } from '@noble/hashes/utils';
 import { RandomBytes } from '../types';
-import { ensureUint8Array, isUint8Array } from 'u8a-utils';
 
 // prettier-ignore
 const _1n = BigInt(1), _2n = BigInt(2), _5n = BigInt(5), _8n = BigInt(8);
@@ -139,22 +137,8 @@ const ed25519Defaults = /* @__PURE__ */ (() => ({
  * ed25519.verify(sig, msg, pub, { zip215: false }); // RFC8032 / FIPS 186-5
  */
 export const createEd25519 = (randomBytes: RandomBytes): CurveFn => {
-  const curve = twistedEdwards({
+  return twistedEdwards({
     ...ed25519Defaults,
     randomBytes,
   });
-
-  const modified: CurveFn = {
-    ...curve,
-    verify: (
-      signature: Hex,
-      message: Hex,
-      publicKey: Hex,
-      options?: { context?: Hex; zip215: boolean },
-    ) => {
-      return curve.verify(signature, message, publicKey, options);
-    },
-  };
-
-  return modified;
 };

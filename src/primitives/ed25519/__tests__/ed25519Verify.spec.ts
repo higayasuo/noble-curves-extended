@@ -4,6 +4,7 @@ import { ed25519Sign } from '../ed25519Sign';
 import { createEd25519 } from '../../../ed25519/ed25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../../types';
+import { ed25519ToJwkPrivateKey } from '../ed25519ToJwkPrivateKey';
 
 const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
   return new Uint8Array(cryptoRandomBytes(bytesLength ?? 32));
@@ -38,5 +39,29 @@ describe('ed25519Verify', () => {
     expect(() =>
       ed25519Verify(curve, { signature, message, publicKey }),
     ).toThrow('Ed25519 public key is invalid');
+  });
+
+  it('should verify a signature created by Web Crypto API', async () => {
+    const curve = createEd25519(randomBytes);
+    const privateKey = curve.utils.randomPrivateKey();
+    const jwkPrivateKey = ed25519ToJwkPrivateKey(curve, privateKey);
+    const publicKey = curve.getPublicKey(privateKey);
+
+    // Import the private key into Web Crypto API
+    const cryptoPrivateKey = await crypto.subtle.importKey(
+      'jwk',
+      jwkPrivateKey,
+      { name: 'Ed25519' },
+      false,
+      ['sign'],
+    );
+
+    // Sign the message using Web Crypto API
+    const signature = new Uint8Array(
+      await crypto.subtle.sign({ name: 'Ed25519' }, cryptoPrivateKey, message),
+    );
+
+    // Verify the signature using ed25519Verify
+    expect(ed25519Verify(curve, { signature, message, publicKey })).toBe(true);
   });
 });

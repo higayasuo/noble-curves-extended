@@ -26,6 +26,8 @@ import { x25519GetSharedSecret } from './x25519GetSharedSecret';
  * const x25519 = new X25519(curve, randomBytes);
  * const privateKey = x25519.randomPrivateKey();
  * const publicKey = x25519.getPublicKey(privateKey);
+ * const peerPublicKey = ...; // Uint8Array from peer
+ * const sharedSecret = x25519.getSharedSecret({ privateKey, publicKey: peerPublicKey });
  * ```
  */
 export class X25519 implements Readonly<EcdhPrimitive> {
@@ -160,6 +162,6 @@ export class X25519 implements Readonly<EcdhPrimitive> {
     privateKey,
     publicKey,
   }: GetSharedSecretParams): Uint8Array {
-    return x25519GetSharedSecret(this.curve, privateKey, publicKey);
+    return x25519GetSharedSecret(this.curve, { privateKey, publicKey });
   }
 }

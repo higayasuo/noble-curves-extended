@@ -130,7 +130,7 @@ export interface EcdhPrimitive extends PrimitiveBase {
   getSharedSecret: GetSharedSecret;
 }
 
-export interface SignaturesPrimitive extends PrimitiveBase {
+export interface SignaturePrimitive extends PrimitiveBase {
   sign: Sign;
   verify: Verify;
 }
