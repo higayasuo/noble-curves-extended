@@ -9,7 +9,7 @@ const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
 };
 
 describe('ed25519RandomPrivateKey', () => {
-  it('should generate a valid private key', () => {
+  it('should generate a valid private key with correct bit patterns', () => {
     const curve = createEd25519(randomBytes);
     const privateKey = ed25519RandomPrivateKey(curve);
 
@@ -18,6 +18,12 @@ describe('ed25519RandomPrivateKey', () => {
 
     // Check that the private key has the correct length (32 bytes for ed25519)
     expect(privateKey.length).toBe(32);
+
+    // Check first byte (lower 3 bits should be 0)
+    expect(privateKey[0] & 0b00000111).toBe(0);
+
+    // Check last byte (upper 2 bits should be 01)
+    expect((privateKey[31] & 0b11000000) >>> 6).toBe(0b01);
   });
 
   it('should generate different private keys on each call', () => {

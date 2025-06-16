@@ -16,32 +16,14 @@ describe('ed25519 interoperability', () => {
     const noblePublicKey = nobleEd25519.getPublicKey(noblePrivateKey);
 
     // Create message using TextEncoder and convert to Uint8Array
-    const ourMessage = new TextEncoder().encode('test message');
-    const nobleMessage = Uint8Array.from(ourMessage);
+    const message = Uint8Array.from(new TextEncoder().encode('test message'));
 
     // Sign with our implementation, verify with noble/curves
-    const ourSignature = ed25519.sign(ourMessage, ourPrivateKey);
-    expect(nobleEd25519.verify(ourSignature, nobleMessage, ourPublicKey)).toBe(
-      true,
-    );
+    const ourSignature = ed25519.sign(message, ourPrivateKey);
+    expect(nobleEd25519.verify(ourSignature, message, ourPublicKey)).toBe(true);
 
     // Sign with noble/curves, verify with our implementation
-    const nobleSignature = nobleEd25519.sign(nobleMessage, noblePrivateKey);
-    expect(ed25519.verify(nobleSignature, ourMessage, noblePublicKey)).toBe(
-      true,
-    );
-  });
-
-  it('should generate private keys with correct bit patterns after adjustScalarBytes', () => {
-    const privateKey = ed25519.utils.randomPrivateKey();
-
-    // Check length
-    expect(privateKey.length).toBe(32);
-
-    // Check first byte (lower 3 bits should be 0)
-    expect(privateKey[0] & 0b00000111).toBe(0);
-
-    // Check last byte (upper 2 bits should be 01)
-    expect((privateKey[31] & 0b11000000) >>> 6).toBe(0b01);
+    const nobleSignature = nobleEd25519.sign(message, noblePrivateKey);
+    expect(ed25519.verify(nobleSignature, message, noblePublicKey)).toBe(true);
   });
 });

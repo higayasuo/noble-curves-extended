@@ -1,6 +1,8 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import { ed25519IsValidPublicKey } from './ed25519IsValidPublicKey';
 import type { VerifyParams } from '../../types';
+import { isUint8Array } from 'u8a-utils';
+import { ensureUint8Array } from 'u8a-utils';
 
 /**
  * Verifies a signature using the Ed25519 curve and a public key.
@@ -21,5 +23,6 @@ export const ed25519Verify = (
     throw new Error('Ed25519 public key is invalid');
   }
 
-  return curve.verify(signature, message, publicKey);
+  const msg = isUint8Array(message) ? ensureUint8Array(message) : message;
+  return curve.verify(signature, msg, publicKey);
 };

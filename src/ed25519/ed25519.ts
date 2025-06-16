@@ -146,35 +146,15 @@ export const createEd25519 = (randomBytes: RandomBytes): CurveFn => {
 
   const modified: CurveFn = {
     ...curve,
-    sign: (message: Hex, privateKey: Hex, options?: { context?: Hex }) => {
-      if (isUint8Array(message)) {
-        message = ensureUint8Array(message);
-      }
-
-      return curve.sign(message, privateKey, options);
-    },
     verify: (
       signature: Hex,
       message: Hex,
       publicKey: Hex,
       options?: { context?: Hex; zip215: boolean },
     ) => {
-      if (isUint8Array(message)) {
-        message = ensureUint8Array(message);
-      }
-
       return curve.verify(signature, message, publicKey, options);
-    },
-    utils: {
-      ...curve.utils,
-      randomPrivateKey: () => {
-        const edRaw = curve.utils.randomPrivateKey();
-        const edHash = sha512(edRaw);
-        return adjustScalarBytes(edHash.slice(0, 32));
-      },
     },
   };
 
   return modified;
 };
-//twistedEdwards({ ...ed25519Defaults, randomBytes });

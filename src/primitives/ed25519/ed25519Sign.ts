@@ -1,6 +1,8 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import { ed25519IsValidPrivateKey } from './ed25519IsValidPrivateKey';
 import type { SignParams } from '../../types';
+import { isUint8Array } from 'u8a-utils';
+import { ensureUint8Array } from 'u8a-utils';
 
 /**
  * Signs a message using the Ed25519 curve and a private key.
@@ -21,7 +23,8 @@ export const ed25519Sign = (
   }
 
   try {
-    return curve.sign(message, privateKey);
+    const msg = isUint8Array(message) ? ensureUint8Array(message) : message;
+    return curve.sign(msg, privateKey);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to sign message');
