@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { x25519 } from '../../../x25519/x25519';
+import { createX25519 } from '../../../x25519/x25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../../types';
 import { x25519ToRawPublicKey } from '../x25519ToRawPublicKey';
@@ -12,7 +12,7 @@ const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
 
 describe('x25519ToRawPublicKey', () => {
   it('should convert a valid JWK to a raw public key', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
     const jwk = x25519ToJwkPublicKey(curve, publicKey);
@@ -21,7 +21,7 @@ describe('x25519ToRawPublicKey', () => {
   });
 
   it('should throw an error for invalid kty', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
     const jwk = x25519ToJwkPublicKey(curve, publicKey);
@@ -32,7 +32,7 @@ describe('x25519ToRawPublicKey', () => {
   });
 
   it('should throw an error for invalid crv', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
     const jwk = x25519ToJwkPublicKey(curve, publicKey);
@@ -43,7 +43,7 @@ describe('x25519ToRawPublicKey', () => {
   });
 
   it('should throw an error for missing x parameter', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
     const jwk = x25519ToJwkPublicKey(curve, publicKey);
@@ -54,7 +54,7 @@ describe('x25519ToRawPublicKey', () => {
   });
 
   it('should throw an error for non-string x parameter', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
     const jwk = x25519ToJwkPublicKey(curve, publicKey);
@@ -65,7 +65,7 @@ describe('x25519ToRawPublicKey', () => {
   });
 
   it('should throw an error for invalid alg parameter', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
     const jwk = x25519ToJwkPublicKey(curve, publicKey);
@@ -76,7 +76,7 @@ describe('x25519ToRawPublicKey', () => {
   });
 
   it('should throw an error for malformed Base64URL in x parameter', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
     const jwk = x25519ToJwkPublicKey(curve, publicKey);
@@ -87,7 +87,7 @@ describe('x25519ToRawPublicKey', () => {
   });
 
   it('should throw an error for invalid public key', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
     const jwk = x25519ToJwkPublicKey(curve, publicKey);

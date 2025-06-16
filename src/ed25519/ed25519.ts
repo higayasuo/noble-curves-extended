@@ -165,8 +165,10 @@ export const createEd25519 = (randomBytes: RandomBytes): CurveFn => {
     utils: {
       ...curve.utils,
       randomPrivateKey: () => {
-        const privateKey = curve.utils.randomPrivateKey();
-        return adjustScalarBytes(privateKey);
+        const edRaw = curve.utils.randomPrivateKey();
+        const edHash = sha512(edRaw);
+        const edAdjusted = adjustScalarBytes(edHash.slice(0, 32));
+        return edAdjusted;
       },
     },
   };

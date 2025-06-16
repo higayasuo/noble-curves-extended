@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { x25519 } from '../../../x25519/x25519';
+import { createX25519 } from '../../../x25519/x25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../../types';
 import { x25519ToJwkPrivateKey } from '../x25519ToJwkPrivateKey';
@@ -12,7 +12,7 @@ const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
 
 describe('x25519ToJwkPrivateKey', () => {
   it('should convert a valid private key to JWK format', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const jwk = x25519ToJwkPrivateKey(curve, privateKey);
 
@@ -44,7 +44,7 @@ describe('x25519ToJwkPrivateKey', () => {
   });
 
   it('should throw an error for invalid private key length', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const invalidKey = new Uint8Array(16); // Too short
     expect(() => x25519ToJwkPrivateKey(curve, invalidKey)).toThrow(
       'Invalid X25519 private key',
@@ -52,7 +52,7 @@ describe('x25519ToJwkPrivateKey', () => {
   });
 
   it('should throw an error for empty private key', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const emptyKey = new Uint8Array(0);
     expect(() => x25519ToJwkPrivateKey(curve, emptyKey)).toThrow(
       'Invalid X25519 private key',
@@ -60,7 +60,7 @@ describe('x25519ToJwkPrivateKey', () => {
   });
 
   it('should throw an error for oversized private key', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const oversizedKey = new Uint8Array(64); // Too long
     expect(() => x25519ToJwkPrivateKey(curve, oversizedKey)).toThrow(
       'Invalid X25519 private key',
@@ -68,7 +68,7 @@ describe('x25519ToJwkPrivateKey', () => {
   });
 
   it('should generate a JWK that can be imported by jose', async () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const jwk = x25519ToJwkPrivateKey(curve, privateKey);
     const importedKey = await importJWK(jwk, 'ECDH-ES');
@@ -76,7 +76,7 @@ describe('x25519ToJwkPrivateKey', () => {
   });
 
   it('should generate a JWK that can be imported by jose with use field', async () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const jwk = x25519ToJwkPrivateKey(curve, privateKey);
     const importedKey = await importJWK(jwk, 'ECDH-ES');

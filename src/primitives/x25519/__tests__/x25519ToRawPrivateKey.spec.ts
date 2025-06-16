@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { x25519 } from '../../../x25519/x25519';
+import { createX25519 } from '../../../x25519/x25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../../types';
 import { x25519ToRawPrivateKey } from '../x25519ToRawPrivateKey';
@@ -13,7 +13,7 @@ const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
 describe('x25519ToRawPrivateKey', () => {
   describe('successful cases', () => {
     it('should convert a valid JWK to a raw private key', () => {
-      const curve = x25519(randomBytes);
+      const curve = createX25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       const jwk = x25519ToJwkPrivateKey(curve, privateKey);
       const rawPrivateKey = x25519ToRawPrivateKey(curve, jwk);
@@ -22,7 +22,7 @@ describe('x25519ToRawPrivateKey', () => {
   });
 
   describe('error cases', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const jwk = x25519ToJwkPrivateKey(curve, privateKey);
 

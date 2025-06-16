@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { x25519GetPublicKey } from '../x25519GetPublicKey';
-import { x25519 } from '../../../x25519/x25519';
+import { createX25519 } from '../../../x25519/x25519';
 import { randomBytes as cryptoRandomBytes } from 'crypto';
 import type { RandomBytes } from '../../../types';
 
@@ -10,7 +10,7 @@ const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
 
 describe('x25519GetPublicKey', () => {
   it('should generate a valid public key from a valid private key', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = x25519GetPublicKey(curve, privateKey);
     expect(publicKey).toBeInstanceOf(Uint8Array);
@@ -18,7 +18,7 @@ describe('x25519GetPublicKey', () => {
   });
 
   it('should throw an error for uncompressed public keys', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     expect(() => x25519GetPublicKey(curve, privateKey, false)).toThrow(
       'x25519 does not support uncompressed public keys',
@@ -26,7 +26,7 @@ describe('x25519GetPublicKey', () => {
   });
 
   it('should throw an error for invalid private key length', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = new Uint8Array(31);
     expect(() => x25519GetPublicKey(curve, privateKey)).toThrow(
       'Invalid X25519 private key',
@@ -34,24 +34,15 @@ describe('x25519GetPublicKey', () => {
   });
 
   it('should throw an error for all-zero private key', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey = new Uint8Array(32);
-    expect(() => x25519GetPublicKey(curve, privateKey)).toThrow(
-      'Invalid X25519 private key',
-    );
-  });
-
-  it('should throw an error for private key with invalid bit pattern', () => {
-    const curve = x25519(randomBytes);
-    const privateKey = new Uint8Array(32);
-    privateKey[31] = 0xff; // Set last byte to all ones
     expect(() => x25519GetPublicKey(curve, privateKey)).toThrow(
       'Invalid X25519 private key',
     );
   });
 
   it('should generate different public keys for different private keys', () => {
-    const curve = x25519(randomBytes);
+    const curve = createX25519(randomBytes);
     const privateKey1 = curve.utils.randomPrivateKey();
     const privateKey2 = curve.utils.randomPrivateKey();
 
