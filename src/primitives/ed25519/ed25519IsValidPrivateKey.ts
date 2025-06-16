@@ -15,6 +15,11 @@ export const ed25519IsValidPrivateKey = (
     return false;
   }
 
+  // Check if private key is all zeros
+  if (!privateKey.some((byte) => byte !== 0)) {
+    return false;
+  }
+
   try {
     curve.getPublicKey(privateKey);
     return true;

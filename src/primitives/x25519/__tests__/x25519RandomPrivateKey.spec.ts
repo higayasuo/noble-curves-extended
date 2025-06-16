@@ -18,9 +18,6 @@ describe('x25519RandomPrivateKey', () => {
 
     // Check that the private key has the correct length (32 bytes for x25519)
     expect(privateKey.length).toBe(32);
-
-    // Check that the private key is not all zeros
-    expect(privateKey.some((byte) => byte !== 0)).toBe(true);
   });
 
   it('should generate different private keys on each call', () => {

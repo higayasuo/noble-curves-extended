@@ -21,7 +21,7 @@ export const x25519GetPublicKey = (
   }
 
   if (!x25519IsValidPrivateKey(curve, privateKey)) {
-    throw new Error('Invalid X25519 private key');
+    throw new Error('X25519 private key is invalid');
   }
 
   return curve.getPublicKey(privateKey);

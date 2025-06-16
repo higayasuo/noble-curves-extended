@@ -139,7 +139,10 @@ const ed25519Defaults = /* @__PURE__ */ (() => ({
  * ed25519.verify(sig, msg, pub, { zip215: false }); // RFC8032 / FIPS 186-5
  */
 export const createEd25519 = (randomBytes: RandomBytes): CurveFn => {
-  const curve = twistedEdwards({ ...ed25519Defaults, randomBytes });
+  const curve = twistedEdwards({
+    ...ed25519Defaults,
+    randomBytes,
+  });
 
   const modified: CurveFn = {
     ...curve,
@@ -167,8 +170,7 @@ export const createEd25519 = (randomBytes: RandomBytes): CurveFn => {
       randomPrivateKey: () => {
         const edRaw = curve.utils.randomPrivateKey();
         const edHash = sha512(edRaw);
-        const edAdjusted = adjustScalarBytes(edHash.slice(0, 32));
-        return edAdjusted;
+        return adjustScalarBytes(edHash.slice(0, 32));
       },
     },
   };
