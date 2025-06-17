@@ -7,12 +7,9 @@
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 import { sha256 } from '@noble/hashes/sha2.js';
-import {
-  createCurve,
-  modifyCurve,
-  type CurveFnWithCreate,
-} from './_shortw_utils';
+import { createCurve } from './_shortw_utils';
 import { Field, mod, pow2 } from '@noble/curves/abstract/modular';
+import type { CurveFn } from '@noble/curves/abstract/weierstrass';
 import { WeierstrassOpts, EndomorphismOpts } from '../abstract/_weierstrass';
 import { RandomBytes } from '../types';
 
@@ -85,10 +82,8 @@ const Fpk1 = Field(secp256k1_CURVE.p, undefined, undefined, { sqrt: sqrtMod });
  * const isValid = secp256k1.verify(sig, msg, pub) === true;
  * ```
  */
-export const createSecp256k1 = (
-  randomBytes: RandomBytes,
-): CurveFnWithCreate => {
-  const curve = createCurve(
+export const createSecp256k1 = (randomBytes: RandomBytes): CurveFn => {
+  return createCurve(
     {
       ...secp256k1_CURVE,
       Fp: Fpk1,
@@ -124,6 +119,4 @@ export const createSecp256k1 = (
     sha256,
     randomBytes,
   );
-
-  return modifyCurve(curve);
 };

@@ -5,12 +5,9 @@
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 import { sha256, sha384, sha512 } from '@noble/hashes/sha2';
-import {
-  createCurve,
-  modifyCurve,
-  type CurveFnWithCreate,
-} from '../_shortw_utils';
+import { createCurve } from '../_shortw_utils';
 import { Field } from '@noble/curves/abstract/modular';
+import type { CurveFn } from '@noble/curves/abstract/weierstrass';
 import type { WeierstrassOpts } from '../../abstract/_weierstrass';
 import type { RandomBytes } from '../../types';
 
@@ -90,29 +87,25 @@ const Fp521 = Field(p521_CURVE.p);
 
 /** NIST P256 (aka secp256r1, prime256v1) curve, ECDSA and ECDH methods. */
 export const createP256 = (randomBytes: RandomBytes): CurveFnWithCreate => {
-  const curve = createCurve(
+  return createCurve(
     { ...p256_CURVE, Fp: Fp256, lowS: false },
     sha256,
     randomBytes,
   );
-
-  return modifyCurve(curve);
 };
 
 /** NIST P384 (aka secp384r1) curve, ECDSA and ECDH methods. */
-export const createP384 = (randomBytes: RandomBytes): CurveFnWithCreate => {
-  const curve = createCurve(
+export const createP384 = (randomBytes: RandomBytes): CurveFn => {
+  return createCurve(
     { ...p384_CURVE, Fp: Fp384, lowS: false },
     sha384,
     randomBytes,
   );
-
-  return modifyCurve(curve);
 };
 
 /** NIST P521 (aka secp521r1) curve, ECDSA and ECDH methods. */
-export const createP521 = (randomBytes: RandomBytes): CurveFnWithCreate => {
-  const curve = createCurve(
+export const createP521 = (randomBytes: RandomBytes): CurveFn => {
+  return createCurve(
     {
       ...p521_CURVE,
       Fp: Fp521,
@@ -122,6 +115,4 @@ export const createP521 = (randomBytes: RandomBytes): CurveFnWithCreate => {
     sha512,
     randomBytes,
   );
-
-  return modifyCurve(curve);
 };

@@ -5,17 +5,13 @@
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 import { hmac } from '@noble/hashes/hmac';
 import { concatBytes } from '@noble/hashes/utils';
-import type { CHash, Hex, PrivKey } from '@noble/curves/abstract/utils';
+import type { CHash } from '@noble/curves/abstract/utils';
 import {
   type CurveFn,
   type CurveType,
-  type VerOpts,
-  type SignOpts,
   weierstrass,
 } from '@noble/curves/abstract/weierstrass';
 import { RandomBytes } from '../types';
-import { isBytes } from '@noble/hashes/utils';
-import { SignatureLike } from '../abstract/_weierstrass';
 
 /**
  * Creates a HMAC function using the provided hash function.
@@ -38,11 +34,6 @@ export type CurveDef = Readonly<
 >;
 
 /**
- * Extended curve function type that includes a create method for generating curves with custom hash functions.
- */
-export type CurveFnWithCreate = CurveFn & { create: (hash: CHash) => CurveFn };
-
-/**
  * Creates a curve function with the ability to generate curves using custom hash functions.
  * The function returns a curve function that includes a create method for generating curves with custom hash functions.
  *
@@ -55,10 +46,13 @@ export function createCurve(
   curveDef: CurveDef,
   hash: CHash,
   randomBytes: RandomBytes,
-): CurveFnWithCreate {
-  const create = (hash: CHash): CurveFn =>
-    weierstrass({ ...curveDef, hash, randomBytes, hmac: createHmacFn(hash) });
-  return { ...create(hash), create };
+): CurveFn {
+  return weierstrass({
+    ...curveDef,
+    hash,
+    randomBytes,
+    hmac: createHmacFn(hash),
+  });
 }
 
 /**
@@ -69,36 +63,36 @@ export function createCurve(
  * @param curve - The curve function to modify
  * @returns A modified curve function with type-safe sign and verify methods
  */
-export const modifyCurve = (curve: CurveFnWithCreate) => {
-  const modified: CurveFnWithCreate = {
-    ...curve,
-    sign: (message: Hex, privateKey: PrivKey, options?: SignOpts) => {
-      if (isBytes(message)) {
-        message = Uint8Array.from(message);
-      }
-      if (isBytes(privateKey)) {
-        privateKey = Uint8Array.from(privateKey);
-      }
-      return curve.sign(message, privateKey, options);
-    },
-    verify: (
-      signature: Hex | SignatureLike,
-      message: Hex,
-      publicKey: Hex,
-      options?: VerOpts,
-    ) => {
-      if (isBytes(signature)) {
-        signature = Uint8Array.from(signature);
-      }
-      if (isBytes(message)) {
-        message = Uint8Array.from(message);
-      }
-      if (isBytes(publicKey)) {
-        publicKey = Uint8Array.from(publicKey);
-      }
-      return curve.verify(signature, message, publicKey, options);
-    },
-  };
+// export const modifyCurve = (curve: CurveFnWithCreate) => {
+//   const modified: CurveFnWithCreate = {
+//     ...curve,
+//     sign: (message: Hex, privateKey: PrivKey, options?: SignOpts) => {
+//       if (isBytes(message)) {
+//         message = Uint8Array.from(message);
+//       }
+//       if (isBytes(privateKey)) {
+//         privateKey = Uint8Array.from(privateKey);
+//       }
+//       return curve.sign(message, privateKey, options);
+//     },
+//     verify: (
+//       signature: Hex | SignatureLike,
+//       message: Hex,
+//       publicKey: Hex,
+//       options?: VerOpts,
+//     ) => {
+//       if (isBytes(signature)) {
+//         signature = Uint8Array.from(signature);
+//       }
+//       if (isBytes(message)) {
+//         message = Uint8Array.from(message);
+//       }
+//       if (isBytes(publicKey)) {
+//         publicKey = Uint8Array.from(publicKey);
+//       }
+//       return curve.verify(signature, message, publicKey, options);
+//     },
+//   };
 
-  return modified;
-};
+//   return modified;
+// };
