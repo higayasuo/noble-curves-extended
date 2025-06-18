@@ -1,7 +1,4 @@
-import {
-  montgomery,
-  type CurveFn as XCurveFn,
-} from '@noble/curves/abstract/montgomery';
+import { montgomery, type CurveFn } from '@noble/curves/abstract/montgomery';
 import {
   ed25519_CURVE,
   ed25519_pow_2_252_3,
@@ -12,7 +9,7 @@ import { RandomBytes } from '../../types';
 
 const _3n = BigInt(3);
 
-export const createX25519 = (randomBytes: RandomBytes): XCurveFn =>
+export const createX25519 = (randomBytes: RandomBytes): CurveFn =>
   /* @__PURE__ */ (() => {
     const P = ed25519_CURVE.p;
     return montgomery({

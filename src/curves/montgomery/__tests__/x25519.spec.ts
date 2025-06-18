@@ -1,51 +1,221 @@
 import { describe, it, expect } from 'vitest';
+import { x25519 as nobleX25519 } from '@noble/curves/ed25519';
 import { createX25519 } from '../x25519';
-import { randomBytes as cryptoRandomBytes } from 'crypto';
-import type { RandomBytes } from '../../types';
-import { x25519 } from '@noble/curves/ed25519';
+import { randomBytes as nodeRandomBytes } from 'crypto';
+import type { RandomBytes } from '../../../types';
+import { encodeBase64Url } from 'u8a-utils';
+import { extractRawPrivateKeyFromPkcs8 } from '../../weierstrass/__tests__/extractRawPrivateKeyFromPkcs8';
 
-const randomBytes: RandomBytes = (bytesLength?: number): Uint8Array => {
-  return new Uint8Array(cryptoRandomBytes(bytesLength ?? 32));
-};
+describe('x25519 interoperability', () => {
+  const randomBytes: RandomBytes = (bytesLength?: number) => {
+    return new Uint8Array(nodeRandomBytes(bytesLength ?? 32));
+  };
+  const ourX25519 = createX25519(randomBytes);
 
-describe('x25519', () => {
-  it('should generate matching shared secrets between two key pairs', () => {
-    const curve = createX25519(randomBytes);
+  describe('getSharedSecret', () => {
+    describe('noble compatibility', () => {
+      it('should compute the same shared secret when using our implementation with noble keys', () => {
+        // Generate key pairs using noble implementation
+        const alicePrivateKey = nobleX25519.utils.randomPrivateKey();
+        const alicePublicKey = nobleX25519.getPublicKey(alicePrivateKey);
+        const bobPrivateKey = nobleX25519.utils.randomPrivateKey();
+        const bobPublicKey = nobleX25519.getPublicKey(bobPrivateKey);
+        // Compute shared secrets using our implementation
+        const aliceSharedSecret = ourX25519.getSharedSecret(
+          alicePrivateKey,
+          bobPublicKey,
+        );
+        const bobSharedSecret = ourX25519.getSharedSecret(
+          bobPrivateKey,
+          alicePublicKey,
+        );
+        expect(aliceSharedSecret).toEqual(bobSharedSecret);
+        // Compute shared secrets using noble implementation
+        const nobleAliceSharedSecret = nobleX25519.getSharedSecret(
+          alicePrivateKey,
+          bobPublicKey,
+        );
+        const nobleBobSharedSecret = nobleX25519.getSharedSecret(
+          bobPrivateKey,
+          alicePublicKey,
+        );
+        expect(aliceSharedSecret).toEqual(nobleAliceSharedSecret);
+        expect(bobSharedSecret).toEqual(nobleBobSharedSecret);
+      });
 
-    // Generate two key pairs
-    const alicePrivateKey = curve.utils.randomPrivateKey();
-    const alicePublicKey = curve.getPublicKey(alicePrivateKey);
+      it('should compute the same shared secret when using noble implementation with our keys', () => {
+        // Generate key pairs using our implementation
+        const alicePrivateKey = ourX25519.utils.randomPrivateKey();
+        const alicePublicKey = ourX25519.getPublicKey(alicePrivateKey);
+        const bobPrivateKey = ourX25519.utils.randomPrivateKey();
+        const bobPublicKey = ourX25519.getPublicKey(bobPrivateKey);
+        // Compute shared secrets using noble implementation
+        const nobleAliceSharedSecret = nobleX25519.getSharedSecret(
+          alicePrivateKey,
+          bobPublicKey,
+        );
+        const nobleBobSharedSecret = nobleX25519.getSharedSecret(
+          bobPrivateKey,
+          alicePublicKey,
+        );
+        expect(nobleAliceSharedSecret).toEqual(nobleBobSharedSecret);
+        // Compute shared secrets using our implementation
+        const aliceSharedSecret = ourX25519.getSharedSecret(
+          alicePrivateKey,
+          bobPublicKey,
+        );
+        const bobSharedSecret = ourX25519.getSharedSecret(
+          bobPrivateKey,
+          alicePublicKey,
+        );
+        expect(nobleAliceSharedSecret).toEqual(aliceSharedSecret);
+        expect(nobleBobSharedSecret).toEqual(bobSharedSecret);
+      });
+    });
 
-    const bobPrivateKey = curve.utils.randomPrivateKey();
-    const bobPublicKey = curve.getPublicKey(bobPrivateKey);
+    describe('Web Crypto API compatibility', () => {
+      it('should compute the same shared secret with Web Crypto API after generating keys with our implementation', async () => {
+        // Generate key pairs using our implementation
+        const alicePrivateKey = ourX25519.utils.randomPrivateKey();
+        const alicePublicKey = ourX25519.getPublicKey(alicePrivateKey);
+        const bobPrivateKey = ourX25519.utils.randomPrivateKey();
+        const bobPublicKey = ourX25519.getPublicKey(bobPrivateKey);
 
-    // Calculate shared secrets
-    const aliceSharedSecret = curve.getSharedSecret(
-      alicePrivateKey,
-      bobPublicKey,
-    );
-    const bobSharedSecret = curve.getSharedSecret(
-      bobPrivateKey,
-      alicePublicKey,
-    );
+        // Compute shared secret using our implementation
+        const aliceSharedSecret = ourX25519.getSharedSecret(
+          alicePrivateKey,
+          bobPublicKey,
+        );
+        const bobSharedSecret = ourX25519.getSharedSecret(
+          bobPrivateKey,
+          alicePublicKey,
+        );
+        expect(aliceSharedSecret).toEqual(bobSharedSecret);
 
-    // Verify that both shared secrets are identical
-    expect(aliceSharedSecret).toEqual(bobSharedSecret);
-  });
+        // Import keys into Web Crypto API
+        const aliceJwkPrivateKey = {
+          kty: 'OKP',
+          crv: 'X25519',
+          x: encodeBase64Url(alicePublicKey),
+          d: encodeBase64Url(alicePrivateKey),
+        };
+        const aliceCryptoPrivateKey = await crypto.subtle.importKey(
+          'jwk',
+          aliceJwkPrivateKey,
+          {
+            name: 'X25519',
+          },
+          false,
+          ['deriveBits'],
+        );
+        const bobCryptoPublicKey = await crypto.subtle.importKey(
+          'raw',
+          bobPublicKey,
+          {
+            name: 'X25519',
+          },
+          false,
+          [],
+        );
 
-  it('should produce the same shared secret as noble implementation', () => {
-    // Our implementation
-    const ourCurve = createX25519(randomBytes);
-    const alicePriv = ourCurve.utils.randomPrivateKey();
-    const alicePub = ourCurve.getPublicKey(alicePriv);
-    const bobPriv = ourCurve.utils.randomPrivateKey();
-    const bobPub = ourCurve.getPublicKey(bobPriv);
-    const ourSecret = ourCurve.getSharedSecret(alicePriv, bobPub);
+        // Compute shared secret using Web Crypto API
+        const webCryptoSharedSecret = await crypto.subtle.deriveBits(
+          {
+            name: 'X25519',
+            public: bobCryptoPublicKey,
+          },
+          aliceCryptoPrivateKey,
+          256,
+        );
+        expect(new Uint8Array(webCryptoSharedSecret)).toEqual(
+          aliceSharedSecret,
+        );
+      });
 
-    // Noble implementation
-    const nobleSecret = x25519.getSharedSecret(alicePriv, bobPub);
+      it('should compute the same shared secret with our implementation after generating keys with Web Crypto API', async () => {
+        // Generate key pairs using Web Crypto API
+        const aliceKeyPair = await crypto.subtle.generateKey(
+          {
+            name: 'X25519',
+          },
+          true,
+          ['deriveKey', 'deriveBits'],
+        );
+        const bobKeyPair = await crypto.subtle.generateKey(
+          {
+            name: 'X25519',
+          },
+          true,
+          ['deriveKey', 'deriveBits'],
+        );
 
-    // Verify that both shared secrets are identical
-    expect(ourSecret).toEqual(nobleSecret);
+        // Destructure keys
+        const { publicKey: alicePublicKeyKey, privateKey: alicePrivateKeyKey } =
+          aliceKeyPair as CryptoKeyPair;
+        const { publicKey: bobPublicKeyKey, privateKey: bobPrivateKeyKey } =
+          bobKeyPair as CryptoKeyPair;
+
+        // Export public keys
+        const alicePublicKey = new Uint8Array(
+          await crypto.subtle.exportKey('raw', alicePublicKeyKey),
+        );
+        const bobPublicKey = new Uint8Array(
+          await crypto.subtle.exportKey('raw', bobPublicKeyKey),
+        );
+
+        // Export private keys in pkcs8 format
+        const alicePkcs8PrivateKey = await crypto.subtle.exportKey(
+          'pkcs8',
+          alicePrivateKeyKey,
+        );
+        const bobPkcs8PrivateKey = await crypto.subtle.exportKey(
+          'pkcs8',
+          bobPrivateKeyKey,
+        );
+
+        // Extract raw private keys
+        const aliceRawPrivateKey = new Uint8Array(
+          extractRawPrivateKeyFromPkcs8(alicePkcs8PrivateKey),
+        );
+        const bobRawPrivateKey = new Uint8Array(
+          extractRawPrivateKeyFromPkcs8(bobPkcs8PrivateKey),
+        );
+
+        // Compute shared secrets using our implementation
+        const aliceSharedSecret = ourX25519.getSharedSecret(
+          aliceRawPrivateKey,
+          bobPublicKey,
+        );
+        const bobSharedSecret = ourX25519.getSharedSecret(
+          bobRawPrivateKey,
+          alicePublicKey,
+        );
+        expect(aliceSharedSecret).toEqual(bobSharedSecret);
+
+        // Compute shared secret using Web Crypto API
+        const webCryptoAliceSharedSecret = await crypto.subtle.deriveBits(
+          {
+            name: 'X25519',
+            public: bobPublicKeyKey,
+          },
+          alicePrivateKeyKey,
+          256,
+        );
+        const webCryptoBobSharedSecret = await crypto.subtle.deriveBits(
+          {
+            name: 'X25519',
+            public: alicePublicKeyKey,
+          },
+          bobPrivateKeyKey,
+          256,
+        );
+        expect(new Uint8Array(webCryptoAliceSharedSecret)).toEqual(
+          new Uint8Array(webCryptoBobSharedSecret),
+        );
+        expect(new Uint8Array(webCryptoAliceSharedSecret)).toEqual(
+          aliceSharedSecret,
+        );
+      });
+    });
   });
 });
