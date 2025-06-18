@@ -11,7 +11,7 @@ import { createCurve } from './_shortw_utils';
 import { Field, mod, pow2 } from '@noble/curves/abstract/modular';
 import type { CurveFn } from '@noble/curves/abstract/weierstrass';
 import { WeierstrassOpts, EndomorphismOpts } from '../abstract/_weierstrass';
-import { RandomBytes } from '../types';
+import { RandomBytes } from '../../types';
 
 // Seems like generator was produced from some seed:
 // `Point.BASE.multiply(Point.Fn.inv(2n, N)).toAffine().x`

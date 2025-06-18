@@ -9,7 +9,7 @@ import { createCurve } from './_shortw_utils';
 import { Field } from '@noble/curves/abstract/modular';
 import type { CurveFn } from '@noble/curves/abstract/weierstrass';
 import type { WeierstrassOpts } from '../abstract/_weierstrass';
-import type { RandomBytes } from '../types';
+import type { RandomBytes } from '../../types';
 
 // p = 2n**521n - 1n
 const p521_CURVE: WeierstrassOpts<bigint> = {

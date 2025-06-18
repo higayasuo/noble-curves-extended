@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { p256 as nobleP256 } from '@noble/curves/p256';
 import { createP256 } from '../p256';
 import { randomBytes as nodeRandomBytes } from 'crypto';
-import { RandomBytes } from '../../types';
+import { RandomBytes } from '../../../types';
 import { encodeBase64Url } from 'u8a-utils';
 import { extractRawPrivateKeyFromPkcs8 } from './extractRawPrivateKeyFromPkcs8';
 

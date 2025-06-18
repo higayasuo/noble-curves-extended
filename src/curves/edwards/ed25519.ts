@@ -8,10 +8,9 @@
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 import { sha512 } from '@noble/hashes/sha2';
 import { type CurveFn, twistedEdwards } from '@noble/curves/abstract/edwards';
-import { type Hex } from '@noble/curves/abstract/utils';
 import { type EdwardsOpts } from '../abstract/_edwards';
 import { Field, isNegativeLE, mod, pow2 } from '@noble/curves/abstract/modular';
-import { RandomBytes } from '../types';
+import { RandomBytes } from '../../types';
 
 // prettier-ignore
 const _1n = BigInt(1), _2n = BigInt(2), _5n = BigInt(5), _8n = BigInt(8);
@@ -127,14 +126,6 @@ const ed25519Defaults = /* @__PURE__ */ (() => ({
 
 /**
  * ed25519 curve with EdDSA signatures.
- * @example
- * import { ed25519 } from '@noble/curves/ed25519';
- * const priv = ed25519.utils.randomPrivateKey();
- * const pub = ed25519.getPublicKey(priv);
- * const msg = new TextEncoder().encode('hello');
- * const sig = ed25519.sign(msg, priv);
- * ed25519.verify(sig, msg, pub); // Default mode: follows ZIP215
- * ed25519.verify(sig, msg, pub, { zip215: false }); // RFC8032 / FIPS 186-5
  */
 export const createEd25519 = (randomBytes: RandomBytes): CurveFn => {
   return twistedEdwards({

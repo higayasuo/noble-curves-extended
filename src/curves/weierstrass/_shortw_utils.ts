@@ -11,7 +11,7 @@ import {
   type CurveType,
   weierstrass,
 } from '@noble/curves/abstract/weierstrass';
-import { RandomBytes } from '../types';
+import type { RandomBytes } from '@/types';
 
 /**
  * Creates a HMAC function using the provided hash function.
@@ -54,45 +54,3 @@ export function createCurve(
     hmac: createHmacFn(hash),
   });
 }
-
-/**
- * Modifies a curve function to ensure proper handling of input types for signing and verification.
- * Wraps the curve's sign and verify methods to convert any byte-like inputs to Uint8Array
- * before passing them to the underlying curve implementation.
- *
- * @param curve - The curve function to modify
- * @returns A modified curve function with type-safe sign and verify methods
- */
-// export const modifyCurve = (curve: CurveFnWithCreate) => {
-//   const modified: CurveFnWithCreate = {
-//     ...curve,
-//     sign: (message: Hex, privateKey: PrivKey, options?: SignOpts) => {
-//       if (isBytes(message)) {
-//         message = Uint8Array.from(message);
-//       }
-//       if (isBytes(privateKey)) {
-//         privateKey = Uint8Array.from(privateKey);
-//       }
-//       return curve.sign(message, privateKey, options);
-//     },
-//     verify: (
-//       signature: Hex | SignatureLike,
-//       message: Hex,
-//       publicKey: Hex,
-//       options?: VerOpts,
-//     ) => {
-//       if (isBytes(signature)) {
-//         signature = Uint8Array.from(signature);
-//       }
-//       if (isBytes(message)) {
-//         message = Uint8Array.from(message);
-//       }
-//       if (isBytes(publicKey)) {
-//         publicKey = Uint8Array.from(publicKey);
-//       }
-//       return curve.verify(signature, message, publicKey, options);
-//     },
-//   };
-
-//   return modified;
-// };

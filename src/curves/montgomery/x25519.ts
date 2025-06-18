@@ -6,9 +6,9 @@ import {
   ed25519_CURVE,
   ed25519_pow_2_252_3,
   adjustScalarBytes,
-} from '../ed25519/ed25519';
+} from '../edwards/ed25519';
 import { mod, pow2 } from '@noble/curves/abstract/modular';
-import { RandomBytes } from '../types';
+import { RandomBytes } from '../../types';
 
 const _3n = BigInt(3);
 

@@ -1,5 +1,5 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
-import { adjustScalarBytes } from '../../ed25519/ed25519';
+import { adjustScalarBytes } from '../../edwards/ed25519';
 
 /**
  * Generates a random private key for the x25519 curve, applying adjustScalarBytes for RFC 7748 compliance.

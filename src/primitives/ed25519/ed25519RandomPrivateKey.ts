@@ -1,6 +1,6 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import { sha512 } from '@noble/hashes/sha2';
-import { adjustScalarBytes } from '../../ed25519/ed25519';
+import { adjustScalarBytes } from '../../edwards/ed25519';
 
 /**
  * Generates a random private key for the Ed25519 curve.
