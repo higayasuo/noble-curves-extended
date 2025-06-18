@@ -10,7 +10,7 @@ import { sha512 } from '@noble/hashes/sha2';
 import { type CurveFn, twistedEdwards } from '@noble/curves/abstract/edwards';
 import { type EdwardsOpts } from '../abstract/_edwards';
 import { Field, isNegativeLE, mod, pow2 } from '@noble/curves/abstract/modular';
-import { RandomBytes } from '../../types';
+import { RandomBytes } from '../types';
 
 // prettier-ignore
 const _1n = BigInt(1), _2n = BigInt(2), _5n = BigInt(5), _8n = BigInt(8);

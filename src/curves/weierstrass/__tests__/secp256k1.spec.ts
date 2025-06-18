@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ec as EC } from 'elliptic';
 import { createSecp256k1 } from '../secp256k1';
-import { randomBytes as nodeRandomBytes } from 'crypto';
-import { RandomBytes } from '../../../types';
+import { randomBytes } from '@noble/hashes/utils';
 import { sha256 } from '@noble/hashes/sha2';
 import { secp256k1 as nobleSecp256k1 } from '@noble/curves/secp256k1';
 
@@ -12,9 +11,6 @@ const toHex = (u8: Uint8Array) => Buffer.from(u8).toString('hex');
 const fromHex = (hex: string) => new Uint8Array(Buffer.from(hex, 'hex'));
 
 describe('secp256k1 interoperability', () => {
-  const randomBytes: RandomBytes = (bytesLength?: number) => {
-    return new Uint8Array(nodeRandomBytes(bytesLength ?? 32));
-  };
   const ourSecp256k1 = createSecp256k1(randomBytes);
 
   describe('sign and verify', () => {

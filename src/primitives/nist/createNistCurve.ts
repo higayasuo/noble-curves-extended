@@ -1,4 +1,4 @@
-import { Jwk, NistCurveName, RandomBytes } from '../../types';
+import { Jwk, NistCurveName, RandomBytes } from '../types';
 import { CurveFnWithCreate } from '../_shortw_utils';
 import { isValidPublicKey } from './isValidPublicKey';
 import { createP256, createP384, createP521 } from './nist';

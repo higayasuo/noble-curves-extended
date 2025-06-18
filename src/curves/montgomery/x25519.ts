@@ -5,7 +5,7 @@ import {
   adjustScalarBytes,
 } from '../edwards/ed25519';
 import { mod, pow2 } from '@noble/curves/abstract/modular';
-import { RandomBytes } from '../../types';
+import { RandomBytes } from '../types';
 
 const _3n = BigInt(3);
 

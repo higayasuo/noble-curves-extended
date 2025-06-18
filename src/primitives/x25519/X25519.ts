@@ -5,7 +5,7 @@ import {
   JwkPrivateKey,
   JwkPublicKey,
   RandomBytes,
-} from '../../types';
+} from '../types';
 import { x25519RandomPrivateKey } from './x25519RandomPrivateKey';
 import { x25519GetPublicKey } from './x25519GetPublicKey';
 import { x25519ToJwkPrivateKey } from './x25519ToJwkPrivateKey';

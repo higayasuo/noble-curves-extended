@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractRawPrivateKeyFromPkcs8 } from './extractRawPrivateKeyFromPkcs8';
+import { extractRawPrivateKeyFromPkcs8 } from '../extractRawPrivateKeyFromPkcs8';
 import { ec as EC } from 'elliptic';
 import { createPrivateKey } from 'crypto';
 

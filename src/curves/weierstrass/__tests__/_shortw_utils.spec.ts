@@ -1,16 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { createCurve, createHmacFn, CurveDef } from '../_shortw_utils';
 import { sha256 } from '@noble/hashes/sha2';
-import { randomBytes as nodeRandomBytes } from 'crypto';
-import type { RandomBytes } from '../../../types';
+import { randomBytes } from '@noble/hashes/utils';
 import { secp256k1 as nobleSecp256k1 } from '@noble/curves/secp256k1';
 import { Field } from '@noble/curves/abstract/modular';
 
 describe('_shortw_utils', () => {
-  const randomBytes: RandomBytes = (bytesLength?: number) => {
-    return new Uint8Array(nodeRandomBytes(bytesLength ?? 32));
-  };
-
   describe('createHmacFn', () => {
     it('should create a valid HMAC function', () => {
       const hmacFn = createHmacFn(sha256);

@@ -9,7 +9,7 @@ import { createCurve } from './_shortw_utils';
 import { Field } from '@noble/curves/abstract/modular';
 import type { CurveFn } from '@noble/curves/abstract/weierstrass';
 import type { WeierstrassOpts } from '../abstract/_weierstrass';
-import type { RandomBytes } from '../../types';
+import type { RandomBytes } from '../types';
 
 // p = 2n**224n * (2n**32n-1n) + 2n**192n + 2n**96n - 1n
 // a = Fp256.create(BigInt('-3'));

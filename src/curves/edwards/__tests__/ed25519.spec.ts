@@ -1,16 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { ed25519 as nobleEd25519 } from '@noble/curves/ed25519';
 import { createEd25519 } from '../ed25519';
-import { randomBytes as nodeRandomBytes } from 'crypto';
-import type { RandomBytes } from '../../../types';
+import { randomBytes } from '@noble/hashes/utils';
 import { encodeBase64Url } from 'u8a-utils';
 
 // Note: Web Crypto API for Ed25519 uses 'Ed25519' as the namedCurve
 
 describe('ed25519 interoperability', () => {
-  const randomBytes: RandomBytes = (bytesLength?: number) => {
-    return new Uint8Array(nodeRandomBytes(bytesLength ?? 32));
-  };
   const ourEd25519 = createEd25519(randomBytes);
 
   describe('sign and verify', () => {

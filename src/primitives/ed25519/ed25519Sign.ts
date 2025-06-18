@@ -1,6 +1,6 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import { ed25519IsValidPrivateKey } from './ed25519IsValidPrivateKey';
-import type { SignParams } from '../../types';
+import type { SignParams } from '../types';
 import { isUint8Array } from 'u8a-utils';
 import { ensureUint8Array } from 'u8a-utils';
 

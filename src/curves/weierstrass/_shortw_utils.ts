@@ -11,7 +11,7 @@ import {
   type CurveType,
   weierstrass,
 } from '@noble/curves/abstract/weierstrass';
-import type { RandomBytes } from '@/types';
+import type { RandomBytes } from '../types';
 
 /**
  * Creates a HMAC function using the provided hash function.

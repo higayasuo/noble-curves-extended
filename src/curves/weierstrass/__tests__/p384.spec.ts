@@ -1,15 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { p384 as nobleP384 } from '@noble/curves/p384';
 import { createP384 } from '../p384';
-import { randomBytes as nodeRandomBytes } from 'crypto';
-import { RandomBytes } from '../../../types';
+import { randomBytes } from '@noble/hashes/utils';
 import { encodeBase64Url } from 'u8a-utils';
-import { extractRawPrivateKeyFromPkcs8 } from './extractRawPrivateKeyFromPkcs8';
+import { extractRawPrivateKeyFromPkcs8 } from '../../../utils/extractRawPrivateKeyFromPkcs8';
 
 describe('p384 interoperability', () => {
-  const randomBytes: RandomBytes = (bytesLength?: number) => {
-    return new Uint8Array(nodeRandomBytes(bytesLength ?? 48));
-  };
   const ourP384 = createP384(randomBytes);
 
   describe('sign and verify', () => {

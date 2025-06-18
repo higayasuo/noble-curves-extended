@@ -1,15 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { p256 as nobleP256 } from '@noble/curves/p256';
 import { createP256 } from '../p256';
-import { randomBytes as nodeRandomBytes } from 'crypto';
-import { RandomBytes } from '../../../types';
+import { randomBytes } from '@noble/hashes/utils';
 import { encodeBase64Url } from 'u8a-utils';
-import { extractRawPrivateKeyFromPkcs8 } from './extractRawPrivateKeyFromPkcs8';
+import { extractRawPrivateKeyFromPkcs8 } from '../../../utils/extractRawPrivateKeyFromPkcs8';
 
 describe('p256 interoperability', () => {
-  const randomBytes: RandomBytes = (bytesLength?: number) => {
-    return new Uint8Array(nodeRandomBytes(bytesLength ?? 32));
-  };
   const ourP256 = createP256(randomBytes);
 
   describe('sign and verify', () => {

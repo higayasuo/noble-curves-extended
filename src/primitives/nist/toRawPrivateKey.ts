@@ -1,5 +1,5 @@
 import { CurveFn } from '@noble/curves/abstract/weierstrass';
-import { Jwk } from '../../types';
+import { Jwk } from '../types';
 import { compareUint8Arrays, fromB64U } from 'u8a-utils';
 import { toRawPublicKey } from './toRawPublicKey';
 

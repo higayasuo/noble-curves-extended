@@ -4,7 +4,7 @@ import {
   IField,
   mapHashToField,
 } from '@noble/curves/abstract/modular';
-import { RandomBytes } from '../types';
+import type { RandomBytes } from '../types';
 
 export const bls12381Fr: IField<bigint> = Field(
   BigInt('0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001'),

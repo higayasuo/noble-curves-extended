@@ -1,5 +1,5 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
-import { JwkPublicKey } from '../../types';
+import { JwkPublicKey } from '../types';
 import { decodeBase64Url } from 'u8a-utils';
 import { x25519IsValidPublicKey } from './x25519IsValidPublicKey';
 

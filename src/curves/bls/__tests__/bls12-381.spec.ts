@@ -15,7 +15,7 @@ describe('BLS12-381', () => {
     expect(privateKey).toBeInstanceOf(Uint8Array);
 
     // Check that the private key is not empty
-    expect(privateKey.length).toBeGreaterThan(0);
+    expect(privateKey.length).toBe(32);
   });
 
   it('should generate different private keys with different random inputs', () => {

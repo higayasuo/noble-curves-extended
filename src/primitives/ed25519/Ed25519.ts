@@ -6,7 +6,7 @@ import {
   SignaturePrimitive,
   SignParams,
   VerifyParams,
-} from '../../types';
+} from '../types';
 import { ed25519RandomPrivateKey } from './ed25519RandomPrivateKey';
 import { ed25519GetPublicKey } from './ed25519GetPublicKey';
 import { ed25519Sign } from './ed25519Sign';

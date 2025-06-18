@@ -1,6 +1,6 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import { ed25519IsValidPublicKey } from './ed25519IsValidPublicKey';
-import type { VerifyParams } from '../../types';
+import type { VerifyParams } from '../types';
 import { isUint8Array } from 'u8a-utils';
 import { ensureUint8Array } from 'u8a-utils';
 

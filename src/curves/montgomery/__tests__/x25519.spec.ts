@@ -1,15 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { x25519 as nobleX25519 } from '@noble/curves/ed25519';
 import { createX25519 } from '../x25519';
-import { randomBytes as nodeRandomBytes } from 'crypto';
-import type { RandomBytes } from '../../../types';
+import { randomBytes } from '@noble/hashes/utils';
 import { encodeBase64Url } from 'u8a-utils';
 import { extractRawPrivateKeyFromPkcs8 } from '../../weierstrass/__tests__/extractRawPrivateKeyFromPkcs8';
 
 describe('x25519 interoperability', () => {
-  const randomBytes: RandomBytes = (bytesLength?: number) => {
-    return new Uint8Array(nodeRandomBytes(bytesLength ?? 32));
-  };
   const ourX25519 = createX25519(randomBytes);
 
   describe('getSharedSecret', () => {

@@ -1,5 +1,5 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
-import { JwkPrivateKey } from '../../types';
+import { JwkPrivateKey } from '../types';
 import { decodeBase64Url } from 'u8a-utils';
 import { ed25519IsValidPublicKey } from './ed25519IsValidPublicKey';
 import { ed25519IsValidPrivateKey } from './ed25519IsValidPrivateKey';

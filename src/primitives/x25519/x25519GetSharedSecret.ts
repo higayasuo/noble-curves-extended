@@ -1,7 +1,7 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
 import { x25519IsValidPrivateKey } from './x25519IsValidPrivateKey';
 import { x25519IsValidPublicKey } from './x25519IsValidPublicKey';
-import type { GetSharedSecretParams } from '../../types';
+import type { GetSharedSecretParams } from '../types';
 
 /**
  * Computes the shared secret for the X25519 curve using a private key and a public key.
