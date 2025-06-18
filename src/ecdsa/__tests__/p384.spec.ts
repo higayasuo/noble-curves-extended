@@ -1,52 +1,46 @@
 import { describe, it, expect } from 'vitest';
-import { p256 as nobleP256 } from '@noble/curves/p256';
-import { createP256 } from '../p256';
+import { p384 as nobleP384 } from '@noble/curves/p384';
+import { createP384 } from '../p384';
 import { randomBytes as nodeRandomBytes } from 'crypto';
 import { RandomBytes } from '../../types';
 import { encodeBase64Url } from 'u8a-utils';
 import { extractRawPrivateKeyFromPkcs8 } from './extractRawPrivateKeyFromPkcs8';
 
-describe('p256 interoperability', () => {
+describe('p384 interoperability', () => {
   const randomBytes: RandomBytes = (bytesLength?: number) => {
-    return new Uint8Array(nodeRandomBytes(bytesLength ?? 32));
+    return new Uint8Array(nodeRandomBytes(bytesLength ?? 48));
   };
-  const ourP256 = createP256(randomBytes);
+  const ourP384 = createP384(randomBytes);
 
   describe('sign and verify', () => {
     describe('noble compatibility', () => {
-      it('should verify signature created by custom implementation using noble implementation', () => {
-        // Generate key pair using custom implementation
-        const privateKey = ourP256.utils.randomPrivateKey();
-        const publicKey = ourP256.getPublicKey(privateKey);
-
-        // Create message using TextEncoder
+      it('should verify signature created by our implementation using noble implementation', () => {
+        // Generate key pair using our implementation
+        const privateKey = ourP384.utils.randomPrivateKey();
+        const publicKey = ourP384.getPublicKey(privateKey);
         const message = Uint8Array.from(
-          new TextEncoder().encode('Hello, P256!'),
+          new TextEncoder().encode('Hello, P384!'),
         );
-        const signature = ourP256.sign(message, privateKey, { prehash: true });
-
+        const signature = ourP384.sign(message, privateKey, { prehash: true });
         // Verify with noble implementation
-        const isValid = nobleP256.verify(signature, message, publicKey, {
+        const isValid = nobleP384.verify(signature, message, publicKey, {
           prehash: true,
         });
         expect(isValid).toBe(true);
       });
 
-      it('should verify signature created by noble implementation using custom implementation', () => {
+      it('should verify signature created by noble implementation using our implementation', () => {
         // Generate key pair using noble implementation
-        const privateKey = nobleP256.utils.randomPrivateKey();
-        const publicKey = nobleP256.getPublicKey(privateKey);
-
-        // Create message using TextEncoder
+        const privateKey = nobleP384.utils.randomPrivateKey();
+        const publicKey = nobleP384.getPublicKey(privateKey);
         const message = Uint8Array.from(
-          new TextEncoder().encode('Hello, P256!'),
+          new TextEncoder().encode('Hello, P384!'),
         );
-        const signature = nobleP256.sign(message, privateKey, {
+        const signature = nobleP384.sign(message, privateKey, {
           prehash: true,
         });
-
-        // Verify with custom implementation
-        const isValid = ourP256.verify(signature, message, publicKey, {
+        // Verify with our implementation
+        const isValid = ourP384.verify(signature, message, publicKey, {
           prehash: true,
         });
         expect(isValid).toBe(true);
@@ -56,26 +50,24 @@ describe('p256 interoperability', () => {
     describe('Web Crypto API compatibility', () => {
       it('should verify signature with Web Crypto API after signing with our implementation', async () => {
         // Generate key pair using our implementation
-        const privateKey = ourP256.utils.randomPrivateKey();
-        const publicKey = ourP256.getPublicKey(privateKey, false);
+        const privateKey = ourP384.utils.randomPrivateKey();
+        const publicKey = ourP384.getPublicKey(privateKey, false);
 
-        // Create message using TextEncoder
+        // Create message
         const message = Uint8Array.from(
-          new TextEncoder().encode('Hello, P256!'),
+          new TextEncoder().encode('Hello, P384!'),
         );
-
-        const signature = ourP256
-          .sign(message, privateKey, {
-            prehash: true,
-          })
+        const signature = ourP384
+          .sign(message, privateKey, { prehash: true })
           .toCompactRawBytes();
 
+        // Import public key into Web Crypto API
         const cryptoPublicKey = await crypto.subtle.importKey(
           'raw',
           publicKey,
           {
             name: 'ECDSA',
-            namedCurve: 'P-256',
+            namedCurve: 'P-384',
           },
           false,
           ['verify'],
@@ -83,7 +75,7 @@ describe('p256 interoperability', () => {
         const isValidWebCrypto = await crypto.subtle.verify(
           {
             name: 'ECDSA',
-            hash: 'SHA-256',
+            hash: 'SHA-384',
           },
           cryptoPublicKey,
           signature,
@@ -92,16 +84,17 @@ describe('p256 interoperability', () => {
         expect(isValidWebCrypto).toBe(true);
       });
 
-      it('should verify signature with ourP256 after signing with Web Crypto API', async () => {
+      it('should verify signature with ourP384 after signing with Web Crypto API', async () => {
         // Generate key pair using our implementation
-        const privateKey = ourP256.utils.randomPrivateKey();
-        const publicKey = ourP256.getPublicKey(privateKey, false);
+        const privateKey = ourP384.utils.randomPrivateKey();
+        const publicKey = ourP384.getPublicKey(privateKey, false);
 
+        // JWK for Web Crypto API
         const jwkPrivateKey = {
           kty: 'EC',
-          crv: 'P-256',
-          x: encodeBase64Url(publicKey.slice(1, 33)),
-          y: encodeBase64Url(publicKey.slice(33)),
+          crv: 'P-384',
+          x: encodeBase64Url(publicKey.slice(1, 49)),
+          y: encodeBase64Url(publicKey.slice(49)),
           d: encodeBase64Url(privateKey),
         };
 
@@ -111,33 +104,31 @@ describe('p256 interoperability', () => {
           jwkPrivateKey,
           {
             name: 'ECDSA',
-            namedCurve: 'P-256',
+            namedCurve: 'P-384',
           },
           false,
           ['sign'],
         );
 
         // Create message
-        const message = new TextEncoder().encode('Hello, P256!');
+        const message = new TextEncoder().encode('Hello, P384!');
 
         // Sign with Web Crypto API
         const signature = await crypto.subtle.sign(
           {
             name: 'ECDSA',
-            hash: 'SHA-256',
+            hash: 'SHA-384',
           },
           cryptoPrivateKey,
           message,
         );
 
-        // Verify with ourP256
-        const isValid = ourP256.verify(
+        // Verify with ourP384
+        const isValid = ourP384.verify(
           new Uint8Array(signature),
           message,
           publicKey,
-          {
-            prehash: true,
-          },
+          { prehash: true },
         );
         expect(isValid).toBe(true);
       });
@@ -146,74 +137,60 @@ describe('p256 interoperability', () => {
 
   describe('getSharedSecret', () => {
     describe('noble compatibility', () => {
-      it('should compute the same shared secret when using custom implementation with noble keys', () => {
+      it('should compute the same shared secret when using our implementation with noble keys', () => {
         // Generate key pairs using noble implementation
-        const alicePrivateKey = nobleP256.utils.randomPrivateKey();
-        const alicePublicKey = nobleP256.getPublicKey(alicePrivateKey);
-
-        const bobPrivateKey = nobleP256.utils.randomPrivateKey();
-        const bobPublicKey = nobleP256.getPublicKey(bobPrivateKey);
-
+        const alicePrivateKey = nobleP384.utils.randomPrivateKey();
+        const alicePublicKey = nobleP384.getPublicKey(alicePrivateKey);
+        const bobPrivateKey = nobleP384.utils.randomPrivateKey();
+        const bobPublicKey = nobleP384.getPublicKey(bobPrivateKey);
         // Compute shared secrets using our implementation
-        const aliceSharedSecret = ourP256.getSharedSecret(
+        const aliceSharedSecret = ourP384.getSharedSecret(
           alicePrivateKey,
           bobPublicKey,
         );
-        const bobSharedSecret = ourP256.getSharedSecret(
+        const bobSharedSecret = ourP384.getSharedSecret(
           bobPrivateKey,
           alicePublicKey,
         );
-
-        // Verify that both parties compute the same shared secret
         expect(aliceSharedSecret).toEqual(bobSharedSecret);
-
-        // Verify with noble implementation
-        const nobleAliceSharedSecret = nobleP256.getSharedSecret(
+        // Compute shared secrets using noble implementation
+        const nobleAliceSharedSecret = nobleP384.getSharedSecret(
           alicePrivateKey,
           bobPublicKey,
         );
-        const nobleBobSharedSecret = nobleP256.getSharedSecret(
+        const nobleBobSharedSecret = nobleP384.getSharedSecret(
           bobPrivateKey,
           alicePublicKey,
         );
-
-        // Verify that our implementation matches noble's
         expect(aliceSharedSecret).toEqual(nobleAliceSharedSecret);
         expect(bobSharedSecret).toEqual(nobleBobSharedSecret);
       });
 
-      it('should compute the same shared secret when using noble implementation with custom keys', () => {
+      it('should compute the same shared secret when using noble implementation with our keys', () => {
         // Generate key pairs using our implementation
-        const alicePrivateKey = ourP256.utils.randomPrivateKey();
-        const alicePublicKey = ourP256.getPublicKey(alicePrivateKey);
-
-        const bobPrivateKey = ourP256.utils.randomPrivateKey();
-        const bobPublicKey = ourP256.getPublicKey(bobPrivateKey);
-
+        const alicePrivateKey = ourP384.utils.randomPrivateKey();
+        const alicePublicKey = ourP384.getPublicKey(alicePrivateKey);
+        const bobPrivateKey = ourP384.utils.randomPrivateKey();
+        const bobPublicKey = ourP384.getPublicKey(bobPrivateKey);
         // Compute shared secrets using noble implementation
-        const nobleAliceSharedSecret = nobleP256.getSharedSecret(
+        const nobleAliceSharedSecret = nobleP384.getSharedSecret(
           alicePrivateKey,
           bobPublicKey,
         );
-        const nobleBobSharedSecret = nobleP256.getSharedSecret(
+        const nobleBobSharedSecret = nobleP384.getSharedSecret(
           bobPrivateKey,
           alicePublicKey,
         );
-
-        // Verify that both parties compute the same shared secret
         expect(nobleAliceSharedSecret).toEqual(nobleBobSharedSecret);
-
-        // Verify with our implementation
-        const aliceSharedSecret = ourP256.getSharedSecret(
+        // Compute shared secrets using our implementation
+        const aliceSharedSecret = ourP384.getSharedSecret(
           alicePrivateKey,
           bobPublicKey,
         );
-        const bobSharedSecret = ourP256.getSharedSecret(
+        const bobSharedSecret = ourP384.getSharedSecret(
           bobPrivateKey,
           alicePublicKey,
         );
-
-        // Verify that noble implementation matches ours
         expect(nobleAliceSharedSecret).toEqual(aliceSharedSecret);
         expect(nobleBobSharedSecret).toEqual(bobSharedSecret);
       });
@@ -222,51 +199,45 @@ describe('p256 interoperability', () => {
     describe('Web Crypto API compatibility', () => {
       it('should compute the same shared secret with Web Crypto API after generating keys with our implementation', async () => {
         // Generate key pairs using our implementation
-        const alicePrivateKey = ourP256.utils.randomPrivateKey();
-        const alicePublicKey = ourP256.getPublicKey(alicePrivateKey, false);
-
-        const bobPrivateKey = ourP256.utils.randomPrivateKey();
-        const bobPublicKey = ourP256.getPublicKey(bobPrivateKey, false);
+        const alicePrivateKey = ourP384.utils.randomPrivateKey();
+        const alicePublicKey = ourP384.getPublicKey(alicePrivateKey, false);
+        const bobPrivateKey = ourP384.utils.randomPrivateKey();
+        const bobPublicKey = ourP384.getPublicKey(bobPrivateKey, false);
 
         // Compute shared secret using our implementation
-        const aliceSharedSecret = ourP256.getSharedSecret(
+        const aliceSharedSecret = ourP384.getSharedSecret(
           alicePrivateKey,
           bobPublicKey,
         );
-        const bobSharedSecret = ourP256.getSharedSecret(
+        const bobSharedSecret = ourP384.getSharedSecret(
           bobPrivateKey,
           alicePublicKey,
         );
-
-        // Verify that both parties compute the same shared secret
         expect(aliceSharedSecret).toEqual(bobSharedSecret);
 
         // Import keys into Web Crypto API
-        const aliceJwkPrivateKey = {
-          kty: 'EC',
-          crv: 'P-256',
-          x: encodeBase64Url(alicePublicKey.slice(1, 33)),
-          y: encodeBase64Url(alicePublicKey.slice(33)),
-          d: encodeBase64Url(alicePrivateKey),
-        };
-
         const aliceCryptoPrivateKey = await crypto.subtle.importKey(
           'jwk',
-          aliceJwkPrivateKey,
+          {
+            kty: 'EC',
+            crv: 'P-384',
+            x: encodeBase64Url(alicePublicKey.slice(1, 49)),
+            y: encodeBase64Url(alicePublicKey.slice(49)),
+            d: encodeBase64Url(alicePrivateKey),
+          },
           {
             name: 'ECDH',
-            namedCurve: 'P-256',
+            namedCurve: 'P-384',
           },
           false,
           ['deriveBits'],
         );
-
         const bobCryptoPublicKey = await crypto.subtle.importKey(
           'raw',
           bobPublicKey,
           {
             name: 'ECDH',
-            namedCurve: 'P-256',
+            namedCurve: 'P-384',
           },
           false,
           [],
@@ -279,10 +250,8 @@ describe('p256 interoperability', () => {
             public: bobCryptoPublicKey,
           },
           aliceCryptoPrivateKey,
-          256,
+          384,
         );
-
-        // Verify that Web Crypto API computes the same shared secret
         expect(new Uint8Array(webCryptoSharedSecret)).toEqual(
           aliceSharedSecret.slice(1),
         );
@@ -293,7 +262,7 @@ describe('p256 interoperability', () => {
         const aliceKeyPair = await crypto.subtle.generateKey(
           {
             name: 'ECDH',
-            namedCurve: 'P-256',
+            namedCurve: 'P-384',
           },
           true,
           ['deriveKey', 'deriveBits'],
@@ -302,7 +271,7 @@ describe('p256 interoperability', () => {
         const bobKeyPair = await crypto.subtle.generateKey(
           {
             name: 'ECDH',
-            namedCurve: 'P-256',
+            namedCurve: 'P-384',
           },
           true,
           ['deriveKey', 'deriveBits'],
@@ -335,16 +304,14 @@ describe('p256 interoperability', () => {
         );
 
         // Compute shared secrets using our implementation
-        const aliceSharedSecret = ourP256.getSharedSecret(
+        const aliceSharedSecret = ourP384.getSharedSecret(
           aliceRawPrivateKey,
           bobPublicKey,
         );
-        const bobSharedSecret = ourP256.getSharedSecret(
+        const bobSharedSecret = ourP384.getSharedSecret(
           bobRawPrivateKey,
           alicePublicKey,
         );
-
-        // Verify that both parties compute the same shared secret
         expect(aliceSharedSecret).toEqual(bobSharedSecret);
 
         // Compute shared secret using Web Crypto API
@@ -354,7 +321,7 @@ describe('p256 interoperability', () => {
             public: bobKeyPair.publicKey,
           },
           aliceKeyPair.privateKey,
-          256,
+          384,
         );
 
         const webCryptoBobSharedSecret = await crypto.subtle.deriveBits(
@@ -363,7 +330,7 @@ describe('p256 interoperability', () => {
             public: aliceKeyPair.publicKey,
           },
           bobKeyPair.privateKey,
-          256,
+          384,
         );
 
         // Verify that Web Crypto API computes the same shared secret
