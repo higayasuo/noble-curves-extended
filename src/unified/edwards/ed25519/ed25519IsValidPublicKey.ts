@@ -23,7 +23,7 @@ export const ed25519IsValidPublicKey = (
   try {
     //const extendedPublicKey = curve.utils.getExtendedPublicKey(publicKey);
     //extendedPublicKey.
-    const point = curve.ExtendedPoint.fromHex(publicKey);
+    const point = curve.Point.fromHex(publicKey);
     point.assertValidity();
 
     return true;

@@ -1,5 +1,6 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import { ed25519IsValidPrivateKey } from './ed25519IsValidPrivateKey';
+import { compareUint8Arrays } from 'u8a-utils';
 
 /**
  * Generates a public key for the ed25519 curve from a given private key.
@@ -24,5 +25,22 @@ export const ed25519GetPublicKey = (
     throw new Error('Private key is invalid');
   }
 
-  return curve.getPublicKey(privateKey);
+  try {
+    if (privateKey.length === 64) {
+      const seed = privateKey.slice(0, 32);
+      const embeddedPublicKey = privateKey.slice(32);
+      const publicKey = curve.getPublicKey(seed);
+
+      if (compareUint8Arrays(publicKey, embeddedPublicKey)) {
+        return publicKey;
+      }
+
+      throw new Error('Embedded public key is invalid');
+    }
+
+    return curve.getPublicKey(privateKey);
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to get public key');
+  }
 };

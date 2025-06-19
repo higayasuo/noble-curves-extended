@@ -28,7 +28,9 @@ export const ed25519Sign = (
 
   try {
     const msg = isUint8Array(message) ? ensureUint8Array(message) : message;
-    return curve.sign(msg, privateKey);
+    const seed =
+      privateKey.length === 64 ? privateKey.slice(0, 32) : privateKey;
+    return curve.sign(msg, seed);
   } catch (error) {
     console.error(error);
     throw new Error('Failed to sign message');

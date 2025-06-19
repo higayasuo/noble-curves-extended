@@ -11,7 +11,7 @@ export const ed25519IsValidPrivateKey = (
   curve: CurveFn,
   privateKey: Uint8Array,
 ): boolean => {
-  if (privateKey.length !== 32) {
+  if (privateKey.length !== 32 && privateKey.length !== 64) {
     return false;
   }
 
@@ -20,10 +20,5 @@ export const ed25519IsValidPrivateKey = (
     return false;
   }
 
-  try {
-    curve.getPublicKey(privateKey);
-    return true;
-  } catch {
-    return false;
-  }
+  return true;
 };

@@ -4,9 +4,19 @@ import { createEd25519 } from '@/curves/edwards/ed25519';
 import { randomBytes } from '@noble/hashes/utils';
 
 describe('ed25519IsValidPrivateKey', () => {
-  it('should return true for a valid private key', () => {
+  it('should return true for a valid 32-byte private key', () => {
     const curve = createEd25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
+    expect(ed25519IsValidPrivateKey(curve, privateKey)).toBe(true);
+  });
+
+  it('should return true for a valid 64-byte private key (tweetnacl style)', () => {
+    const curve = createEd25519(randomBytes);
+    const privateKey = new Uint8Array(64);
+    // Fill with random bytes (not all zeros)
+    for (let i = 0; i < 64; i++) {
+      privateKey[i] = Math.floor(Math.random() * 256);
+    }
     expect(ed25519IsValidPrivateKey(curve, privateKey)).toBe(true);
   });
 
@@ -19,6 +29,12 @@ describe('ed25519IsValidPrivateKey', () => {
   it('should return false for an invalid private key (wrong length)', () => {
     const curve = createEd25519(randomBytes);
     const invalidPrivateKey = new Uint8Array(16); // Too short
+    expect(ed25519IsValidPrivateKey(curve, invalidPrivateKey)).toBe(false);
+  });
+
+  it('should return false for an invalid private key (too long)', () => {
+    const curve = createEd25519(randomBytes);
+    const invalidPrivateKey = new Uint8Array(128); // Too long
     expect(ed25519IsValidPrivateKey(curve, invalidPrivateKey)).toBe(false);
   });
 });

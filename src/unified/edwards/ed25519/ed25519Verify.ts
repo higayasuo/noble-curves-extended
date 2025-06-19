@@ -20,9 +20,16 @@ export const ed25519Verify = (
   { signature, message, publicKey }: VerifyParams,
 ): boolean => {
   if (!ed25519IsValidPublicKey(curve, publicKey)) {
-    throw new Error('Public key is invalid');
+    console.error('Public key is invalid');
+
+    return false;
   }
 
-  const msg = isUint8Array(message) ? ensureUint8Array(message) : message;
-  return curve.verify(signature, msg, publicKey);
+  try {
+    const msg = isUint8Array(message) ? ensureUint8Array(message) : message;
+    return curve.verify(signature, msg, publicKey);
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
 };

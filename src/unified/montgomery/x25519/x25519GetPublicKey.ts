@@ -17,12 +17,17 @@ export const x25519GetPublicKey = (
   compressed = true,
 ): Uint8Array => {
   if (!compressed) {
-    throw new Error('x25519 does not support uncompressed public keys');
+    throw new Error('Uncompressed public key is not supported');
   }
 
   if (!x25519IsValidPrivateKey(curve, privateKey)) {
-    throw new Error('X25519 private key is invalid');
+    throw new Error('Private key is invalid');
   }
 
-  return curve.getPublicKey(privateKey);
+  try {
+    return curve.getPublicKey(privateKey);
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to get public key');
+  }
 };

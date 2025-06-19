@@ -12,7 +12,12 @@ import { adjustScalarBytes } from '@/curves/edwards/ed25519';
  * @returns {Uint8Array} A randomly generated and adjusted private key.
  */
 export const ed25519RandomPrivateKey = (curve: CurveFn): Uint8Array => {
-  const seed = curve.utils.randomPrivateKey();
-  const hash = sha512(seed);
-  return adjustScalarBytes(hash.slice(0, 32));
+  try {
+    const seed = curve.utils.randomPrivateKey();
+    const hash = sha512(seed);
+    return adjustScalarBytes(hash.slice(0, 32));
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to generate random private key');
+  }
 };

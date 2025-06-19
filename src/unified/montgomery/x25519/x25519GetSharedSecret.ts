@@ -18,11 +18,11 @@ export const x25519GetSharedSecret = (
   { privateKey, publicKey }: GetSharedSecretParams,
 ): Uint8Array => {
   if (!x25519IsValidPrivateKey(curve, privateKey)) {
-    throw new Error('X25519 private key is invalid');
+    throw new Error('Private key is invalid');
   }
 
   if (!x25519IsValidPublicKey(curve, publicKey)) {
-    throw new Error('X25519 public key is invalid');
+    throw new Error('Public key is invalid');
   }
 
   try {
