@@ -3,7 +3,7 @@ import { x25519 as nobleX25519 } from '@noble/curves/ed25519';
 import { createX25519 } from '../x25519';
 import { randomBytes } from '@noble/hashes/utils';
 import { encodeBase64Url } from 'u8a-utils';
-import { extractRawPrivateKeyFromPkcs8 } from '../../weierstrass/__tests__/extractRawPrivateKeyFromPkcs8';
+import { extractRawPrivateKeyFromPkcs8 } from '@/utils/extractRawPrivateKeyFromPkcs8';
 
 describe('x25519 interoperability', () => {
   const ourX25519 = createX25519(randomBytes);
