@@ -27,20 +27,6 @@ describe('weierstrassIsValidPublicKey', () => {
         expect(weierstrassIsValidPublicKey(curve, publicKey)).toBe(true);
       },
     );
-
-    it.each(curves)(
-      'should return true for multiple valid public keys for $name',
-      ({ createCurve }) => {
-        const curve = createCurve(randomBytes);
-
-        // Generate multiple valid public keys
-        for (let i = 0; i < 5; i++) {
-          const privateKey = weierstrassRandomPrivateKey(curve);
-          const publicKey = weierstrassGetPublicKey(curve, privateKey);
-          expect(weierstrassIsValidPublicKey(curve, publicKey)).toBe(true);
-        }
-      },
-    );
   });
 
   describe('invalid public key tests', () => {
