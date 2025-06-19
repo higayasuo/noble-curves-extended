@@ -19,11 +19,11 @@ export const ed25519Sign = (
   { message, privateKey, recoverable = false }: SignParams,
 ): Uint8Array => {
   if (recoverable) {
-    throw new Error('Ed25519 does not support recoverable signatures');
+    throw new Error('Recoverable signature is not supported');
   }
 
   if (!ed25519IsValidPrivateKey(curve, privateKey)) {
-    throw new Error('Ed25519 private key is invalid');
+    throw new Error('Private key is invalid');
   }
 
   try {

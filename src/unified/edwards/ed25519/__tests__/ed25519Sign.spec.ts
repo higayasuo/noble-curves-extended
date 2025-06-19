@@ -19,7 +19,7 @@ describe('ed25519Sign', () => {
     const invalidKey = new Uint8Array(16); // Too short
     expect(() =>
       ed25519Sign(curve, { message, privateKey: invalidKey }),
-    ).toThrow('Ed25519 private key is invalid');
+    ).toThrow('Private key is invalid');
   });
 
   it('should throw an error for all-zero private key', () => {
@@ -27,7 +27,7 @@ describe('ed25519Sign', () => {
     const invalidKey = new Uint8Array(32); // All zeros
     expect(() =>
       ed25519Sign(curve, { message, privateKey: invalidKey }),
-    ).toThrow('Ed25519 private key is invalid');
+    ).toThrow('Private key is invalid');
   });
 
   it('should throw an error when recoverable is set to true', () => {
@@ -35,7 +35,7 @@ describe('ed25519Sign', () => {
     const privateKey = curve.utils.randomPrivateKey();
     expect(() =>
       ed25519Sign(curve, { message, privateKey, recoverable: true }),
-    ).toThrow('Ed25519 does not support recoverable signatures');
+    ).toThrow('Recoverable signature is not supported');
   });
 
   it('should produce a signature that can be verified by Web Crypto API', async () => {

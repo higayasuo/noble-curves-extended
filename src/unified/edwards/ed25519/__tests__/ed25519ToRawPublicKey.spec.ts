@@ -21,7 +21,7 @@ describe('ed25519ToRawPublicKey', () => {
     const jwk = ed25519ToJwkPublicKey(curve, publicKey);
     const invalidJwk = { ...jwk, kty: 'EC' };
     expect(() => ed25519ToRawPublicKey(curve, invalidJwk)).toThrow(
-      'Invalid JWK: kty parameter must be OKP',
+      'Invalid JWK: unsupported key type',
     );
   });
 
@@ -32,7 +32,7 @@ describe('ed25519ToRawPublicKey', () => {
     const jwk = ed25519ToJwkPublicKey(curve, publicKey);
     const invalidJwk = { ...jwk, crv: 'X25519' };
     expect(() => ed25519ToRawPublicKey(curve, invalidJwk)).toThrow(
-      'Invalid JWK: crv parameter must be Ed25519',
+      'Invalid JWK: unsupported curve',
     );
   });
 
@@ -43,7 +43,7 @@ describe('ed25519ToRawPublicKey', () => {
     const jwk = ed25519ToJwkPublicKey(curve, publicKey);
     const { x, ...invalidJwk } = jwk;
     expect(() => ed25519ToRawPublicKey(curve, invalidJwk as any)).toThrow(
-      'Invalid JWK: x parameter is missing',
+      'Invalid JWK: missing required parameter for x',
     );
   });
 
@@ -54,7 +54,7 @@ describe('ed25519ToRawPublicKey', () => {
     const jwk = ed25519ToJwkPublicKey(curve, publicKey);
     const invalidJwk = { ...jwk, x: 123 };
     expect(() => ed25519ToRawPublicKey(curve, invalidJwk as any)).toThrow(
-      'Invalid JWK: x parameter must be a string',
+      'Invalid JWK: invalid parameter type for x',
     );
   });
 
@@ -65,7 +65,7 @@ describe('ed25519ToRawPublicKey', () => {
     const jwk = ed25519ToJwkPublicKey(curve, publicKey);
     const invalidJwk = { ...jwk, alg: 'ES256' };
     expect(() => ed25519ToRawPublicKey(curve, invalidJwk)).toThrow(
-      'Invalid JWK: alg parameter must be EdDSA',
+      'Invalid JWK: unsupported algorithm',
     );
   });
 
@@ -76,7 +76,7 @@ describe('ed25519ToRawPublicKey', () => {
     const jwk = ed25519ToJwkPublicKey(curve, publicKey);
     const invalidJwk = { ...jwk, x: 'invalid-base64url!' };
     expect(() => ed25519ToRawPublicKey(curve, invalidJwk)).toThrow(
-      'Invalid JWK: malformed Base64URL in x parameter',
+      'Invalid JWK: malformed encoding for x',
     );
   });
 
@@ -92,7 +92,7 @@ describe('ed25519ToRawPublicKey', () => {
       x: Buffer.from(invalidPublicKey).toString('base64url'),
     };
     expect(() => ed25519ToRawPublicKey(curve, invalidJwk)).toThrow(
-      'Invalid JWK: public key is invalid',
+      'Invalid JWK: invalid key data for x',
     );
   });
 });

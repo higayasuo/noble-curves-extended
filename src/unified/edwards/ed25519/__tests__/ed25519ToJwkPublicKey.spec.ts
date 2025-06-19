@@ -25,7 +25,7 @@ describe('ed25519ToJwkPublicKey', () => {
     const curve = createEd25519(randomBytes);
     const invalidKey = new Uint8Array(16); // Too short
     expect(() => ed25519ToJwkPublicKey(curve, invalidKey)).toThrow(
-      'Ed25519 public key is invalid',
+      'Public key is invalid',
     );
   });
 
@@ -33,7 +33,7 @@ describe('ed25519ToJwkPublicKey', () => {
     const curve = createEd25519(randomBytes);
     const invalidKey = new Uint8Array(32); // All zeros
     expect(() => ed25519ToJwkPublicKey(curve, invalidKey)).toThrow(
-      'Ed25519 public key is invalid',
+      'Public key is invalid',
     );
   });
 

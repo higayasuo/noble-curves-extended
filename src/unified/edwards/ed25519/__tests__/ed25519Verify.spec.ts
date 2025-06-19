@@ -33,7 +33,7 @@ describe('ed25519Verify', () => {
     const signature = ed25519Sign(curve, { message, privateKey });
     expect(() =>
       ed25519Verify(curve, { signature, message, publicKey }),
-    ).toThrow('Ed25519 public key is invalid');
+    ).toThrow('Public key is invalid');
   });
 
   it('should verify a signature created by Web Crypto API', async () => {

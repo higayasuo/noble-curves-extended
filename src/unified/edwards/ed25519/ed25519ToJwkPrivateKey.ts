@@ -17,7 +17,7 @@ export const ed25519ToJwkPrivateKey = (
   privateKey: Uint8Array,
 ): JwkPrivateKey => {
   if (!ed25519IsValidPrivateKey(curve, privateKey)) {
-    throw new Error('Ed25519 private key is invalid');
+    throw new Error('Private key is invalid');
   }
 
   const publicKey = curve.getPublicKey(privateKey);

@@ -28,7 +28,7 @@ describe('ed25519ToJwkPrivateKey', () => {
     const curve = createEd25519(randomBytes);
     const invalidKey = new Uint8Array(16); // Too short
     expect(() => ed25519ToJwkPrivateKey(curve, invalidKey)).toThrow(
-      'Ed25519 private key is invalid',
+      'Private key is invalid',
     );
   });
 
@@ -36,7 +36,7 @@ describe('ed25519ToJwkPrivateKey', () => {
     const curve = createEd25519(randomBytes);
     const invalidKey = new Uint8Array(32); // All zeros
     expect(() => ed25519ToJwkPrivateKey(curve, invalidKey)).toThrow(
-      'Ed25519 private key is invalid',
+      'Private key is invalid',
     );
   });
 

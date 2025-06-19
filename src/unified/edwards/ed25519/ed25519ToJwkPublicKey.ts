@@ -16,7 +16,7 @@ export const ed25519ToJwkPublicKey = (
   publicKey: Uint8Array,
 ): JwkPublicKey => {
   if (!ed25519IsValidPublicKey(curve, publicKey)) {
-    throw new Error('Ed25519 public key is invalid');
+    throw new Error('Public key is invalid');
   }
 
   return {

@@ -16,7 +16,7 @@ describe('ed25519GetPublicKey', () => {
     const curve = createEd25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     expect(() => ed25519GetPublicKey(curve, privateKey, false)).toThrow(
-      'Ed25519 does not support uncompressed public keys',
+      'Uncompressed public key is not supported',
     );
   });
 
@@ -24,7 +24,7 @@ describe('ed25519GetPublicKey', () => {
     const curve = createEd25519(randomBytes);
     const privateKey = new Uint8Array(31);
     expect(() => ed25519GetPublicKey(curve, privateKey)).toThrow(
-      'Ed25519 private key is invalid',
+      'Private key is invalid',
     );
   });
 
@@ -32,7 +32,7 @@ describe('ed25519GetPublicKey', () => {
     const curve = createEd25519(randomBytes);
     const privateKey = new Uint8Array(32);
     expect(() => ed25519GetPublicKey(curve, privateKey)).toThrow(
-      'Ed25519 private key is invalid',
+      'Private key is invalid',
     );
   });
 
