@@ -16,13 +16,18 @@ export const x25519ToJwkPublicKey = (
   publicKey: Uint8Array,
 ): JwkPublicKey => {
   if (!x25519IsValidPublicKey(curve, publicKey)) {
-    throw new Error('X25519 public key is invalid');
+    throw new Error('Public key is invalid');
   }
 
-  return {
-    kty: 'OKP',
-    crv: 'X25519',
-    x: encodeBase64Url(publicKey),
-    alg: 'ECDH-ES',
-  };
+  try {
+    return {
+      kty: 'OKP',
+      crv: 'X25519',
+      x: encodeBase64Url(publicKey),
+      alg: 'ECDH-ES',
+    };
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to convert public key to JWK');
+  }
 };

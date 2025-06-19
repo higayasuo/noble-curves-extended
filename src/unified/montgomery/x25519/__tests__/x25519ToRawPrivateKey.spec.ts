@@ -6,7 +6,7 @@ import { x25519ToJwkPrivateKey } from '../x25519ToJwkPrivateKey';
 import type { JwkPrivateKey } from '../../../types';
 
 describe('x25519ToRawPrivateKey', () => {
-  describe('successful cases', () => {
+  describe('successful conversion tests', () => {
     it('should convert a valid JWK to a raw private key', () => {
       const curve = createX25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
@@ -16,7 +16,7 @@ describe('x25519ToRawPrivateKey', () => {
     });
   });
 
-  describe('error cases', () => {
+  describe('invalid JWK structure tests', () => {
     const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const jwk = x25519ToJwkPrivateKey(curve, privateKey);
@@ -24,14 +24,14 @@ describe('x25519ToRawPrivateKey', () => {
     it('should throw an error for invalid kty', () => {
       const invalidJwk = { ...jwk, kty: 'EC' } as JwkPrivateKey;
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Invalid JWK: kty parameter must be OKP',
+        'Invalid JWK: unsupported key type',
       );
     });
 
     it('should throw an error for invalid crv', () => {
       const invalidJwk = { ...jwk, crv: 'Ed25519' } as JwkPrivateKey;
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Invalid JWK: crv parameter must be X25519',
+        'Invalid JWK: unsupported curve',
       );
     });
 
@@ -39,13 +39,13 @@ describe('x25519ToRawPrivateKey', () => {
       const { x, ...invalidJwk } = jwk;
       expect(() =>
         x25519ToRawPrivateKey(curve, invalidJwk as JwkPrivateKey),
-      ).toThrow('Invalid JWK: x parameter is missing');
+      ).toThrow('Invalid JWK: missing required parameter for x');
     });
 
     it('should throw an error for non-string x parameter', () => {
       const invalidJwk = { ...jwk, x: 123 } as unknown as JwkPrivateKey;
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Invalid JWK: x parameter must be a string',
+        'Invalid JWK: invalid parameter type for x',
       );
     });
 
@@ -53,34 +53,40 @@ describe('x25519ToRawPrivateKey', () => {
       const { d, ...invalidJwk } = jwk;
       expect(() =>
         x25519ToRawPrivateKey(curve, invalidJwk as JwkPrivateKey),
-      ).toThrow('Invalid JWK: d parameter is missing');
+      ).toThrow('Invalid JWK: missing required parameter for d');
     });
 
     it('should throw an error for non-string d parameter', () => {
       const invalidJwk = { ...jwk, d: 123 } as unknown as JwkPrivateKey;
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Invalid JWK: d parameter must be a string',
+        'Invalid JWK: invalid parameter type for d',
       );
     });
 
     it('should throw an error for invalid alg parameter', () => {
       const invalidJwk = { ...jwk, alg: 'ES256' } as JwkPrivateKey;
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Invalid JWK: alg parameter must be ECDH-ES',
+        'Invalid JWK: unsupported algorithm',
       );
     });
+  });
+
+  describe('data validation tests', () => {
+    const curve = createX25519(randomBytes);
+    const privateKey = curve.utils.randomPrivateKey();
+    const jwk = x25519ToJwkPrivateKey(curve, privateKey);
 
     it('should throw an error for malformed Base64URL in x parameter', () => {
       const invalidJwk = { ...jwk, x: 'invalid-base64url!' } as JwkPrivateKey;
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Invalid JWK: malformed Base64URL in x parameter',
+        'Invalid JWK: malformed encoding for x',
       );
     });
 
     it('should throw an error for malformed Base64URL in d parameter', () => {
       const invalidJwk = { ...jwk, d: 'invalid-base64url!' } as JwkPrivateKey;
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Invalid JWK: malformed Base64URL in d parameter',
+        'Invalid JWK: malformed encoding for d',
       );
     });
 
@@ -90,7 +96,7 @@ describe('x25519ToRawPrivateKey', () => {
         x: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       } as JwkPrivateKey; // All zeros
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Invalid JWK: public key is invalid',
+        'Invalid JWK: invalid key data for x',
       );
     });
 
@@ -100,7 +106,7 @@ describe('x25519ToRawPrivateKey', () => {
         d: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       } as JwkPrivateKey; // All zeros
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Invalid JWK: private key is invalid',
+        'Invalid JWK: invalid key data for d',
       );
     });
   });

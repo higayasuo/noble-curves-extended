@@ -16,7 +16,7 @@ import { ed25519ToJwkPublicKey } from './ed25519ToJwkPublicKey';
 import { ed25519ToRawPrivateKey } from './ed25519ToRawPrivateKey';
 import { ed25519ToRawPublicKey } from './ed25519ToRawPublicKey';
 import { ed25519IsValidPrivateKey } from './ed25519IsValidPrivateKey';
-import { ed25519IsValidPublicKey } from './ed25519IsValidPublicKey';
+import { ed25519IsValidPublicKey } from '../../weierstrass/weierstrassIsValidPublicKey';
 
 /**
  * Ed25519 implementation for digital signatures.

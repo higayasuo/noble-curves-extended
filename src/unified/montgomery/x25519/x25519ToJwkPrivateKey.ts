@@ -17,15 +17,20 @@ export const x25519ToJwkPrivateKey = (
   privateKey: Uint8Array,
 ): JwkPrivateKey => {
   if (!x25519IsValidPrivateKey(curve, privateKey)) {
-    throw new Error('X25519 private key is invalid');
+    throw new Error('Private key is invalid');
   }
 
-  const publicKey = curve.getPublicKey(privateKey);
-  const jwkPublicKey = x25519ToJwkPublicKey(curve, publicKey);
-  const jwkPrivateKey: JwkPrivateKey = {
-    ...jwkPublicKey,
-    d: encodeBase64Url(privateKey),
-  };
+  try {
+    const publicKey = curve.getPublicKey(privateKey);
+    const jwkPublicKey = x25519ToJwkPublicKey(curve, publicKey);
+    const jwkPrivateKey: JwkPrivateKey = {
+      ...jwkPublicKey,
+      d: encodeBase64Url(privateKey),
+    };
 
-  return jwkPrivateKey;
+    return jwkPrivateKey;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to convert private key to JWK');
+  }
 };

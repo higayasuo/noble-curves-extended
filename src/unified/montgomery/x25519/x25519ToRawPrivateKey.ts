@@ -19,22 +19,22 @@ export const x25519ToRawPrivateKey = (
   x25519ToRawPublicKey(curve, jwkPrivateKey);
 
   if (!jwkPrivateKey.d) {
-    throw new Error('Invalid JWK: d parameter is missing');
+    throw new Error('Invalid JWK: missing required parameter for d');
   }
 
   if (typeof jwkPrivateKey.d !== 'string') {
-    throw new Error('Invalid JWK: d parameter must be a string');
+    throw new Error('Invalid JWK: invalid parameter type for d');
   }
 
   let decodedD!: Uint8Array;
   try {
     decodedD = decodeBase64Url(jwkPrivateKey.d);
   } catch (e) {
-    throw new Error('Invalid JWK: malformed Base64URL in d parameter');
+    throw new Error('Invalid JWK: malformed encoding for d');
   }
 
   if (!x25519IsValidPrivateKey(curve, decodedD)) {
-    throw new Error('Invalid JWK: private key is invalid');
+    throw new Error('Invalid JWK: invalid key data for d');
   }
 
   return decodedD;

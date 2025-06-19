@@ -12,6 +12,7 @@ export const weierstrassRandomPrivateKey = (curve: CurveFn): Uint8Array => {
   try {
     return curve.utils.randomPrivateKey();
   } catch (e) {
-    throw new Error(`Failed to generate random private key`);
+    console.error(e);
+    throw new Error('Failed to generate random private key');
   }
 };

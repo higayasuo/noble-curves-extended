@@ -1,7 +1,7 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import { JwkPublicKey } from '@/unified/types';
 import { decodeBase64Url } from 'u8a-utils';
-import { ed25519IsValidPublicKey } from './ed25519IsValidPublicKey';
+import { ed25519IsValidPublicKey } from '../../weierstrass/weierstrassIsValidPublicKey';
 
 /**
  * Converts a JWK (JSON Web Key) to a raw Ed25519 public key.

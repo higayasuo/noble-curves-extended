@@ -1,5 +1,5 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
-import { ed25519IsValidPublicKey } from './ed25519IsValidPublicKey';
+import { ed25519IsValidPublicKey } from '../../weierstrass/weierstrassIsValidPublicKey';
 import type { JwkPublicKey } from '@/unified/types';
 import { encodeBase64Url } from 'u8a-utils';
 

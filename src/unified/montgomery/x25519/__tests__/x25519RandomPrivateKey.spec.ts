@@ -23,4 +23,18 @@ describe('x25519RandomPrivateKey', () => {
     const key2 = x25519RandomPrivateKey(curve);
     expect(key1).not.toEqual(key2);
   });
+
+  it('should throw an error if randomPrivateKey fails', () => {
+    const curve = createX25519(randomBytes);
+    // Mock randomPrivateKey to throw
+    const originalRandomPrivateKey = curve.utils.randomPrivateKey;
+    curve.utils.randomPrivateKey = () => {
+      throw new Error('Random failure');
+    };
+    expect(() => x25519RandomPrivateKey(curve)).toThrow(
+      'Failed to generate random private key',
+    );
+    // Restore original
+    curve.utils.randomPrivateKey = originalRandomPrivateKey;
+  });
 });

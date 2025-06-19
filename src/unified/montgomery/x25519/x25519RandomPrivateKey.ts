@@ -8,6 +8,11 @@ import { adjustScalarBytes } from '@/curves/edwards/ed25519';
  * @returns {Uint8Array} A randomly generated and adjusted private key.
  */
 export const x25519RandomPrivateKey = (curve: CurveFn): Uint8Array => {
-  const privateKey = curve.utils.randomPrivateKey();
-  return adjustScalarBytes(privateKey);
+  try {
+    const privateKey = curve.utils.randomPrivateKey();
+    return adjustScalarBytes(privateKey);
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to generate random private key');
+  }
 };

@@ -27,7 +27,7 @@ const SMALL_ORDER_POINTS = [
  * @returns {boolean} True if the public key is valid, false otherwise.
  */
 export const x25519IsValidPublicKey = (
-  curve: CurveFn,
+  _curve: CurveFn,
   publicKey: Uint8Array,
 ): boolean => {
   if (publicKey.length !== 32) {
@@ -42,11 +42,5 @@ export const x25519IsValidPublicKey = (
     return false;
   }
 
-  try {
-    const dummyPrivate = curve.utils.randomPrivateKey();
-    const sharedSecret = curve.getSharedSecret(dummyPrivate, publicKey);
-    return sharedSecret.some((byte) => byte !== 0);
-  } catch {
-    return false;
-  }
+  return true;
 };

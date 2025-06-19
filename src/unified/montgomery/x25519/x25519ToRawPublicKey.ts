@@ -16,34 +16,34 @@ export const x25519ToRawPublicKey = (
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
   if (jwkPublicKey.kty !== 'OKP') {
-    throw new Error('Invalid JWK: kty parameter must be OKP');
+    throw new Error('Invalid JWK: unsupported key type');
   }
 
   if (jwkPublicKey.crv !== 'X25519') {
-    throw new Error('Invalid JWK: crv parameter must be X25519');
+    throw new Error('Invalid JWK: unsupported curve');
   }
 
   if (!jwkPublicKey?.x) {
-    throw new Error('Invalid JWK: x parameter is missing');
+    throw new Error('Invalid JWK: missing required parameter for x');
   }
 
   if (typeof jwkPublicKey.x !== 'string') {
-    throw new Error('Invalid JWK: x parameter must be a string');
+    throw new Error('Invalid JWK: invalid parameter type for x');
   }
 
   if (jwkPublicKey.alg && jwkPublicKey.alg !== 'ECDH-ES') {
-    throw new Error('Invalid JWK: alg parameter must be ECDH-ES');
+    throw new Error('Invalid JWK: unsupported algorithm');
   }
 
   let decoded!: Uint8Array;
   try {
     decoded = decodeBase64Url(jwkPublicKey.x);
   } catch (e) {
-    throw new Error('Invalid JWK: malformed Base64URL in x parameter');
+    throw new Error('Invalid JWK: malformed encoding for x');
   }
 
   if (!x25519IsValidPublicKey(curve, decoded)) {
-    throw new Error('Invalid JWK: public key is invalid');
+    throw new Error('Invalid JWK: invalid key data for x');
   }
 
   return decoded;

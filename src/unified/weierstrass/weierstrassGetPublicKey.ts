@@ -16,8 +16,13 @@ export const weierstrassGetPublicKey = (
   compressed = true,
 ): Uint8Array => {
   if (!weierstrassIsValidPrivateKey(curve, privateKey)) {
-    throw new Error('Weierstrass private key is invalid');
+    throw new Error('Private key is invalid');
   }
 
-  return curve.getPublicKey(privateKey, compressed);
+  try {
+    return curve.getPublicKey(privateKey, compressed);
+  } catch (e) {
+    console.error(e);
+    throw new Error('Failed to get public key');
+  }
 };

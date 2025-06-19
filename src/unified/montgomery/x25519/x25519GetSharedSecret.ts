@@ -26,7 +26,13 @@ export const x25519GetSharedSecret = (
   }
 
   try {
-    return curve.getSharedSecret(privateKey, publicKey);
+    const sharedSecret = curve.getSharedSecret(privateKey, publicKey);
+
+    if (sharedSecret.some((byte) => byte !== 0)) {
+      return sharedSecret;
+    }
+
+    throw new Error('Shared secret is zero');
   } catch (error) {
     console.error(error);
     throw new Error('Failed to compute shared secret');

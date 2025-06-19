@@ -8,7 +8,7 @@ import { CurveFn } from '@noble/curves/abstract/montgomery';
  * @returns {boolean} True if the private key is valid, false otherwise.
  */
 export const x25519IsValidPrivateKey = (
-  curve: CurveFn,
+  _curve: CurveFn,
   privateKey: Uint8Array,
 ): boolean => {
   if (privateKey.length !== 32) {
@@ -20,10 +20,5 @@ export const x25519IsValidPrivateKey = (
     return false;
   }
 
-  try {
-    curve.getPublicKey(privateKey);
-    return true;
-  } catch {
-    return false;
-  }
+  return true;
 };

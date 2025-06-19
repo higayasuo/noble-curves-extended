@@ -43,7 +43,7 @@ describe('X25519', () => {
     it('should throw an error for invalid private key', () => {
       const invalidPrivateKey = new Uint8Array(32); // All zeros
       expect(() => x25519.getPublicKey(invalidPrivateKey)).toThrow(
-        'X25519 private key is invalid',
+        'Private key is invalid',
       );
     });
   });
@@ -60,7 +60,7 @@ describe('X25519', () => {
     it('should throw an error for invalid private key', () => {
       const invalidPrivateKey = new Uint8Array(32); // All zeros
       expect(() => x25519.toJwkPrivateKey(invalidPrivateKey)).toThrow(
-        'X25519 private key is invalid',
+        'Private key is invalid',
       );
     });
   });
@@ -77,7 +77,7 @@ describe('X25519', () => {
     it('should throw an error for invalid public key', () => {
       const invalidPublicKey = new Uint8Array(32); // All zeros
       expect(() => x25519.toJwkPublicKey(invalidPublicKey)).toThrow(
-        'X25519 public key is invalid',
+        'Public key is invalid',
       );
     });
   });
@@ -99,7 +99,7 @@ describe('X25519', () => {
         x: 'hSDwCYkwp1R0i33ctD73Wg2_Og0mYTq-Ke2pAApFvgs',
       };
       expect(() => x25519.toRawPrivateKey(invalidJwk)).toThrow(
-        'Invalid JWK: malformed Base64URL in d parameter',
+        'Invalid JWK: malformed encoding for d',
       );
     });
   });
@@ -121,7 +121,7 @@ describe('X25519', () => {
         x: 'invalid-base64url!',
       };
       expect(() => x25519.toRawPublicKey(invalidJwk)).toThrow(
-        'Invalid JWK: malformed Base64URL in x parameter',
+        'Invalid JWK: malformed encoding for x',
       );
     });
   });
@@ -166,14 +166,14 @@ describe('X25519', () => {
       const publicKey = x25519.getPublicKey(x25519.randomPrivateKey());
       expect(() =>
         x25519.getSharedSecret({ privateKey: invalidPrivateKey, publicKey }),
-      ).toThrow('X25519 private key is invalid');
+      ).toThrow('Private key is invalid');
     });
     it('should throw an error for invalid public key', () => {
       const privateKey = x25519.randomPrivateKey();
       const invalidPublicKey = new Uint8Array(32); // All zeros
       expect(() =>
         x25519.getSharedSecret({ privateKey, publicKey: invalidPublicKey }),
-      ).toThrow('X25519 public key is invalid');
+      ).toThrow('Public key is invalid');
     });
   });
 });

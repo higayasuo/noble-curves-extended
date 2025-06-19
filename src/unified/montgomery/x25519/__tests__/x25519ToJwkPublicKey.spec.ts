@@ -13,49 +13,53 @@ describe('x25519ToJwkPublicKey', () => {
     0x29, 0xed, 0xa9, 0x00, 0x0a, 0x45, 0xbe, 0x0b,
   ]);
 
-  it('should convert a valid public key to JWK format', () => {
-    const jwk = x25519ToJwkPublicKey(curve, publicKey);
+  describe('successful conversion tests', () => {
+    it('should convert a valid public key to JWK format', () => {
+      const jwk = x25519ToJwkPublicKey(curve, publicKey);
 
-    expect(jwk).toEqual({
-      kty: 'OKP',
-      crv: 'X25519',
-      x: 'hSDwCYkwp1R0i33ctD73Wg2_Og0mYTq-Ke2pAApFvgs',
-      alg: 'ECDH-ES',
+      expect(jwk).toEqual({
+        kty: 'OKP',
+        crv: 'X25519',
+        x: 'hSDwCYkwp1R0i33ctD73Wg2_Og0mYTq-Ke2pAApFvgs',
+        alg: 'ECDH-ES',
+      });
+    });
+
+    it('should generate a JWK that can be imported by Web Crypto API', async () => {
+      const jwk = x25519ToJwkPublicKey(curve, publicKey);
+      const importedKey = await crypto.subtle.importKey(
+        'jwk',
+        jwk,
+        {
+          name: 'X25519',
+        },
+        false,
+        [],
+      );
+      expect(importedKey).toBeDefined();
     });
   });
 
-  it('should throw an error for invalid public key length', () => {
-    const invalidKey = new Uint8Array(16); // Too short
-    expect(() => x25519ToJwkPublicKey(curve, invalidKey)).toThrow(
-      'X25519 public key is invalid',
-    );
-  });
+  describe('invalid input tests', () => {
+    it('should throw an error for invalid public key length', () => {
+      const invalidKey = new Uint8Array(16); // Too short
+      expect(() => x25519ToJwkPublicKey(curve, invalidKey)).toThrow(
+        'Public key is invalid',
+      );
+    });
 
-  it('should throw an error for empty public key', () => {
-    const emptyKey = new Uint8Array(0);
-    expect(() => x25519ToJwkPublicKey(curve, emptyKey)).toThrow(
-      'X25519 public key is invalid',
-    );
-  });
+    it('should throw an error for empty public key', () => {
+      const emptyKey = new Uint8Array(0);
+      expect(() => x25519ToJwkPublicKey(curve, emptyKey)).toThrow(
+        'Public key is invalid',
+      );
+    });
 
-  it('should throw an error for oversized public key', () => {
-    const oversizedKey = new Uint8Array(64); // Too long
-    expect(() => x25519ToJwkPublicKey(curve, oversizedKey)).toThrow(
-      'X25519 public key is invalid',
-    );
-  });
-
-  it('should generate a JWK that can be imported by Web Crypto API', async () => {
-    const jwk = x25519ToJwkPublicKey(curve, publicKey);
-    const importedKey = await crypto.subtle.importKey(
-      'jwk',
-      jwk,
-      {
-        name: 'X25519',
-      },
-      false,
-      [],
-    );
-    expect(importedKey).toBeDefined();
+    it('should throw an error for oversized public key', () => {
+      const oversizedKey = new Uint8Array(64); // Too long
+      expect(() => x25519ToJwkPublicKey(curve, oversizedKey)).toThrow(
+        'Public key is invalid',
+      );
+    });
   });
 });
