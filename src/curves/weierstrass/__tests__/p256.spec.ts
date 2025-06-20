@@ -1,12 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { p256 as nobleP256 } from '@noble/curves/p256';
-import { createP256 } from '../p256';
+import { createP256, p256_CURVE } from '../p256';
 import { randomBytes } from '@noble/hashes/utils';
 import { encodeBase64Url } from 'u8a-utils';
 import { extractRawPrivateKeyFromPkcs8 } from '../../../utils/extractRawPrivateKeyFromPkcs8';
 
 describe('p256 interoperability', () => {
   const ourP256 = createP256(randomBytes);
+
+  describe('curve parameters', () => {
+    it('should have matching prime p values between our implementation and p256_CURVE', () => {
+      expect(ourP256.CURVE.p).toEqual(p256_CURVE.p);
+    });
+  });
 
   describe('sign and verify', () => {
     describe('noble compatibility', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ec as EC } from 'elliptic';
-import { createSecp256k1 } from '../secp256k1';
+import { createSecp256k1, secp256k1_CURVE } from '../secp256k1';
 import { randomBytes } from '@noble/hashes/utils';
 import { sha256 } from '@noble/hashes/sha256';
 import { secp256k1 as nobleSecp256k1 } from '@noble/curves/secp256k1';
@@ -12,6 +12,12 @@ const fromHex = (hex: string) => new Uint8Array(Buffer.from(hex, 'hex'));
 
 describe('secp256k1 interoperability', () => {
   const ourSecp256k1 = createSecp256k1(randomBytes);
+
+  describe('curve parameters', () => {
+    it('should have matching prime p values between our implementation and secp256k1_CURVE', () => {
+      expect(ourSecp256k1.CURVE.p).toEqual(secp256k1_CURVE.p);
+    });
+  });
 
   describe('sign and verify', () => {
     describe('noble compatibility', () => {

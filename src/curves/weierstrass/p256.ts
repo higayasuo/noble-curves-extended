@@ -13,7 +13,7 @@ import type { RandomBytes } from '../types';
 
 // p = 2n**224n * (2n**32n-1n) + 2n**192n + 2n**96n - 1n
 // a = Fp256.create(BigInt('-3'));
-const p256_CURVE: WeierstrassOpts<bigint> = {
+export const p256_CURVE: WeierstrassOpts<bigint> = {
   p: BigInt(
     '0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff',
   ),

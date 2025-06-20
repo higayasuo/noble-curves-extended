@@ -1,12 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { p384 as nobleP384 } from '@noble/curves/p384';
-import { createP384 } from '../p384';
+import { createP384, p384_CURVE } from '../p384';
 import { randomBytes } from '@noble/hashes/utils';
 import { encodeBase64Url } from 'u8a-utils';
 import { extractRawPrivateKeyFromPkcs8 } from '../../../utils/extractRawPrivateKeyFromPkcs8';
 
 describe('p384 interoperability', () => {
   const ourP384 = createP384(randomBytes);
+
+  describe('curve parameters', () => {
+    it('should have matching prime p values between our implementation and p384_CURVE', () => {
+      expect(ourP384.CURVE.p).toEqual(p384_CURVE.p);
+    });
+  });
 
   describe('sign and verify', () => {
     describe('noble compatibility', () => {

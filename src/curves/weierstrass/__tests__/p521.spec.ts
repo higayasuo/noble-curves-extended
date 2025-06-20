@@ -1,12 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { p521 as nobleP521 } from '@noble/curves/p521';
-import { createP521 } from '../p521';
+import { createP521, p521_CURVE } from '../p521';
 import { randomBytes } from '@noble/hashes/utils';
 import { encodeBase64Url } from 'u8a-utils';
 import { extractRawPrivateKeyFromPkcs8 } from '../../../utils/extractRawPrivateKeyFromPkcs8';
 
 describe('p521 interoperability', () => {
   const ourP521 = createP521(randomBytes);
+
+  describe('curve parameters', () => {
+    it('should have matching prime p values between our implementation and p521_CURVE', () => {
+      expect(ourP521.CURVE.p).toEqual(p521_CURVE.p);
+    });
+  });
 
   describe('sign and verify', () => {
     describe('noble compatibility', () => {

@@ -12,7 +12,7 @@ import type { WeierstrassOpts } from '../abstract/_weierstrass';
 import type { RandomBytes } from '../types';
 
 // p = 2n**384n - 2n**128n - 2n**96n + 2n**32n - 1n
-const p384_CURVE: WeierstrassOpts<bigint> = {
+export const p384_CURVE: WeierstrassOpts<bigint> = {
   p: BigInt(
     '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffff0000000000000000ffffffff',
   ),

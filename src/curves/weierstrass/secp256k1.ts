@@ -16,7 +16,7 @@ import { RandomBytes } from '../types';
 // Seems like generator was produced from some seed:
 // `Point.BASE.multiply(Point.Fn.inv(2n, N)).toAffine().x`
 // // gives short x 0x3b78ce563f89a0ed9414f5aa28ad0d96d6795f9c63n
-const secp256k1_CURVE: WeierstrassOpts<bigint> = {
+export const secp256k1_CURVE: WeierstrassOpts<bigint> = {
   p: BigInt(
     '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f',
   ),
