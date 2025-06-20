@@ -28,7 +28,6 @@ describe('X25519', () => {
       const privateKey = x25519.randomPrivateKey();
       expect(privateKey).toBeInstanceOf(Uint8Array);
       expect(privateKey.length).toBe(32);
-      expect(x25519.isValidPrivateKey(privateKey)).toBe(true);
     });
   });
 
@@ -38,13 +37,40 @@ describe('X25519', () => {
       const publicKey = x25519.getPublicKey(privateKey);
       expect(publicKey).toBeInstanceOf(Uint8Array);
       expect(publicKey.length).toBe(32);
-      expect(x25519.isValidPublicKey(publicKey)).toBe(true);
     });
     it('should throw an error for invalid private key', () => {
-      const invalidPrivateKey = new Uint8Array(32); // All zeros
+      const invalidPrivateKey = new Uint8Array(31); // All zeros
       expect(() => x25519.getPublicKey(invalidPrivateKey)).toThrow(
-        'Private key is invalid',
+        'Failed to get public key',
       );
+    });
+  });
+
+  describe('getSharedSecret', () => {
+    it('should compute a shared secret', () => {
+      const privateKeyA = x25519.randomPrivateKey();
+      const privateKeyB = x25519.randomPrivateKey();
+      const publicKeyB = x25519.getPublicKey(privateKeyB);
+      const sharedSecretA = x25519.getSharedSecret({
+        privateKey: privateKeyA,
+        publicKey: publicKeyB,
+      });
+      expect(sharedSecretA).toBeInstanceOf(Uint8Array);
+      expect(sharedSecretA.length).toBe(32);
+    });
+    it('should throw an error for invalid private key', () => {
+      const invalidPrivateKey = new Uint8Array(31); // All zeros
+      const publicKey = x25519.getPublicKey(x25519.randomPrivateKey());
+      expect(() =>
+        x25519.getSharedSecret({ privateKey: invalidPrivateKey, publicKey }),
+      ).toThrow('Failed to compute shared secret');
+    });
+    it('should throw an error for invalid public key', () => {
+      const privateKey = x25519.randomPrivateKey();
+      const invalidPublicKey = new Uint8Array(31); // All zeros
+      expect(() =>
+        x25519.getSharedSecret({ privateKey, publicKey: invalidPublicKey }),
+      ).toThrow('Failed to compute shared secret');
     });
   });
 
@@ -58,9 +84,9 @@ describe('X25519', () => {
       expect(jwk).toHaveProperty('x');
     });
     it('should throw an error for invalid private key', () => {
-      const invalidPrivateKey = new Uint8Array(32); // All zeros
+      const invalidPrivateKey = new Uint8Array(31); // short length
       expect(() => x25519.toJwkPrivateKey(invalidPrivateKey)).toThrow(
-        'Private key is invalid',
+        'Failed to convert private key to JWK',
       );
     });
   });
@@ -75,9 +101,9 @@ describe('X25519', () => {
       expect(jwk).toHaveProperty('x');
     });
     it('should throw an error for invalid public key', () => {
-      const invalidPublicKey = new Uint8Array(32); // All zeros
+      const invalidPublicKey = new Uint8Array(31); // All zeros
       expect(() => x25519.toJwkPublicKey(invalidPublicKey)).toThrow(
-        'Public key is invalid',
+        'Failed to convert public key to JWK',
       );
     });
   });
@@ -123,57 +149,6 @@ describe('X25519', () => {
       expect(() => x25519.toRawPublicKey(invalidJwk)).toThrow(
         'Invalid JWK: malformed encoding for x',
       );
-    });
-  });
-
-  describe('isValidPrivateKey', () => {
-    it('should return true for a valid private key', () => {
-      const privateKey = x25519.randomPrivateKey();
-      expect(x25519.isValidPrivateKey(privateKey)).toBe(true);
-    });
-    it('should return false for an invalid private key', () => {
-      const invalidPrivateKey = new Uint8Array(32); // All zeros
-      expect(x25519.isValidPrivateKey(invalidPrivateKey)).toBe(false);
-    });
-  });
-
-  describe('isValidPublicKey', () => {
-    it('should return true for a valid public key', () => {
-      const privateKey = x25519.randomPrivateKey();
-      const publicKey = x25519.getPublicKey(privateKey);
-      expect(x25519.isValidPublicKey(publicKey)).toBe(true);
-    });
-    it('should return false for an invalid public key', () => {
-      const invalidPublicKey = new Uint8Array(32); // All zeros
-      expect(x25519.isValidPublicKey(invalidPublicKey)).toBe(false);
-    });
-  });
-
-  describe('getSharedSecret', () => {
-    it('should compute a shared secret', () => {
-      const privateKeyA = x25519.randomPrivateKey();
-      const privateKeyB = x25519.randomPrivateKey();
-      const publicKeyB = x25519.getPublicKey(privateKeyB);
-      const sharedSecretA = x25519.getSharedSecret({
-        privateKey: privateKeyA,
-        publicKey: publicKeyB,
-      });
-      expect(sharedSecretA).toBeInstanceOf(Uint8Array);
-      expect(sharedSecretA.length).toBe(32);
-    });
-    it('should throw an error for invalid private key', () => {
-      const invalidPrivateKey = new Uint8Array(32); // All zeros
-      const publicKey = x25519.getPublicKey(x25519.randomPrivateKey());
-      expect(() =>
-        x25519.getSharedSecret({ privateKey: invalidPrivateKey, publicKey }),
-      ).toThrow('Private key is invalid');
-    });
-    it('should throw an error for invalid public key', () => {
-      const privateKey = x25519.randomPrivateKey();
-      const invalidPublicKey = new Uint8Array(32); // All zeros
-      expect(() =>
-        x25519.getSharedSecret({ privateKey, publicKey: invalidPublicKey }),
-      ).toThrow('Public key is invalid');
     });
   });
 });

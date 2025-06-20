@@ -12,8 +12,6 @@ import { x25519ToJwkPrivateKey } from './x25519ToJwkPrivateKey';
 import { x25519ToJwkPublicKey } from './x25519ToJwkPublicKey';
 import { x25519ToRawPrivateKey } from './x25519ToRawPrivateKey';
 import { x25519ToRawPublicKey } from './x25519ToRawPublicKey';
-import { x25519IsValidPrivateKey } from './x25519IsValidPrivateKey';
-import { x25519IsValidPublicKey } from './x25519IsValidPublicKey';
 import { x25519GetSharedSecret } from './x25519GetSharedSecret';
 
 /**
@@ -86,6 +84,22 @@ export class X25519 implements Readonly<Ecdh> {
   }
 
   /**
+   * Computes a shared secret using ECDH.
+   *
+   * @param {GetSharedSecretParams} params - The parameters for shared secret computation
+   * @param {Uint8Array} params.privateKey - The private key
+   * @param {Uint8Array} params.publicKey - The public key
+   * @returns {Uint8Array} The computed shared secret
+   * @throws {Error} If either the private key or public key is invalid
+   */
+  getSharedSecret({
+    privateKey,
+    publicKey,
+  }: GetSharedSecretParams): Uint8Array {
+    return x25519GetSharedSecret(this.curve, { privateKey, publicKey });
+  }
+
+  /**
    * Converts a private key to JWK format.
    *
    * @param {Uint8Array} privateKey - The private key to convert
@@ -127,41 +141,5 @@ export class X25519 implements Readonly<Ecdh> {
    */
   toRawPublicKey(jwkPublicKey: JwkPublicKey): Uint8Array {
     return x25519ToRawPublicKey(this.curve, jwkPublicKey);
-  }
-
-  /**
-   * Validates if a private key is valid for X25519.
-   *
-   * @param {Uint8Array} privateKey - The private key to validate
-   * @returns {boolean} True if the private key is valid, false otherwise
-   */
-  isValidPrivateKey(privateKey: Uint8Array): boolean {
-    return x25519IsValidPrivateKey(this.curve, privateKey);
-  }
-
-  /**
-   * Validates if a public key is valid for X25519.
-   *
-   * @param {Uint8Array} publicKey - The public key to validate
-   * @returns {boolean} True if the public key is valid, false otherwise
-   */
-  isValidPublicKey(publicKey: Uint8Array): boolean {
-    return x25519IsValidPublicKey(this.curve, publicKey);
-  }
-
-  /**
-   * Computes a shared secret using ECDH.
-   *
-   * @param {GetSharedSecretParams} params - The parameters for shared secret computation
-   * @param {Uint8Array} params.privateKey - The private key
-   * @param {Uint8Array} params.publicKey - The public key
-   * @returns {Uint8Array} The computed shared secret
-   * @throws {Error} If either the private key or public key is invalid
-   */
-  getSharedSecret({
-    privateKey,
-    publicKey,
-  }: GetSharedSecretParams): Uint8Array {
-    return x25519GetSharedSecret(this.curve, { privateKey, publicKey });
   }
 }

@@ -1,7 +1,5 @@
 export * from './Ed25519';
 export * from './ed25519GetPublicKey';
-export * from './ed25519IsValidPrivateKey';
-export * from '../../weierstrass/weierstrassIsValidPublicKey';
 export * from './ed25519RandomPrivateKey';
 export * from './ed25519Sign';
 export * from './ed25519ToJwkPrivateKey';

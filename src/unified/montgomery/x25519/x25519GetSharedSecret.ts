@@ -1,6 +1,5 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
-import { x25519IsValidPrivateKey } from './x25519IsValidPrivateKey';
-import { x25519IsValidPublicKey } from './x25519IsValidPublicKey';
+import { x25519IsSmallOrderPoint } from './x25519IsSmallOrderPoint';
 import type { GetSharedSecretParams } from '../../types';
 
 /**
@@ -17,15 +16,11 @@ export const x25519GetSharedSecret = (
   curve: CurveFn,
   { privateKey, publicKey }: GetSharedSecretParams,
 ): Uint8Array => {
-  // if (!x25519IsValidPrivateKey(curve, privateKey)) {
-  //   throw new Error('Private key is invalid');
-  // }
-
-  if (!x25519IsValidPublicKey(curve, publicKey)) {
-    throw new Error('Public key is invalid');
-  }
-
   try {
+    if (x25519IsSmallOrderPoint(publicKey)) {
+      throw new Error('Public key is a small order point');
+    }
+
     const sharedSecret = curve.getSharedSecret(privateKey, publicKey);
 
     if (sharedSecret.some((byte) => byte !== 0)) {

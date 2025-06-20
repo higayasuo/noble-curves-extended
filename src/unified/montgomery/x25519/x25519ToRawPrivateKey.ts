@@ -1,7 +1,6 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
 import { JwkPrivateKey } from '../../types';
 import { decodeBase64Url } from 'u8a-utils';
-import { x25519IsValidPrivateKey } from './x25519IsValidPrivateKey';
 import { x25519ToRawPublicKey } from './x25519ToRawPublicKey';
 
 /**
@@ -18,7 +17,7 @@ export const x25519ToRawPrivateKey = (
 ): Uint8Array => {
   x25519ToRawPublicKey(curve, jwkPrivateKey);
 
-  if (!jwkPrivateKey.d) {
+  if (jwkPrivateKey.d === undefined || jwkPrivateKey.d === null) {
     throw new Error('Invalid JWK: missing required parameter for d');
   }
 
@@ -29,11 +28,12 @@ export const x25519ToRawPrivateKey = (
   let decodedD!: Uint8Array;
   try {
     decodedD = decodeBase64Url(jwkPrivateKey.d);
+    console.log('decodedD', decodedD);
   } catch (e) {
     throw new Error('Invalid JWK: malformed encoding for d');
   }
 
-  if (!x25519IsValidPrivateKey(curve, decodedD)) {
+  if (decodedD.length !== 32) {
     throw new Error('Invalid JWK: invalid key data for d');
   }
 

@@ -48,9 +48,9 @@ export class Ed25519 implements Readonly<Signature> {
    * @param {CurveFn} curve - The curve implementation to use
    * @param {RandomBytes} randomBytes - Function to generate random bytes
    */
-  constructor(curve: CurveFn) {
+  constructor(curve: CurveFn, randomBytes: RandomBytes) {
     this.curve = curve;
-    this.randomBytes = curve.CURVE.randomBytes;
+    this.randomBytes = randomBytes;
   }
 
   /**

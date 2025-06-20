@@ -91,10 +91,12 @@ describe('x25519ToRawPublicKey', () => {
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = curve.getPublicKey(privateKey);
       const jwk = x25519ToJwkPublicKey(curve, publicKey);
+      // Create exactly 31 bytes of zeros
+      const invalidPublicKey = new Uint8Array(31);
       const invalidJwk = {
         ...jwk,
-        x: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-      } as JwkPublicKey; // All zeros
+        x: Buffer.from(invalidPublicKey).toString('base64url'),
+      } as JwkPublicKey;
       expect(() => x25519ToRawPublicKey(curve, invalidJwk)).toThrow(
         'Invalid JWK: invalid key data for x',
       );

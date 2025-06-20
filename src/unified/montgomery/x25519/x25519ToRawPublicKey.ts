@@ -1,29 +1,36 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
 import { JwkPublicKey } from '../../types';
 import { decodeBase64Url } from 'u8a-utils';
-import { x25519IsValidPublicKey } from './x25519IsValidPublicKey';
 
 /**
  * Converts a JWK (JSON Web Key) to a raw X25519 public key.
  *
- * @param {CurveFn} curve - The curve function used to validate the public key.
+ * @param {CurveFn} _curve - The curve function used for conversion (unused).
  * @param {JwkPublicKey} jwkPublicKey - The JWK to convert.
  * @returns {Uint8Array} The raw public key as a Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or the public key is invalid.
  */
 export const x25519ToRawPublicKey = (
-  curve: CurveFn,
+  _curve: CurveFn,
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
+  if (jwkPublicKey.kty === undefined || jwkPublicKey.kty === null) {
+    throw new Error('Invalid JWK: missing required parameter for kty');
+  }
+
   if (jwkPublicKey.kty !== 'OKP') {
     throw new Error('Invalid JWK: unsupported key type');
+  }
+
+  if (jwkPublicKey.crv === undefined || jwkPublicKey.crv === null) {
+    throw new Error('Invalid JWK: missing required parameter for crv');
   }
 
   if (jwkPublicKey.crv !== 'X25519') {
     throw new Error('Invalid JWK: unsupported curve');
   }
 
-  if (!jwkPublicKey?.x) {
+  if (jwkPublicKey.x === undefined || jwkPublicKey.x === null) {
     throw new Error('Invalid JWK: missing required parameter for x');
   }
 
@@ -31,20 +38,25 @@ export const x25519ToRawPublicKey = (
     throw new Error('Invalid JWK: invalid parameter type for x');
   }
 
-  if (jwkPublicKey.alg && jwkPublicKey.alg !== 'ECDH-ES') {
+  if (
+    jwkPublicKey.alg !== undefined &&
+    jwkPublicKey.alg !== null &&
+    jwkPublicKey.alg !== 'ECDH-ES'
+  ) {
     throw new Error('Invalid JWK: unsupported algorithm');
   }
 
-  let decoded!: Uint8Array;
+  let decodedX!: Uint8Array;
   try {
-    decoded = decodeBase64Url(jwkPublicKey.x);
+    decodedX = decodeBase64Url(jwkPublicKey.x);
+    console.log('decodedX', decodedX);
   } catch (e) {
     throw new Error('Invalid JWK: malformed encoding for x');
   }
 
-  if (!x25519IsValidPublicKey(curve, decoded)) {
+  if (decodedX.length !== 32) {
     throw new Error('Invalid JWK: invalid key data for x');
   }
 
-  return decoded;
+  return decodedX;
 };

@@ -7,7 +7,7 @@ const message = new TextEncoder().encode('hello');
 
 const setup = () => {
   const curve = createEd25519(randomBytes);
-  const ed = new Ed25519(curve);
+  const ed = new Ed25519(curve, randomBytes);
   return { ed, curve };
 };
 

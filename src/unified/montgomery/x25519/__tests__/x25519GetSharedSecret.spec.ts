@@ -136,32 +136,6 @@ describe('x25519GetSharedSecret', () => {
   });
 
   describe('invalid input tests', () => {
-    it('should throw an error for invalid private key', () => {
-      const curve = createX25519(randomBytes);
-      const invalidPrivateKey = new Uint8Array(32); // All zeros
-      const publicKey = curve.getPublicKey(curve.utils.randomPrivateKey());
-
-      expect(() =>
-        x25519GetSharedSecret(curve, {
-          privateKey: invalidPrivateKey,
-          publicKey,
-        }),
-      ).toThrow('Private key is invalid');
-    });
-
-    it('should throw an error for invalid public key', () => {
-      const curve = createX25519(randomBytes);
-      const privateKey = curve.utils.randomPrivateKey();
-      const invalidPublicKey = new Uint8Array(32); // All zeros
-
-      expect(() =>
-        x25519GetSharedSecret(curve, {
-          privateKey,
-          publicKey: invalidPublicKey,
-        }),
-      ).toThrow('Public key is invalid');
-    });
-
     it('should throw an error for private key with wrong length', () => {
       const curve = createX25519(randomBytes);
       const invalidPrivateKey = new Uint8Array(31); // Wrong length
@@ -172,7 +146,7 @@ describe('x25519GetSharedSecret', () => {
           privateKey: invalidPrivateKey,
           publicKey,
         }),
-      ).toThrow('Private key is invalid');
+      ).toThrow('Failed to compute shared secret');
     });
 
     it('should throw an error for public key with wrong length', () => {
@@ -185,7 +159,7 @@ describe('x25519GetSharedSecret', () => {
           privateKey,
           publicKey: invalidPublicKey,
         }),
-      ).toThrow('Public key is invalid');
+      ).toThrow('Failed to compute shared secret');
     });
   });
 

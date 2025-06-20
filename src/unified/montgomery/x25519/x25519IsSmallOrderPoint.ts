@@ -1,8 +1,7 @@
-import { CurveFn } from '@noble/curves/abstract/montgomery';
 import { compareUint8Arrays, decodeHex } from 'u8a-utils';
 
 // RFC 7748 §6.1 small order points
-const SMALL_ORDER_POINTS = [
+export const SMALL_ORDER_POINTS = [
   // 0 (order 1)
   '0000000000000000000000000000000000000000000000000000000000000000',
   // 1 (order 1)
@@ -20,27 +19,13 @@ const SMALL_ORDER_POINTS = [
 ].map((hex) => decodeHex(hex));
 
 /**
- * Validates if a given public key is valid for the x25519 curve.
+ * Checks if a given public key is a small order point as defined in RFC 7748 §6.1.
  *
- * @param {CurveFn} curve - The curve function used to validate the public key.
- * @param {Uint8Array} publicKey - The public key to validate.
- * @returns {boolean} True if the public key is valid, false otherwise.
+ * @param {Uint8Array} publicKey - The public key to check.
+ * @returns {boolean} True if the public key is a small order point, false otherwise.
  */
-export const x25519IsValidPublicKey = (
-  _curve: CurveFn,
-  publicKey: Uint8Array,
-): boolean => {
-  if (publicKey.length !== 32) {
-    return false;
-  }
-
-  // RFC 7748 §6.1
-  // Check for small order points
-  if (
-    SMALL_ORDER_POINTS.some((point) => compareUint8Arrays(publicKey, point))
-  ) {
-    return false;
-  }
-
-  return true;
+export const x25519IsSmallOrderPoint = (publicKey: Uint8Array): boolean => {
+  return SMALL_ORDER_POINTS.some((point) =>
+    compareUint8Arrays(publicKey, point),
+  );
 };

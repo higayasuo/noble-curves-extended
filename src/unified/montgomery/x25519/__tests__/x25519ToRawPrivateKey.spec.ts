@@ -91,20 +91,24 @@ describe('x25519ToRawPrivateKey', () => {
     });
 
     it('should throw an error for invalid public key', () => {
+      // Create exactly 31 bytes of zeros
+      const invalidPublicKey = new Uint8Array(31);
       const invalidJwk = {
         ...jwk,
-        x: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-      } as JwkPrivateKey; // All zeros
+        x: Buffer.from(invalidPublicKey).toString('base64url'),
+      } as JwkPrivateKey;
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
         'Invalid JWK: invalid key data for x',
       );
     });
 
     it('should throw an error for invalid private key', () => {
+      // Create exactly 31 bytes of zeros
+      const invalidPrivateKey = new Uint8Array(31);
       const invalidJwk = {
         ...jwk,
-        d: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-      } as JwkPrivateKey; // All zeros
+        d: Buffer.from(invalidPrivateKey).toString('base64url'),
+      } as JwkPrivateKey;
       expect(() => x25519ToRawPrivateKey(curve, invalidJwk)).toThrow(
         'Invalid JWK: invalid key data for d',
       );

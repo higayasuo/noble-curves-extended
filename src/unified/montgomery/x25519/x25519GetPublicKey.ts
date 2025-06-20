@@ -1,5 +1,4 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
-import { x25519IsValidPrivateKey } from './x25519IsValidPrivateKey';
 
 /**
  * Generates a public key for the x25519 curve from a given private key.
@@ -18,10 +17,6 @@ export const x25519GetPublicKey = (
 ): Uint8Array => {
   if (!compressed) {
     throw new Error('Uncompressed public key is not supported');
-  }
-
-  if (!x25519IsValidPrivateKey(curve, privateKey)) {
-    throw new Error('Private key is invalid');
   }
 
   try {

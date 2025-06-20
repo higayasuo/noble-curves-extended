@@ -2,7 +2,7 @@ export * from './X25519';
 export * from './x25519GetPublicKey';
 export * from './x25519GetSharedSecret';
 export * from './x25519IsValidPrivateKey';
-export * from './x25519IsValidPublicKey';
+export * from './x25519IsSmallOrderPoint';
 export * from './x25519RandomPrivateKey';
 export * from './x25519ToJwkPrivateKey';
 export * from './x25519ToJwkPublicKey';
