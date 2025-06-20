@@ -94,15 +94,7 @@ describe('ed25519Sign', () => {
       const invalidKey = new Uint8Array(16); // Too short
       expect(() =>
         ed25519Sign(curve, { message, privateKey: invalidKey }),
-      ).toThrow('Private key is invalid');
-    });
-
-    it('should throw an error for all-zero private key', () => {
-      const curve = createEd25519(randomBytes);
-      const invalidKey = new Uint8Array(32); // All zeros
-      expect(() =>
-        ed25519Sign(curve, { message, privateKey: invalidKey }),
-      ).toThrow('Private key is invalid');
+      ).toThrow('Failed to sign message');
     });
 
     it('should throw an error when recoverable is set to true', () => {

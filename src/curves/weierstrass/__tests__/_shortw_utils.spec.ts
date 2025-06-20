@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createCurve, createHmacFn, CurveDef } from '../_shortw_utils';
-import { sha256 } from '@noble/hashes/sha2';
+import { sha256 } from '@noble/hashes/sha256';
 import { randomBytes } from '@noble/hashes/utils';
 import { secp256k1 as nobleSecp256k1 } from '@noble/curves/secp256k1';
 import { Field } from '@noble/curves/abstract/modular';

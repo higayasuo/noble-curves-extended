@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toJwkPublicKey } from '../toJwkPublickKey';
+import { toJwkPublicKey } from '../../weierstrassToJwkPublickKey';
 import { createP256, createP384, createP521 } from '..';
 import { randomBytes as nodeRandomBytes } from 'crypto';
 import { RandomBytes, NistCurveName } from '../../../types';

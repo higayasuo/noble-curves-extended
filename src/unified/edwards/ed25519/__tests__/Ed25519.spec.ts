@@ -7,7 +7,7 @@ const message = new TextEncoder().encode('hello');
 
 const setup = () => {
   const curve = createEd25519(randomBytes);
-  const ed = new Ed25519(curve, randomBytes);
+  const ed = new Ed25519(curve);
   return { ed, curve };
 };
 
@@ -75,11 +75,6 @@ describe('Ed25519', () => {
       expect(jwk).toHaveProperty('crv', 'Ed25519');
       expect(jwk).toHaveProperty('x');
     });
-    it('should throw for an invalid public key', () => {
-      const { ed } = setup();
-      const invalidPub = new Uint8Array(16);
-      expect(() => ed.toJwkPublicKey(invalidPub)).toThrow();
-    });
   });
 
   describe('toRawPrivateKey', () => {
@@ -112,33 +107,6 @@ describe('Ed25519', () => {
       const { ed } = setup();
       const invalidJwk = { kty: 'EC', crv: 'Ed25519', x: 'AA' } as any;
       expect(() => ed.toRawPublicKey(invalidJwk)).toThrow();
-    });
-  });
-
-  describe('isValidPrivateKey', () => {
-    it('should return true for a valid private key', () => {
-      const { ed } = setup();
-      const priv = ed.randomPrivateKey();
-      expect(ed.isValidPrivateKey(priv)).toBe(true);
-    });
-    it('should return false for an invalid private key', () => {
-      const { ed } = setup();
-      const invalidPriv = new Uint8Array(16);
-      expect(ed.isValidPrivateKey(invalidPriv)).toBe(false);
-    });
-  });
-
-  describe('isValidPublicKey', () => {
-    it('should return true for a valid public key', () => {
-      const { ed } = setup();
-      const priv = ed.randomPrivateKey();
-      const pub = ed.getPublicKey(priv);
-      expect(ed.isValidPublicKey(pub)).toBe(true);
-    });
-    it('should return false for an invalid public key', () => {
-      const { ed } = setup();
-      const invalidPub = new Uint8Array(16);
-      expect(ed.isValidPublicKey(invalidPub)).toBe(false);
     });
   });
 

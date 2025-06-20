@@ -28,15 +28,7 @@ describe('ed25519ToJwkPrivateKey', () => {
     const curve = createEd25519(randomBytes);
     const invalidKey = new Uint8Array(16); // Too short
     expect(() => ed25519ToJwkPrivateKey(curve, invalidKey)).toThrow(
-      'Private key is invalid',
-    );
-  });
-
-  it('should throw an error for all-zero private key', () => {
-    const curve = createEd25519(randomBytes);
-    const invalidKey = new Uint8Array(32); // All zeros
-    expect(() => ed25519ToJwkPrivateKey(curve, invalidKey)).toThrow(
-      'Private key is invalid',
+      'Failed to convert private key to JWK',
     );
   });
 

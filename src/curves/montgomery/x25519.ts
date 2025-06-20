@@ -1,4 +1,4 @@
-import { montgomery, type CurveFn } from '@noble/curves/abstract/montgomery';
+import { montgomery, type CurveFn } from '../abstract/_montgomery';
 import {
   ed25519_CURVE,
   ed25519_pow_2_252_3,

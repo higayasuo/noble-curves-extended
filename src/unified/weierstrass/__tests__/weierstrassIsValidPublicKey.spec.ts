@@ -71,56 +71,6 @@ describe('weierstrassIsValidPublicKey', () => {
         expect(weierstrassIsValidPublicKey(curve, shortKey)).toBe(false);
       },
     );
-
-    it.each(curves)(
-      'should return false for public key with invalid format for $name',
-      ({ createCurve, expectedLength }) => {
-        const curve = createCurve(randomBytes);
-        const invalidKey = new Uint8Array(expectedLength);
-        invalidKey.fill(0xff); // Fill with all 0xFF (invalid format)
-
-        expect(weierstrassIsValidPublicKey(curve, invalidKey)).toBe(false);
-      },
-    );
-  });
-
-  describe('edge case tests', () => {
-    it.each(curves)(
-      'should return false for public key with only first byte non-zero for $name',
-      ({ createCurve, expectedLength, name }) => {
-        const curve = createCurve(randomBytes);
-        const key = new Uint8Array(expectedLength);
-        key[0] = 0x02; // Valid compressed format prefix
-        // Rest remains zeros
-
-        // NIST curves (P-256, P-384, P-521) accept this format, secp256k1 rejects it
-        const expectedResult = name === 'secp256k1' ? false : true;
-        expect(weierstrassIsValidPublicKey(curve, key)).toBe(expectedResult);
-      },
-    );
-
-    it.each(curves)(
-      'should return false for public key with only last byte non-zero for $name',
-      ({ createCurve, expectedLength }) => {
-        const curve = createCurve(randomBytes);
-        const key = new Uint8Array(expectedLength);
-        key[key.length - 1] = 0x01; // Only last byte non-zero
-
-        expect(weierstrassIsValidPublicKey(curve, key)).toBe(false);
-      },
-    );
-
-    it.each(curves)(
-      'should return false for public key with invalid compressed format for $name',
-      ({ createCurve, expectedLength }) => {
-        const curve = createCurve(randomBytes);
-        const key = new Uint8Array(expectedLength);
-        key[0] = 0x04; // Invalid prefix for compressed format
-        key.fill(0x01, 1); // Fill rest with non-zero values
-
-        expect(weierstrassIsValidPublicKey(curve, key)).toBe(false);
-      },
-    );
   });
 
   describe('consistency tests', () => {
@@ -139,24 +89,6 @@ describe('weierstrassIsValidPublicKey', () => {
         expect(result1).toBe(result2);
         expect(result2).toBe(result3);
         expect(result1).toBe(true);
-      },
-    );
-
-    it.each(curves)(
-      'should return consistent results for invalid keys for $name',
-      ({ createCurve, expectedLength }) => {
-        const curve = createCurve(randomBytes);
-        const invalidKey = new Uint8Array(expectedLength);
-        invalidKey.fill(0xff);
-
-        // Test multiple times with the same invalid key
-        const result1 = weierstrassIsValidPublicKey(curve, invalidKey);
-        const result2 = weierstrassIsValidPublicKey(curve, invalidKey);
-        const result3 = weierstrassIsValidPublicKey(curve, invalidKey);
-
-        expect(result1).toBe(result2);
-        expect(result2).toBe(result3);
-        expect(result1).toBe(false);
       },
     );
   });

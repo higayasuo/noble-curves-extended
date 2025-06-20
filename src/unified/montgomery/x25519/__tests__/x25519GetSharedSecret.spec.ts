@@ -110,7 +110,7 @@ describe('x25519GetSharedSecret', () => {
             privateKey,
             publicKey: smallOrderPoint,
           }),
-        ).toThrow('Public key is invalid');
+        ).toThrow('Failed to compute shared secret');
       }
     });
 

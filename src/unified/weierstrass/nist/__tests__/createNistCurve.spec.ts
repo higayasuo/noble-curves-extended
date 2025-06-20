@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createNistCurve } from '../createNistCurve';
-import { toJwkPublicKey } from '../toJwkPublickKey';
+import { toJwkPublicKey } from '../../weierstrassToJwkPublickKey';
 import { toJwkPrivateKey } from '../toJwkPrivateKey';
 import { randomBytes as nodeRandomBytes } from 'crypto';
 import { NistCurveName, RandomBytes } from '../../../types';

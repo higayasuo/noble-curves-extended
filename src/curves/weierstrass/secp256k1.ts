@@ -6,7 +6,7 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { sha256 } from '@noble/hashes/sha2.js';
+import { sha256 } from '@noble/hashes/sha256';
 import { createCurve } from './_shortw_utils';
 import { Field, mod, pow2 } from '@noble/curves/abstract/modular';
 import type { CurveFn } from '@noble/curves/abstract/weierstrass';

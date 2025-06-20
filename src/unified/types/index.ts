@@ -61,22 +61,6 @@ export type ToRawPrivateKey = (privateKey: JwkPrivateKey) => Uint8Array;
 export type ToRawPublicKey = (publicKey: JwkPublicKey) => Uint8Array;
 
 /**
- * Validates a public key.
- * @typedef {Function} IsValidPublicKey
- * @param {Uint8Array} publicKey - The public key as a Uint8Array
- * @returns {boolean} Returns true if the public key is valid, otherwise false.
- */
-export type IsValidPublicKey = (publicKey: Uint8Array) => boolean;
-
-/**
- * Validates a private key.
- * @typedef {Function} IsValidPrivateKey
- * @param {Uint8Array} privateKey - The private key as a Uint8Array
- * @returns {boolean} Returns true if the private key is valid, otherwise false.
- */
-export type IsValidPrivateKey = (privateKey: Uint8Array) => boolean;
-
-/**
  * Generates a random private key.
  * @typedef {Function} RandomPrivateKey
  * @returns {Uint8Array} A random private key as a Uint8Array
@@ -188,8 +172,6 @@ export interface UnifiedBase {
   toJwkPublicKey: ToJwkPublicKey;
   toRawPrivateKey: ToRawPrivateKey;
   toRawPublicKey: ToRawPublicKey;
-  isValidPublicKey: IsValidPublicKey;
-  isValidPrivateKey: IsValidPrivateKey;
 }
 
 /**

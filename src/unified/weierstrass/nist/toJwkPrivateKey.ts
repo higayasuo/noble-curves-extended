@@ -1,7 +1,7 @@
 import { CurveFn } from '@noble/curves/abstract/weierstrass';
 import { Jwk, NistCurveName } from '../../types';
 import { toB64U } from 'u8a-utils';
-import { toJwkPublicKey } from './toJwkPublickKey';
+import { toJwkPublicKey } from '../weierstrassToJwkPublickKey';
 
 /**
  * Parameters for converting a private key to JWK format.

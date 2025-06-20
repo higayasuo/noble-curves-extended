@@ -6,7 +6,7 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { sha512 } from '@noble/hashes/sha2';
+import { sha512 } from '@noble/hashes/sha512';
 import { type CurveFn, twistedEdwards } from '@noble/curves/abstract/edwards';
 import { type EdwardsOpts } from '../abstract/_edwards';
 import { Field, isNegativeLE, mod, pow2 } from '@noble/curves/abstract/modular';

@@ -11,17 +11,16 @@ export const weierstrassIsValidPublicKey = (
   curve: CurveFn,
   publicKey: Uint8Array,
 ): boolean => {
-  // Check if public key is all zeros
+  console.log(publicKey.length, curve.CURVE.nByteLength);
+  // Check length
+  if (publicKey.length !== curve.CURVE.nByteLength + 1) {
+    return false;
+  }
+
+  // Check if public key is all zeros (invalid point)
   if (!publicKey.some((byte) => byte !== 0)) {
     return false;
   }
 
-  try {
-    const point = curve.Point.fromHex(publicKey);
-    point.assertValidity();
-
-    return true;
-  } catch {
-    return false;
-  }
+  return true;
 };

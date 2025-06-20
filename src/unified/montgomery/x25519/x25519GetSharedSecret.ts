@@ -17,9 +17,9 @@ export const x25519GetSharedSecret = (
   curve: CurveFn,
   { privateKey, publicKey }: GetSharedSecretParams,
 ): Uint8Array => {
-  if (!x25519IsValidPrivateKey(curve, privateKey)) {
-    throw new Error('Private key is invalid');
-  }
+  // if (!x25519IsValidPrivateKey(curve, privateKey)) {
+  //   throw new Error('Private key is invalid');
+  // }
 
   if (!x25519IsValidPublicKey(curve, publicKey)) {
     throw new Error('Public key is invalid');

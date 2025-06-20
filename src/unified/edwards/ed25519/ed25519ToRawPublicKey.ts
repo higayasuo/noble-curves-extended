@@ -1,29 +1,36 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import { JwkPublicKey } from '@/unified/types';
 import { decodeBase64Url } from 'u8a-utils';
-import { ed25519IsValidPublicKey } from '../../weierstrass/weierstrassIsValidPublicKey';
 
 /**
- * Converts a JWK (JSON Web Key) to a raw Ed25519 public key.
+ * Converts a JWK formatted Ed25519 public key to a raw public key.
  *
- * @param {CurveFn} curve - The curve function used to validate the public key.
- * @param {JwkPublicKey} jwkPublicKey - The JWK to convert.
- * @returns {Uint8Array} The raw public key as a Uint8Array.
- * @throws {Error} Throws an error if the JWK is invalid or the public key is invalid.
+ * @param {CurveFn} _curve - The curve function used for conversion (unused).
+ * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
+ * @returns {Uint8Array} The public key as a raw Uint8Array.
+ * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
  */
 export const ed25519ToRawPublicKey = (
-  curve: CurveFn,
+  _curve: CurveFn,
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
+  if (jwkPublicKey.kty === undefined || jwkPublicKey.kty === null) {
+    throw new Error('Invalid JWK: missing required parameter for kty');
+  }
+
   if (jwkPublicKey.kty !== 'OKP') {
     throw new Error('Invalid JWK: unsupported key type');
+  }
+
+  if (jwkPublicKey.crv === undefined || jwkPublicKey.crv === null) {
+    throw new Error('Invalid JWK: missing required parameter for crv');
   }
 
   if (jwkPublicKey.crv !== 'Ed25519') {
     throw new Error('Invalid JWK: unsupported curve');
   }
 
-  if (!jwkPublicKey?.x) {
+  if (jwkPublicKey.x === undefined || jwkPublicKey.x === null) {
     throw new Error('Invalid JWK: missing required parameter for x');
   }
 
@@ -31,7 +38,11 @@ export const ed25519ToRawPublicKey = (
     throw new Error('Invalid JWK: invalid parameter type for x');
   }
 
-  if (jwkPublicKey.alg && jwkPublicKey.alg !== 'EdDSA') {
+  if (
+    jwkPublicKey.alg !== undefined &&
+    jwkPublicKey.alg !== null &&
+    jwkPublicKey.alg !== 'EdDSA'
+  ) {
     throw new Error('Invalid JWK: unsupported algorithm');
   }
 
@@ -42,7 +53,7 @@ export const ed25519ToRawPublicKey = (
     throw new Error('Invalid JWK: malformed encoding for x');
   }
 
-  if (!ed25519IsValidPublicKey(curve, decodedX)) {
+  if (decodedX.length !== 32) {
     throw new Error('Invalid JWK: invalid key data for x');
   }
 

@@ -3,7 +3,7 @@ import { CurveFnWithCreate } from '../_shortw_utils';
 import { isValidPublicKey } from './isValidPublicKey';
 import { createP256, createP384, createP521 } from './nist';
 import { toJwkPrivateKey } from './toJwkPrivateKey';
-import { toJwkPublicKey } from './toJwkPublickKey';
+import { toJwkPublicKey } from '../weierstrassToJwkPublickKey';
 import { toRawPrivateKey } from './toRawPrivateKey';
 import { toRawPublicKey } from './toRawPublicKey';
 

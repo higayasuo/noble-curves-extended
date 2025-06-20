@@ -1,16 +1,15 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import { JwkPrivateKey } from '@/unified/types';
 import { decodeBase64Url } from 'u8a-utils';
-import { ed25519IsValidPrivateKey } from './ed25519IsValidPrivateKey';
 import { ed25519ToRawPublicKey } from './ed25519ToRawPublicKey';
 
 /**
- * Converts a JWK (JSON Web Key) to a raw Ed25519 private key.
+ * Converts a JWK formatted Ed25519 private key to a raw private key.
  *
- * @param {CurveFn} curve - The curve function used to validate the keys.
- * @param {JwkPrivateKey} jwkPrivateKey - The JWK to convert.
- * @returns {Uint8Array} The raw private key as a Uint8Array.
- * @throws {Error} Throws an error if the JWK is invalid or the private key is invalid.
+ * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {JwkPrivateKey} jwkPrivateKey - The private key in JWK format.
+ * @returns {Uint8Array} The private key as a raw Uint8Array.
+ * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
  */
 export const ed25519ToRawPrivateKey = (
   curve: CurveFn,
@@ -18,7 +17,7 @@ export const ed25519ToRawPrivateKey = (
 ): Uint8Array => {
   ed25519ToRawPublicKey(curve, jwkPrivateKey);
 
-  if (!jwkPrivateKey?.d) {
+  if (jwkPrivateKey.d === undefined || jwkPrivateKey.d === null) {
     throw new Error('Invalid JWK: missing required parameter for d');
   }
 
@@ -33,7 +32,7 @@ export const ed25519ToRawPrivateKey = (
     throw new Error('Invalid JWK: malformed encoding for d');
   }
 
-  if (!ed25519IsValidPrivateKey(curve, decodedD)) {
+  if (decodedD.length !== 32) {
     throw new Error('Invalid JWK: invalid key data for d');
   }
 

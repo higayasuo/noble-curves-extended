@@ -4,7 +4,7 @@
  * @module
  */
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-import { sha512 } from '@noble/hashes/sha2';
+import { sha512 } from '@noble/hashes/sha512';
 import { createCurve } from './_shortw_utils';
 import { Field } from '@noble/curves/abstract/modular';
 import type { CurveFn } from '@noble/curves/abstract/weierstrass';

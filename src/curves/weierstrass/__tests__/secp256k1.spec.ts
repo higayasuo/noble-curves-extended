@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ec as EC } from 'elliptic';
 import { createSecp256k1 } from '../secp256k1';
 import { randomBytes } from '@noble/hashes/utils';
-import { sha256 } from '@noble/hashes/sha2';
+import { sha256 } from '@noble/hashes/sha256';
 import { secp256k1 as nobleSecp256k1 } from '@noble/curves/secp256k1';
 
 const ec = new EC('secp256k1');

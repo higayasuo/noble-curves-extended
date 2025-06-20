@@ -51,16 +51,9 @@ describe('x25519GetPublicKey', () => {
     const curve = createX25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
 
-    // Mock the curve.getPublicKey to throw an error only when called from the main function
     const originalGetPublicKey = curve.getPublicKey;
-    let callCount = 0;
     curve.getPublicKey = vi.fn().mockImplementation((key: Uint8Array) => {
-      callCount++;
-      // The first call is from x25519IsValidPrivateKey, the second is from x25519GetPublicKey
-      if (callCount === 2) {
-        throw new Error('Internal curve error');
-      }
-      return originalGetPublicKey.call(curve, key);
+      throw new Error('Internal curve error');
     });
 
     expect(() => x25519GetPublicKey(curve, privateKey)).toThrow(

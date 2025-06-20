@@ -15,8 +15,6 @@ import { ed25519ToJwkPrivateKey } from './ed25519ToJwkPrivateKey';
 import { ed25519ToJwkPublicKey } from './ed25519ToJwkPublicKey';
 import { ed25519ToRawPrivateKey } from './ed25519ToRawPrivateKey';
 import { ed25519ToRawPublicKey } from './ed25519ToRawPublicKey';
-import { ed25519IsValidPrivateKey } from './ed25519IsValidPrivateKey';
-import { ed25519IsValidPublicKey } from '../../weierstrass/weierstrassIsValidPublicKey';
 
 /**
  * Ed25519 implementation for digital signatures.
@@ -50,9 +48,9 @@ export class Ed25519 implements Readonly<Signature> {
    * @param {CurveFn} curve - The curve implementation to use
    * @param {RandomBytes} randomBytes - Function to generate random bytes
    */
-  constructor(curve: CurveFn, randomBytes: RandomBytes) {
+  constructor(curve: CurveFn) {
     this.curve = curve;
-    this.randomBytes = randomBytes;
+    this.randomBytes = curve.CURVE.randomBytes;
   }
 
   /**
@@ -72,9 +70,9 @@ export class Ed25519 implements Readonly<Signature> {
    *
    * @returns {Uint8Array} A 32-byte random private key
    */
-  randomPrivateKey(): Uint8Array {
+  randomPrivateKey = (): Uint8Array => {
     return ed25519RandomPrivateKey(this.curve);
-  }
+  };
 
   /**
    * Derives a public key from a private key.
@@ -83,73 +81,9 @@ export class Ed25519 implements Readonly<Signature> {
    * @returns {Uint8Array} The derived public key
    * @throws {Error} If the private key is invalid
    */
-  getPublicKey(privateKey: Uint8Array): Uint8Array {
+  getPublicKey = (privateKey: Uint8Array): Uint8Array => {
     return ed25519GetPublicKey(this.curve, privateKey);
-  }
-
-  /**
-   * Converts a private key to JWK format.
-   *
-   * @param {Uint8Array} privateKey - The private key to convert
-   * @returns {JwkPrivateKey} The private key in JWK format
-   * @throws {Error} If the private key is invalid
-   */
-  toJwkPrivateKey(privateKey: Uint8Array): JwkPrivateKey {
-    return ed25519ToJwkPrivateKey(this.curve, privateKey);
-  }
-
-  /**
-   * Converts a public key to JWK format.
-   *
-   * @param {Uint8Array} publicKey - The public key to convert
-   * @returns {JwkPublicKey} The public key in JWK format
-   * @throws {Error} If the public key is invalid
-   */
-  toJwkPublicKey(publicKey: Uint8Array): JwkPublicKey {
-    return ed25519ToJwkPublicKey(this.curve, publicKey);
-  }
-
-  /**
-   * Converts a JWK private key to raw format.
-   *
-   * @param {JwkPrivateKey} jwkPrivateKey - The JWK private key to convert
-   * @returns {Uint8Array} The private key in raw format
-   * @throws {Error} If the JWK is invalid
-   */
-  toRawPrivateKey(jwkPrivateKey: JwkPrivateKey): Uint8Array {
-    return ed25519ToRawPrivateKey(this.curve, jwkPrivateKey);
-  }
-
-  /**
-   * Converts a JWK public key to raw format.
-   *
-   * @param {JwkPublicKey} jwkPublicKey - The JWK public key to convert
-   * @returns {Uint8Array} The public key in raw format
-   * @throws {Error} If the JWK is invalid
-   */
-  toRawPublicKey(jwkPublicKey: JwkPublicKey): Uint8Array {
-    return ed25519ToRawPublicKey(this.curve, jwkPublicKey);
-  }
-
-  /**
-   * Validates if a private key is valid for Ed25519.
-   *
-   * @param {Uint8Array} privateKey - The private key to validate
-   * @returns {boolean} True if the private key is valid, false otherwise
-   */
-  isValidPrivateKey(privateKey: Uint8Array): boolean {
-    return ed25519IsValidPrivateKey(this.curve, privateKey);
-  }
-
-  /**
-   * Validates if a public key is valid for Ed25519.
-   *
-   * @param {Uint8Array} publicKey - The public key to validate
-   * @returns {boolean} True if the public key is valid, false otherwise
-   */
-  isValidPublicKey(publicKey: Uint8Array): boolean {
-    return ed25519IsValidPublicKey(this.curve, publicKey);
-  }
+  };
 
   /**
    * Signs a message using the Ed25519 curve and a private key.
@@ -159,9 +93,9 @@ export class Ed25519 implements Readonly<Signature> {
    * @param {Uint8Array} params.privateKey - The private key as a Uint8Array.
    * @returns {Uint8Array} The signature as a Uint8Array.
    */
-  sign({ message, privateKey }: SignParams): Uint8Array {
+  sign = ({ message, privateKey }: SignParams): Uint8Array => {
     return ed25519Sign(this.curve, { message, privateKey });
-  }
+  };
 
   /**
    * Verifies a signature using the Ed25519 curve and a public key.
@@ -172,7 +106,51 @@ export class Ed25519 implements Readonly<Signature> {
    * @param {Uint8Array} params.publicKey - The public key as a Uint8Array.
    * @returns {boolean} True if the signature is valid, false otherwise.
    */
-  verify({ signature, message, publicKey }: VerifyParams): boolean {
+  verify = ({ signature, message, publicKey }: VerifyParams): boolean => {
     return ed25519Verify(this.curve, { signature, message, publicKey });
-  }
+  };
+
+  /**
+   * Converts a private key to JWK format.
+   *
+   * @param {Uint8Array} privateKey - The private key to convert
+   * @returns {JwkPrivateKey} The private key in JWK format
+   * @throws {Error} If the private key is invalid
+   */
+  toJwkPrivateKey = (privateKey: Uint8Array): JwkPrivateKey => {
+    return ed25519ToJwkPrivateKey(this.curve, privateKey);
+  };
+
+  /**
+   * Converts a public key to JWK format.
+   *
+   * @param {Uint8Array} publicKey - The public key to convert
+   * @returns {JwkPublicKey} The public key in JWK format
+   * @throws {Error} If the public key is invalid
+   */
+  toJwkPublicKey = (publicKey: Uint8Array): JwkPublicKey => {
+    return ed25519ToJwkPublicKey(this.curve, publicKey);
+  };
+
+  /**
+   * Converts a JWK private key to raw format.
+   *
+   * @param {JwkPrivateKey} jwkPrivateKey - The JWK private key to convert
+   * @returns {Uint8Array} The private key in raw format
+   * @throws {Error} If the JWK is invalid
+   */
+  toRawPrivateKey = (jwkPrivateKey: JwkPrivateKey): Uint8Array => {
+    return ed25519ToRawPrivateKey(this.curve, jwkPrivateKey);
+  };
+
+  /**
+   * Converts a JWK public key to raw format.
+   *
+   * @param {JwkPublicKey} jwkPublicKey - The JWK public key to convert
+   * @returns {Uint8Array} The public key in raw format
+   * @throws {Error} If the JWK is invalid
+   */
+  toRawPublicKey = (jwkPublicKey: JwkPublicKey): Uint8Array => {
+    return ed25519ToRawPublicKey(this.curve, jwkPublicKey);
+  };
 }

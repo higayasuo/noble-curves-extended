@@ -1,18 +1,17 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
-import { ed25519IsValidPrivateKey } from './ed25519IsValidPrivateKey';
 import type { SignParams } from '@/unified/types';
 import { isUint8Array, ensureUint8Array } from 'u8a-utils';
 
 /**
  * Signs a message using the Ed25519 curve and a private key.
  *
- * @param {CurveFn} curve - The curve function used to sign the message.
+ * @param {CurveFn} curve - The curve function used for signing.
  * @param {SignParams} params - An object containing the message and private key.
  * @param {Uint8Array} params.message - The message to be signed as a Uint8Array.
  * @param {Uint8Array} params.privateKey - The private key as a Uint8Array.
- * @param {boolean} params.recoverable - Whether the signature is recoverable.
+ * @param {boolean} [params.recoverable=false] - Indicates if the signature should be recoverable.
  * @returns {Uint8Array} The signature as a Uint8Array.
- * @throws {Error} Throws an error if the private key is invalid or if signing fails.
+ * @throws {Error} Throws an error if recoverable signature is requested or if signing fails.
  */
 export const ed25519Sign = (
   curve: CurveFn,
@@ -20,10 +19,6 @@ export const ed25519Sign = (
 ): Uint8Array => {
   if (recoverable) {
     throw new Error('Recoverable signature is not supported');
-  }
-
-  if (!ed25519IsValidPrivateKey(curve, privateKey)) {
-    throw new Error('Private key is invalid');
   }
 
   try {
