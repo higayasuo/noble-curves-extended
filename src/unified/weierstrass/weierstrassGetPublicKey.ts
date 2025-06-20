@@ -1,5 +1,4 @@
 import { CurveFn } from '@noble/curves/abstract/weierstrass';
-import { weierstrassIsValidPrivateKey } from './weierstrassIsValidPrivateKey';
 
 /**
  * Generates a public key for the weierstrass curve from a given private key.
@@ -15,10 +14,6 @@ export const weierstrassGetPublicKey = (
   privateKey: Uint8Array,
   compressed = true,
 ): Uint8Array => {
-  if (!weierstrassIsValidPrivateKey(curve, privateKey)) {
-    throw new Error('Private key is invalid');
-  }
-
   try {
     return curve.getPublicKey(privateKey, compressed);
   } catch (e) {

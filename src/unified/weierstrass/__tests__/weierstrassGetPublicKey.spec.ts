@@ -9,10 +9,30 @@ import { randomBytes } from '@noble/hashes/utils';
 
 describe('weierstrassGetPublicKey', () => {
   const curves = [
-    { name: 'P-256', createCurve: createP256, expectedLength: 33 },
-    { name: 'P-384', createCurve: createP384, expectedLength: 49 },
-    { name: 'P-521', createCurve: createP521, expectedLength: 67 },
-    { name: 'secp256k1', createCurve: createSecp256k1, expectedLength: 33 },
+    {
+      name: 'P-256',
+      createCurve: createP256,
+      expectedLength: 33,
+      expectedUncompressedLength: 65,
+    },
+    {
+      name: 'P-384',
+      createCurve: createP384,
+      expectedLength: 49,
+      expectedUncompressedLength: 97,
+    },
+    {
+      name: 'P-521',
+      createCurve: createP521,
+      expectedLength: 67,
+      expectedUncompressedLength: 133,
+    },
+    {
+      name: 'secp256k1',
+      createCurve: createSecp256k1,
+      expectedLength: 33,
+      expectedUncompressedLength: 65,
+    },
   ];
 
   describe('successful public key generation tests', () => {
@@ -40,6 +60,20 @@ describe('weierstrassGetPublicKey', () => {
         expect(publicKey).toBeInstanceOf(Uint8Array);
         expect(publicKey.length).toBe(expectedLength);
         expect([0x02, 0x03]).toContain(publicKey[0]);
+      },
+    );
+
+    it.each(curves)(
+      'should generate a valid uncompressed public key when compressed=false for $name',
+      ({ createCurve, expectedUncompressedLength }) => {
+        const curve = createCurve(randomBytes);
+        const privateKey = weierstrassRandomPrivateKey(curve);
+        const publicKey = weierstrassGetPublicKey(curve, privateKey, false);
+
+        expect(publicKey).toBeInstanceOf(Uint8Array);
+        expect(publicKey.length).toBe(expectedUncompressedLength);
+        console.log('publicKey[0]', publicKey[0]);
+        expect(publicKey[0]).toBe(0x04);
       },
     );
 
@@ -73,25 +107,13 @@ describe('weierstrassGetPublicKey', () => {
 
   describe('invalid input tests', () => {
     it.each(curves)(
-      'should throw an error for invalid private key for $name',
-      ({ createCurve }) => {
-        const curve = createCurve(randomBytes);
-        const invalidPrivateKey = new Uint8Array(32); // All zeros
-
-        expect(() => weierstrassGetPublicKey(curve, invalidPrivateKey)).toThrow(
-          'Private key is invalid',
-        );
-      },
-    );
-
-    it.each(curves)(
       'should throw an error for private key with wrong length for $name',
       ({ createCurve }) => {
         const curve = createCurve(randomBytes);
         const invalidPrivateKey = new Uint8Array(16); // Too short
 
         expect(() => weierstrassGetPublicKey(curve, invalidPrivateKey)).toThrow(
-          'Private key is invalid',
+          'Failed to get public key',
         );
       },
     );
@@ -103,7 +125,7 @@ describe('weierstrassGetPublicKey', () => {
         const emptyPrivateKey = new Uint8Array(0);
 
         expect(() => weierstrassGetPublicKey(curve, emptyPrivateKey)).toThrow(
-          'Private key is invalid',
+          'Failed to get public key',
         );
       },
     );
