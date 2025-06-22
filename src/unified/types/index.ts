@@ -150,8 +150,8 @@ export type Verify = ({
 /**
  * Base interface for unified cryptographic operations.
  * @interface UnifiedBase
- * @property {string} crv - Curve name
- * @property {string} alg - Algorithm
+ * @property {string} curveName - Curve name
+ * @property {string} signatureAlgorithm - Signature algorithm
  * @property {RandomPrivateKey} randomPrivateKey - Function to generate a random private key
  * @property {GetPublicKey} getPublicKey - Function to retrieve the public key from a private key
  * @property {RandomBytes} randomBytes - Function to generate random bytes
@@ -163,8 +163,7 @@ export type Verify = ({
  * @property {IsValidPrivateKey} isValidPrivateKey - Function to validate a private key
  */
 export interface UnifiedBase {
-  crv: string;
-  alg: string;
+  curveName: string;
   randomPrivateKey: RandomPrivateKey;
   getPublicKey: GetPublicKey;
   randomBytes: RandomBytes;

@@ -2,8 +2,17 @@ import { CurveFn } from '@noble/curves/abstract/weierstrass';
 import { getWeierstrassCurveName } from '@/curves/weierstrass';
 import { JwkPublicKey } from '../types';
 import { encodeBase64Url } from 'u8a-utils';
+import { getWeierstrassSignatureAlgorithm } from '@/curves/weierstrass/getWeierstrassSignatureAlgorithm';
 
-export const toJwkPublicKey = (
+/**
+ * Converts a Weierstrass public key to a JWK format.
+ *
+ * @param {CurveFn} curve - The curve function used to derive the public key.
+ * @param {Uint8Array} publicKey - The public key as a Uint8Array.
+ * @returns {JwkPublicKey} The public key in JWK format.
+ * @throws {Error} Throws an error if the public key conversion fails.
+ */
+export const weierstrassToJwkPublickKey = (
   curve: CurveFn,
   publicKey: Uint8Array,
 ): JwkPublicKey => {
@@ -17,6 +26,7 @@ export const toJwkPublicKey = (
     return {
       kty: 'EC',
       crv: getWeierstrassCurveName(curve),
+      alg: getWeierstrassSignatureAlgorithm(curve),
       x: encodeBase64Url(x),
       y: encodeBase64Url(y),
     };

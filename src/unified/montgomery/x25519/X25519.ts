@@ -35,9 +35,7 @@ export class X25519 implements Readonly<Ecdh> {
   readonly randomBytes: RandomBytes;
 
   /** Curve identifier for X25519 */
-  crv = 'X25519';
-  /** Algorithm identifier for ECDH-ES */
-  alg = 'ECDH-ES';
+  curveName = 'X25519';
 
   /**
    * Creates a new X25519 instance.

@@ -8,9 +8,8 @@ describe('X25519', () => {
   const curve = createX25519(randomBytes);
   const x25519 = new X25519(curve, randomBytes);
 
-  it('should have correct curve and algorithm identifiers', () => {
-    expect(x25519.crv).toBe('X25519');
-    expect(x25519.alg).toBe('ECDH-ES');
+  it('should have correct curve name', () => {
+    expect(x25519.curveName).toBe('X25519');
   });
 
   describe('getCurve', () => {

@@ -21,7 +21,6 @@ describe('x25519ToJwkPublicKey', () => {
         kty: 'OKP',
         crv: 'X25519',
         x: 'hSDwCYkwp1R0i33ctD73Wg2_Og0mYTq-Ke2pAApFvgs',
-        alg: 'ECDH-ES',
       });
     });
 

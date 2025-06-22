@@ -12,10 +12,9 @@ const setup = () => {
 };
 
 describe('Ed25519', () => {
-  it('should have correct alg and crv properties', () => {
+  it('should have correct curveName property', () => {
     const { ed } = setup();
-    expect(ed.alg).toBe('EdDSA');
-    expect(ed.crv).toBe('Ed25519');
+    expect(ed.curveName).toBe('Ed25519');
   });
 
   describe('randomPrivateKey', () => {

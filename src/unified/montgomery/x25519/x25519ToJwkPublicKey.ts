@@ -23,7 +23,6 @@ export const x25519ToJwkPublicKey = (
       kty: 'OKP',
       crv: 'X25519',
       x: encodeBase64Url(publicKey),
-      alg: 'ECDH-ES',
     };
   } catch (error) {
     console.error(error);

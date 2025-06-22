@@ -38,9 +38,7 @@ export class Ed25519 implements Readonly<Signature> {
   readonly randomBytes: RandomBytes;
 
   /** Curve identifier for Ed25519 */
-  crv = 'Ed25519';
-  /** Algorithm identifier for EdDSA */
-  alg = 'EdDSA';
+  curveName = 'Ed25519';
 
   /**
    * Creates a new Ed25519 instance.
