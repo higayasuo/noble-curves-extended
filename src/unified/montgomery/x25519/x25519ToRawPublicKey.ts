@@ -3,14 +3,34 @@ import { JwkPublicKey } from '../../types';
 import { decodeBase64Url } from 'u8a-utils';
 
 /**
- * Converts a JWK (JSON Web Key) to a raw X25519 public key.
+ * Converts a JWK formatted X25519 public key to a raw public key.
  *
- * @param {CurveFn} _curve - The curve function used for conversion (unused).
- * @param {JwkPublicKey} jwkPublicKey - The JWK to convert.
- * @returns {Uint8Array} The raw public key as a Uint8Array.
- * @throws {Error} Throws an error if the JWK is invalid or the public key is invalid.
+ * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
+ * @returns {Uint8Array} The public key as a raw Uint8Array.
+ * @throws {Error} Throws an error if the JWK is invalid or if the conversion fails.
  */
 export const x25519ToRawPublicKey = (
+  curve: CurveFn,
+  jwkPublicKey: JwkPublicKey,
+): Uint8Array => {
+  try {
+    return x25519ToRawPublicKeyInternal(curve, jwkPublicKey);
+  } catch (e) {
+    console.error(e);
+    throw new Error('Failed to convert JWK to raw public key');
+  }
+};
+
+/**
+ * Converts a JWK formatted X25519 public key to a raw public key.
+ *
+ * @param {CurveFn} _curve - The curve function used for conversion (unused).
+ * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
+ * @returns {Uint8Array} The public key as a raw Uint8Array.
+ * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
+ */
+export const x25519ToRawPublicKeyInternal = (
   _curve: CurveFn,
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
@@ -38,18 +58,9 @@ export const x25519ToRawPublicKey = (
     throw new Error('Invalid JWK: invalid parameter type for x');
   }
 
-  if (
-    jwkPublicKey.alg !== undefined &&
-    jwkPublicKey.alg !== null &&
-    jwkPublicKey.alg !== 'ECDH-ES'
-  ) {
-    throw new Error('Invalid JWK: unsupported algorithm');
-  }
-
   let decodedX!: Uint8Array;
   try {
     decodedX = decodeBase64Url(jwkPublicKey.x);
-    console.log('decodedX', decodedX);
   } catch (e) {
     throw new Error('Invalid JWK: malformed encoding for x');
   }
