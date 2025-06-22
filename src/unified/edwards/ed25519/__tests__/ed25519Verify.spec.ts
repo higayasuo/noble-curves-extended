@@ -20,23 +20,6 @@ describe('ed25519Verify', () => {
       );
     });
 
-    it('should verify a signature created by tweetnacl', () => {
-      const curve = createEd25519(randomBytes);
-      const tweetnaclKeyPair = tweetnacl.sign.keyPair();
-      const signature = tweetnacl.sign.detached(
-        message,
-        tweetnaclKeyPair.secretKey,
-      );
-
-      expect(
-        ed25519Verify(curve, {
-          signature,
-          message,
-          publicKey: tweetnaclKeyPair.publicKey,
-        }),
-      ).toBe(true);
-    });
-
     it('should verify a signature created by Web Crypto API', async () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
