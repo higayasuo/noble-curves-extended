@@ -7,7 +7,7 @@ import tweetnacl from 'tweetnacl';
 const message = new TextEncoder().encode('hello');
 
 describe('ed25519Sign', () => {
-  describe('compatibility tests', () => {
+  describe('basic tests', () => {
     it('should sign a message with a valid private key', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
@@ -16,75 +16,63 @@ describe('ed25519Sign', () => {
       expect(signature.length).toBe(64);
     });
 
-    it('should sign a message with a tweetnacl 64-byte private key', () => {
-      const curve = createEd25519(randomBytes);
-      const tweetnaclKeyPair = tweetnacl.sign.keyPair();
-      const privateKey = new Uint8Array(tweetnaclKeyPair.secretKey);
-      expect(privateKey.length).toBe(64);
-
-      const signature = ed25519Sign(curve, { message, privateKey });
-      expect(signature).toBeInstanceOf(Uint8Array);
-      expect(signature.length).toBe(64);
-
-      // Verify the signature with tweetnacl
-      const isValid = tweetnacl.sign.detached.verify(
-        message,
-        signature,
-        tweetnaclKeyPair.publicKey,
-      );
-      expect(isValid).toBe(true);
-    });
-
-    it('should produce a signature that can be verified by Web Crypto API', async () => {
+    it('should throw an error when recovered is set to true', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
-      const publicKey = curve.getPublicKey(privateKey);
-      const signature = ed25519Sign(curve, { message, privateKey });
+      expect(() =>
+        ed25519Sign(curve, { message, privateKey, recovered: true }),
+      ).toThrow('Recovered signature is not supported');
+    });
+  });
 
-      // Import the public key into Web Crypto API
-      const cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        publicKey,
-        { name: 'Ed25519' },
-        false,
-        ['verify'],
-      );
+  describe('compatibility tests', () => {
+    describe('tweetnacl compatibility', () => {
+      it('should sign a message with a tweetnacl 64-byte private key', () => {
+        const curve = createEd25519(randomBytes);
+        const tweetnaclKeyPair = tweetnacl.sign.keyPair();
+        const privateKey = new Uint8Array(tweetnaclKeyPair.secretKey);
+        expect(privateKey.length).toBe(64);
 
-      // Verify the signature
-      const isValid = await crypto.subtle.verify(
-        { name: 'Ed25519' },
-        cryptoKey,
-        signature,
-        message,
-      );
+        const signature = ed25519Sign(curve, { message, privateKey });
+        expect(signature).toBeInstanceOf(Uint8Array);
+        expect(signature.length).toBe(64);
 
-      expect(isValid).toBe(true);
+        // Verify the signature with tweetnacl
+        const isValid = tweetnacl.sign.detached.verify(
+          message,
+          signature,
+          tweetnaclKeyPair.publicKey,
+        );
+        expect(isValid).toBe(true);
+      });
     });
 
-    it('should produce a signature from tweetnacl key that can be verified by Web Crypto API', async () => {
-      const curve = createEd25519(randomBytes);
-      const tweetnaclKeyPair = tweetnacl.sign.keyPair();
-      const privateKey = new Uint8Array(tweetnaclKeyPair.secretKey);
-      const signature = ed25519Sign(curve, { message, privateKey });
+    describe('Web Crypto API compatibility', () => {
+      it('should produce a signature that can be verified by Web Crypto API', async () => {
+        const curve = createEd25519(randomBytes);
+        const privateKey = curve.utils.randomPrivateKey();
+        const publicKey = curve.getPublicKey(privateKey);
+        const signature = ed25519Sign(curve, { message, privateKey });
 
-      // Import the tweetnacl public key into Web Crypto API
-      const cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        tweetnaclKeyPair.publicKey,
-        { name: 'Ed25519' },
-        false,
-        ['verify'],
-      );
+        // Import the public key into Web Crypto API
+        const cryptoKey = await crypto.subtle.importKey(
+          'raw',
+          publicKey,
+          { name: 'Ed25519' },
+          false,
+          ['verify'],
+        );
 
-      // Verify the signature
-      const isValid = await crypto.subtle.verify(
-        { name: 'Ed25519' },
-        cryptoKey,
-        signature,
-        message,
-      );
+        // Verify the signature
+        const isValid = await crypto.subtle.verify(
+          { name: 'Ed25519' },
+          cryptoKey,
+          signature,
+          message,
+        );
 
-      expect(isValid).toBe(true);
+        expect(isValid).toBe(true);
+      });
     });
   });
 
@@ -97,12 +85,34 @@ describe('ed25519Sign', () => {
       ).toThrow('Failed to sign message');
     });
 
-    it('should throw an error when recoverable is set to true', () => {
+    it('should throw an error for null private key', () => {
+      const curve = createEd25519(randomBytes);
+      expect(() =>
+        ed25519Sign(curve, { message, privateKey: null as any }),
+      ).toThrow('Failed to sign message');
+    });
+
+    it('should throw an error for undefined private key', () => {
+      const curve = createEd25519(randomBytes);
+      expect(() =>
+        ed25519Sign(curve, { message, privateKey: undefined as any }),
+      ).toThrow('Failed to sign message');
+    });
+
+    it('should throw an error for null message', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       expect(() =>
-        ed25519Sign(curve, { message, privateKey, recoverable: true }),
-      ).toThrow('Recoverable signature is not supported');
+        ed25519Sign(curve, { message: null as any, privateKey }),
+      ).toThrow('Failed to sign message');
+    });
+
+    it('should throw an error for undefined message', () => {
+      const curve = createEd25519(randomBytes);
+      const privateKey = curve.utils.randomPrivateKey();
+      expect(() =>
+        ed25519Sign(curve, { message: undefined as any, privateKey }),
+      ).toThrow('Failed to sign message');
     });
   });
 

@@ -8,6 +8,7 @@ import {
   VerifyParams,
   GetSharedSecretParams,
   Ecdh,
+  RecoverPublicKeyParams,
 } from '@/unified/types';
 import { weierstrassRandomPrivateKey } from './weierstrassRandomPrivateKey';
 import { weierstrassGetPublicKey } from './weierstrassGetPublicKey';
@@ -19,6 +20,7 @@ import { weierstrassToJwkPublickKey } from './weierstrassToJwkPublickKey';
 import { weierstrassToRawPrivateKey } from './weierstrassToRawPrivateKey';
 import { weierstrassToRawPublicKey } from './weierstrassToRawPublicKey';
 import { getWeierstrassCurveName } from '@/curves/weierstrass/getWeierstrassCurveName';
+import { weierstrassRecoverPublicKey } from './weierstrassRecoverPublicKey';
 
 /**
  * Weierstrass curve implementation for digital signatures and ECDH.
@@ -112,6 +114,24 @@ export class Weierstrass implements Readonly<Signature>, Readonly<Ecdh> {
    */
   verify = ({ signature, message, publicKey }: VerifyParams): boolean => {
     return weierstrassVerify(this.curve, { signature, message, publicKey });
+  };
+
+  /**
+   * Recovers the public key from a given signature and message using the Weierstrass curve.
+   *
+   * @param {RecoverPublicKeyParams} params - An object containing the signature and message.
+   * @param {Uint8Array} params.signature - The signature from which to recover the public key.
+   * @param {Uint8Array} params.message - The message that was signed.
+   * @returns {Uint8Array} The recovered public key as a Uint8Array.
+   */
+  recoverPublicKey = ({
+    signature,
+    message,
+  }: RecoverPublicKeyParams): Uint8Array => {
+    return weierstrassRecoverPublicKey(this.curve, {
+      signature,
+      message,
+    });
   };
 
   /**

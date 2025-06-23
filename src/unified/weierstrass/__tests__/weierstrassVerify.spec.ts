@@ -49,7 +49,7 @@ describe('weierstrassVerify', () => {
         const signature = weierstrassSign(curve, {
           message,
           privateKey,
-          recoverable: true,
+          recovered: true,
         });
         expect(
           weierstrassVerify(curve, { signature, message, publicKey }),
@@ -66,7 +66,7 @@ describe('weierstrassVerify', () => {
         const signature = weierstrassSign(curve, {
           message,
           privateKey,
-          recoverable: false,
+          recovered: false,
         });
         expect(
           weierstrassVerify(curve, { signature, message, publicKey }),
@@ -192,7 +192,7 @@ describe('weierstrassVerify', () => {
         const signature = weierstrassSign(curve, {
           message,
           privateKey,
-          recoverable: false,
+          recovered: false,
         });
 
         const modifiedMessage = new TextEncoder().encode('hello world');
@@ -216,7 +216,7 @@ describe('weierstrassVerify', () => {
         const signature = weierstrassSign(curve, {
           message,
           privateKey: privateKey1,
-          recoverable: false,
+          recovered: false,
         });
 
         expect(
@@ -240,7 +240,7 @@ describe('weierstrassVerify', () => {
         const signature = weierstrassSign(curve, {
           message,
           privateKey,
-          recoverable: false,
+          recovered: false,
         });
         expect(
           weierstrassVerify(curve, { signature, message, publicKey }),
@@ -257,7 +257,7 @@ describe('weierstrassVerify', () => {
         const signature = weierstrassSign(curve, {
           message,
           privateKey,
-          recoverable: false,
+          recovered: false,
         });
 
         // Mock the curve.verify to throw an error

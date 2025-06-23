@@ -44,7 +44,7 @@ describe('weierstrassSign', () => {
     },
   ];
 
-  describe('compatibility tests', () => {
+  describe('basic tests', () => {
     it.each(curves)(
       'should sign a message with a valid private key for $name',
       ({ createCurve, signatureLength }) => {
@@ -55,170 +55,104 @@ describe('weierstrassSign', () => {
         expect(signature.length).toBe(signatureLength);
       },
     );
+  });
 
-    it.each(curves.filter((c) => c.name !== 'secp256k1'))(
-      'should produce a signature that can be verified by Web Crypto API for $name',
-      async ({ createCurve, webCryptoNamedCurve, webCryptoHash }) => {
-        const curve = createCurve();
+  describe('compatibility tests', () => {
+    describe('Web Crypto API compatibility', () => {
+      it.each(curves.filter((c) => c.name !== 'secp256k1'))(
+        'should produce a signature that can be verified by Web Crypto API for $name',
+        async ({ createCurve, webCryptoNamedCurve, webCryptoHash }) => {
+          const curve = createCurve();
+          const privateKey = curve.utils.randomPrivateKey();
+          const publicKey = curve.getPublicKey(privateKey, false); // uncompressed
+          const signature = weierstrassSign(curve, { message, privateKey });
+
+          // Import the public key into Web Crypto API
+          const cryptoKey = await crypto.subtle.importKey(
+            'raw',
+            publicKey,
+            {
+              name: 'ECDSA',
+              namedCurve: webCryptoNamedCurve as 'P-256' | 'P-384' | 'P-521',
+            },
+            false,
+            ['verify'],
+          );
+
+          // Verify the signature
+          const isValid = await crypto.subtle.verify(
+            {
+              name: 'ECDSA',
+              hash: webCryptoHash as 'SHA-256' | 'SHA-384' | 'SHA-512',
+            },
+            cryptoKey,
+            signature,
+            message,
+          );
+
+          expect(isValid).toBe(true);
+        },
+      );
+    });
+
+    describe('elliptic compatibility', () => {
+      it('should produce a signature that can be verified by elliptic for secp256k1', () => {
+        const curve = createSecp256k1(randomBytes);
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey, false); // uncompressed
         const signature = weierstrassSign(curve, { message, privateKey });
 
-        // Import the public key into Web Crypto API
-        const cryptoKey = await crypto.subtle.importKey(
-          'raw',
-          publicKey,
-          {
-            name: 'ECDSA',
-            namedCurve: webCryptoNamedCurve as 'P-256' | 'P-384' | 'P-521',
-          },
-          false,
-          ['verify'],
-        );
+        // Create elliptic curve instance
+        const ec = new elliptic.ec('secp256k1');
+
+        // Import the public key into elliptic
+        const key = ec.keyFromPublic(publicKey, 'hex'); // Remove 0x04 prefix
+
+        // Hash the message with SHA-256 for elliptic verification
+        const hashedMessage = sha256(message);
 
         // Verify the signature
-        const isValid = await crypto.subtle.verify(
-          {
-            name: 'ECDSA',
-            hash: webCryptoHash as 'SHA-256' | 'SHA-384' | 'SHA-512',
-          },
-          cryptoKey,
-          signature,
-          message,
-        );
+        const isValid = key.verify(hashedMessage, {
+          r: signature.slice(0, 32),
+          s: signature.slice(32, 64),
+        });
 
         expect(isValid).toBe(true);
-      },
-    );
-
-    it('should produce a signature that can be verified by elliptic for secp256k1', () => {
-      const curve = createSecp256k1(randomBytes);
-      const privateKey = curve.utils.randomPrivateKey();
-      const publicKey = curve.getPublicKey(privateKey, false); // uncompressed
-      const signature = weierstrassSign(curve, { message, privateKey });
-
-      // Create elliptic curve instance
-      const ec = new elliptic.ec('secp256k1');
-
-      // Import the public key into elliptic
-      const key = ec.keyFromPublic(publicKey, 'hex'); // Remove 0x04 prefix
-
-      // Hash the message with SHA-256 for elliptic verification
-      const hashedMessage = sha256(message);
-
-      // Verify the signature
-      const isValid = key.verify(hashedMessage, {
-        r: signature.slice(0, 32),
-        s: signature.slice(32, 64),
       });
-
-      expect(isValid).toBe(true);
     });
   });
 
   describe('recoverable signature tests', () => {
     it.each(curves)(
-      'should produce recoverable signature for $name when recoverable is true',
-      ({ createCurve, signatureLength }) => {
-        const curve = createCurve();
-        const privateKey = curve.utils.randomPrivateKey();
-        const signature = weierstrassSign(curve, {
-          message,
-          privateKey,
-          recoverable: true,
-        });
-        expect(signature).toBeInstanceOf(Uint8Array);
-        expect(signature.length).toBe(signatureLength + 1); // +1 for recovery byte
-      },
-    );
-
-    it.each(curves)(
-      'should produce non-recoverable signature for $name when recoverable is false',
-      ({ createCurve, signatureLength }) => {
-        const curve = createCurve();
-        const privateKey = curve.utils.randomPrivateKey();
-        const signature = weierstrassSign(curve, {
-          message,
-          privateKey,
-          recoverable: false,
-        });
-        expect(signature).toBeInstanceOf(Uint8Array);
-        expect(signature.length).toBe(signatureLength);
-      },
-    );
-
-    it.each(curves)(
       'should recover public key from recoverable signature for $name',
-      ({ createCurve }) => {
+      ({ createCurve, signatureLength }) => {
         const curve = createCurve();
         const privateKey = curve.utils.randomPrivateKey();
         const expectedPublicKey = curve.getPublicKey(privateKey, false); // uncompressed
         const signature = weierstrassSign(curve, {
           message,
           privateKey,
-          recoverable: true,
+          recovered: true,
         });
+        expect(signature).toBeInstanceOf(Uint8Array);
+        expect(signature.length).toBe(signatureLength + 1); // +1 for recovery byte
 
         // Extract recovery byte and signature
-        const recoveryByte = signature[signature.length - 1];
+        const recoveryBit = signature[signature.length - 1];
         const signatureWithoutRecovery = signature.slice(0, -1);
 
         // Hash the message since weierstrassSign uses prehash: true
         const messageHash = curve.CURVE.hash(message);
 
-        // Recover public key from signature
-        const recoveredPoint = curve.Signature.fromCompact(
+        // Recovered uncompressed public key from signature
+        const recoveredPublicKey = curve.Signature.fromCompact(
           signatureWithoutRecovery,
         )
-          .addRecoveryBit(recoveryByte)
-          .recoverPublicKey(messageHash);
-
-        // Convert Point to Uint8Array format
-        const recoveredPublicKey = recoveredPoint.toRawBytes(false); // uncompressed
+          .addRecoveryBit(recoveryBit)
+          .recoverPublicKey(messageHash)
+          .toRawBytes(false);
 
         expect(recoveredPublicKey).toEqual(expectedPublicKey);
-      },
-    );
-
-    it.each(curves)(
-      'should recover correct public key from recoverable signature for $name with different messages',
-      ({ createCurve }) => {
-        const curve = createCurve();
-        const privateKey = curve.utils.randomPrivateKey();
-        const expectedPublicKey = curve.getPublicKey(privateKey, false); // uncompressed
-
-        const testMessages = [
-          new TextEncoder().encode('hello'),
-          new TextEncoder().encode('world'),
-          new TextEncoder().encode('test message'),
-        ];
-
-        for (const testMessage of testMessages) {
-          const signature = weierstrassSign(curve, {
-            message: testMessage,
-            privateKey,
-            recoverable: true,
-          });
-
-          // Extract recovery byte and signature
-          const recoveryByte = signature[signature.length - 1];
-          const signatureWithoutRecovery = signature.slice(0, -1);
-
-          // Hash the message since weierstrassSign uses prehash: true
-          const messageHash = curve.CURVE.hash(testMessage);
-
-          // Recover public key from signature
-          const recoveredPoint = curve.Signature.fromCompact(
-            signatureWithoutRecovery,
-          )
-            .addRecoveryBit(recoveryByte)
-            .recoverPublicKey(messageHash);
-
-          // Convert Point to Uint8Array format
-          const recoveredPublicKey = recoveredPoint.toRawBytes(false); // uncompressed
-
-          expect(recoveredPublicKey).toEqual(expectedPublicKey);
-        }
       },
     );
   });

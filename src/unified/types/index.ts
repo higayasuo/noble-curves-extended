@@ -106,12 +106,12 @@ export type GetSharedSecret = ({
  * @typedef {Object} SignParams
  * @property {Uint8Array} privateKey - The private key as a Uint8Array
  * @property {Uint8Array} message - The message to sign as a Uint8Array
- * @property {boolean} [recoverable] - Whether the signature should be recoverable
+ * @property {boolean} [recovered] - Optional. Indicates if the signature should be in recovered format.
  */
 export type SignParams = {
   privateKey: Uint8Array;
   message: Uint8Array;
-  recoverable?: boolean;
+  recovered?: boolean;
 };
 
 /**
