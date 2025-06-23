@@ -7,7 +7,6 @@ import { createSecp256k1 } from '@/curves/weierstrass/secp256k1';
 import { randomBytes } from '@noble/hashes/utils';
 import { weierstrassToJwkPrivateKey } from '../weierstrassToJwkPrivateKey';
 import elliptic from 'elliptic';
-import { encodeBase64Url } from 'u8a-utils';
 import { extractRawPrivateKeyFromPkcs8 } from '@/utils/extractRawPrivateKeyFromPkcs8';
 
 type WebCryptoCurve = {

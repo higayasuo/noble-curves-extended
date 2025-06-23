@@ -39,85 +39,112 @@ const curves = [
 ];
 
 describe('weierstrassVerify', () => {
-  describe('compatibility tests', () => {
-    it.each(curves.filter((c) => 'webCryptoAlgorithm' in c))(
-      'should verify a valid signature for $name',
+  describe('basic tests', () => {
+    it.each(curves)(
+      'should verify a valid signature with recoverable: true for $name',
       ({ createCurve }) => {
         const curve = createCurve(randomBytes);
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
-        const signature = weierstrassSign(curve, { message, privateKey });
+        const signature = weierstrassSign(curve, {
+          message,
+          privateKey,
+          recoverable: true,
+        });
         expect(
           weierstrassVerify(curve, { signature, message, publicKey }),
         ).toBe(true);
       },
     );
 
-    it.each(curves.filter((c) => 'webCryptoAlgorithm' in c))(
-      'should verify a signature created by Web Crypto API for $name',
-      async ({ createCurve, hash }) => {
+    it.each(curves)(
+      'should verify a valid signature with recoverable: false for $name',
+      ({ createCurve }) => {
         const curve = createCurve(randomBytes);
         const privateKey = curve.utils.randomPrivateKey();
-        const jwkPrivateKey = weierstrassToJwkPrivateKey(curve, privateKey);
-        const publicKey = curve.getPublicKey(privateKey, false); // uncompressed for Web Crypto API
-
-        // Import the private key into Web Crypto API
-        const cryptoPrivateKey = await crypto.subtle.importKey(
-          'jwk',
-          jwkPrivateKey,
-          { name: 'ECDSA', namedCurve: jwkPrivateKey.crv },
-          false,
-          ['sign'],
-        );
-
-        // Sign the message using Web Crypto API
-        const signature = new Uint8Array(
-          await crypto.subtle.sign(
-            { name: 'ECDSA', hash: { name: hash! } },
-            cryptoPrivateKey,
-            message,
-          ),
-        );
-
-        // Verify the signature using weierstrassVerify
+        const publicKey = curve.getPublicKey(privateKey);
+        const signature = weierstrassSign(curve, {
+          message,
+          privateKey,
+          recoverable: false,
+        });
         expect(
           weierstrassVerify(curve, { signature, message, publicKey }),
         ).toBe(true);
       },
     );
+  });
 
-    it('should verify a signature created by elliptic for secp256k1', () => {
-      const curve = createSecp256k1(randomBytes);
-      const ec = new elliptic.ec('secp256k1');
-      const ellipticKeyPair = ec.genKeyPair();
-      const ellipticPrivateKey = Buffer.from(
-        ellipticKeyPair.getPrivate().toArray('be', 32),
-      );
-      const ellipticPublicKey = new Uint8Array(
-        ellipticKeyPair.getPublic().encode('array', false),
-      );
+  describe('compatibility tests', () => {
+    describe('Web Crypto API compatibility', () => {
+      it.each(curves.filter((c) => 'webCryptoAlgorithm' in c))(
+        'should verify a signature created by Web Crypto API for $name',
+        async ({ createCurve, hash }) => {
+          const curve = createCurve(randomBytes);
+          const privateKey = curve.utils.randomPrivateKey();
+          const jwkPrivateKey = weierstrassToJwkPrivateKey(curve, privateKey);
+          const publicKey = curve.getPublicKey(privateKey, false); // uncompressed for Web Crypto API
 
-      // Hash the message for compatibility with noble (prehash: true)
-      const msgHash = sha256(message);
-      // Sign with elliptic (using hashed message)
-      const ellipticSignature = ec.sign(
-        Buffer.from(msgHash),
-        ellipticPrivateKey,
-        { canonical: true },
-      );
-      const signature = new Uint8Array([
-        ...ellipticSignature.r.toArray('be', 32),
-        ...ellipticSignature.s.toArray('be', 32),
-      ]);
+          // Import the private key into Web Crypto API
+          const cryptoPrivateKey = await crypto.subtle.importKey(
+            'jwk',
+            jwkPrivateKey,
+            { name: 'ECDSA', namedCurve: jwkPrivateKey.crv },
+            false,
+            ['sign'],
+          );
 
-      // Verify with weierstrassVerify
-      expect(
-        weierstrassVerify(curve, {
-          signature,
-          message,
-          publicKey: ellipticPublicKey,
-        }),
-      ).toBe(true);
+          // Sign the message using Web Crypto API
+          const signature = new Uint8Array(
+            await crypto.subtle.sign(
+              { name: 'ECDSA', hash: { name: hash! } },
+              cryptoPrivateKey,
+              message,
+            ),
+          );
+
+          // Verify the signature using weierstrassVerify
+          expect(
+            weierstrassVerify(curve, { signature, message, publicKey }),
+          ).toBe(true);
+        },
+      );
+    });
+
+    describe('elliptic compatibility', () => {
+      it('should verify a signature created by elliptic for secp256k1', () => {
+        const curve = createSecp256k1(randomBytes);
+        const ec = new elliptic.ec('secp256k1');
+        const ellipticKeyPair = ec.genKeyPair();
+        const ellipticPrivateKey = Buffer.from(
+          ellipticKeyPair.getPrivate().toArray('be', 32),
+        );
+        const ellipticPublicKey = new Uint8Array(
+          ellipticKeyPair.getPublic().encode('array', false),
+        );
+
+        // Hash the message for compatibility with noble (prehash: true)
+        const msgHash = sha256(message);
+        // Sign with elliptic (using hashed message)
+        const ellipticSignature = ec.sign(
+          Buffer.from(msgHash),
+          ellipticPrivateKey,
+          { canonical: true },
+        );
+        const signature = new Uint8Array([
+          ...ellipticSignature.r.toArray('be', 32),
+          ...ellipticSignature.s.toArray('be', 32),
+        ]);
+
+        // Verify with weierstrassVerify
+        expect(
+          weierstrassVerify(curve, {
+            signature,
+            message,
+            publicKey: ellipticPublicKey,
+          }),
+        ).toBe(true);
+      });
     });
   });
 
@@ -162,7 +189,11 @@ describe('weierstrassVerify', () => {
         const curve = createCurve(randomBytes);
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
-        const signature = weierstrassSign(curve, { message, privateKey });
+        const signature = weierstrassSign(curve, {
+          message,
+          privateKey,
+          recoverable: false,
+        });
 
         const modifiedMessage = new TextEncoder().encode('hello world');
         expect(
@@ -185,6 +216,7 @@ describe('weierstrassVerify', () => {
         const signature = weierstrassSign(curve, {
           message,
           privateKey: privateKey1,
+          recoverable: false,
         });
 
         expect(
@@ -205,7 +237,11 @@ describe('weierstrassVerify', () => {
         const curve = createCurve(randomBytes);
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = new Uint8Array(65); // All zeros (invalid)
-        const signature = weierstrassSign(curve, { message, privateKey });
+        const signature = weierstrassSign(curve, {
+          message,
+          privateKey,
+          recoverable: false,
+        });
         expect(
           weierstrassVerify(curve, { signature, message, publicKey }),
         ).toBe(false);
@@ -218,7 +254,11 @@ describe('weierstrassVerify', () => {
         const curve = createCurve(randomBytes);
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
-        const signature = weierstrassSign(curve, { message, privateKey });
+        const signature = weierstrassSign(curve, {
+          message,
+          privateKey,
+          recoverable: false,
+        });
 
         // Mock the curve.verify to throw an error
         const originalVerify = curve.verify;

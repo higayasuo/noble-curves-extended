@@ -1,10 +1,7 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
 import { JwkPrivateKey } from '../../types';
 import { compareUint8Arrays, decodeBase64Url } from 'u8a-utils';
-import {
-  x25519ToRawPublicKey,
-  x25519ToRawPublicKeyInternal,
-} from './x25519ToRawPublicKey';
+import { x25519ToRawPublicKeyInternal } from './x25519ToRawPublicKey';
 
 /**
  * Converts a JWK (JSON Web Key) to a raw X25519 private key.

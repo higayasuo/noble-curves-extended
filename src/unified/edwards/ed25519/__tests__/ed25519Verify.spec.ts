@@ -4,7 +4,6 @@ import { ed25519Sign } from '../ed25519Sign';
 import { createEd25519 } from '@/curves/edwards/ed25519';
 import { randomBytes } from '@noble/hashes/utils';
 import { ed25519ToJwkPrivateKey } from '../ed25519ToJwkPrivateKey';
-import tweetnacl from 'tweetnacl';
 
 const message = new TextEncoder().encode('hello');
 

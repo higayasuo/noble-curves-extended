@@ -2,6 +2,7 @@ import { CurveFn } from '@noble/curves/abstract/weierstrass';
 import type { VerifyParams } from '@/unified/types';
 import { isUint8Array } from 'u8a-utils';
 import { ensureUint8Array } from 'u8a-utils';
+import { fromRawSignature } from '@/curves/weierstrass/fromRawSignature';
 
 /**
  * Verifies a signature using the Weierstrass curve and a public key.
@@ -19,7 +20,8 @@ export const weierstrassVerify = (
 ): boolean => {
   try {
     const msg = isUint8Array(message) ? ensureUint8Array(message) : message;
-    return curve.verify(signature, msg, publicKey, { prehash: true });
+    const sig = fromRawSignature(curve, signature);
+    return curve.verify(sig, msg, publicKey, { prehash: true });
   } catch (error) {
     console.error(error);
     return false;
