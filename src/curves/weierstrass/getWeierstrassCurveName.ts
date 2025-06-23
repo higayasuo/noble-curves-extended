@@ -3,15 +3,18 @@ import { p256_CURVE } from './p256';
 import { p384_CURVE } from './p384';
 import { p521_CURVE } from './p521';
 import { secp256k1_CURVE } from './secp256k1';
+import { WeierstrassCurveName } from './types';
 
 /**
  * Returns the name of the Weierstrass curve based on the provided curve function.
  *
  * @param {CurveFn} curve - The curve function containing the curve parameters.
- * @returns {string} The name of the Weierstrass curve.
+ * @returns {WeierstrassCurveName} The name of the Weierstrass curve.
  * @throws {Error} Throws an error if the curve is unknown.
  */
-export const getWeierstrassCurveName = (curve: CurveFn): string => {
+export const getWeierstrassCurveName = (
+  curve: CurveFn,
+): WeierstrassCurveName => {
   switch (curve.CURVE.p) {
     case p256_CURVE.p:
       return 'P-256';

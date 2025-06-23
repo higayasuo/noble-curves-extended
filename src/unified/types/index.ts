@@ -1,6 +1,43 @@
 import { RandomBytes } from '../../curves/types';
 
 /**
+ * Represents the names of supported cryptographic curves.
+ * @typedef {('P-256' | 'P-384' | 'P-521' | 'secp256k1' | 'Ed25519' | 'X25519')} CurveName
+ */
+export type CurveName =
+  | 'P-256'
+  | 'P-384'
+  | 'P-521'
+  | 'secp256k1'
+  | 'Ed25519'
+  | 'X25519';
+
+/**
+ * Represents the names of curves used for signature operations.
+ * Excludes 'X25519' as it is not used for signatures.
+ * @typedef {Exclude<CurveName, 'X25519'>} SignatureCurveName
+ */
+export type SignatureCurveName = Exclude<CurveName, 'X25519'>;
+
+/**
+ * Represents the names of curves used for ECDH operations.
+ * Excludes 'Ed25519' as it is not used for ECDH.
+ * @typedef {Exclude<CurveName, 'Ed25519'>} EcdhCurveName
+ */
+export type EcdhCurveName = Exclude<CurveName, 'Ed25519'>;
+
+/**
+ * Represents the names of supported signature algorithms.
+ * @typedef {('ES256' | 'ES384' | 'ES512' | 'ES256K' | 'EdDSA')} SignatureAlgorithmName
+ */
+export type SignatureAlgorithmName =
+  | 'ES256'
+  | 'ES384'
+  | 'ES512'
+  | 'ES256K'
+  | 'EdDSA';
+
+/**
  * JSON Web Key (JWK) representation of a public key.
  * @typedef {Object} JwkPublicKey
  * @property {string} kty - Key type
@@ -188,7 +225,7 @@ export type RecoverPublicKey = ({
  * @property {IsValidPrivateKey} isValidPrivateKey - Function to validate a private key
  */
 export interface UnifiedBase {
-  curveName: string;
+  curveName: CurveName;
   randomPrivateKey: RandomPrivateKey;
   getPublicKey: GetPublicKey;
   randomBytes: RandomBytes;
@@ -214,11 +251,13 @@ export interface Ecdh extends UnifiedBase {
  * Extends UnifiedBase with methods to sign and verify messages.
  * @interface Signature
  * @extends UnifiedBase
+ * @property {SignatureAlgorithmName} signatureAlgorithmName - Signature algorithm name
  * @property {Sign} sign - Function to sign a message
  * @property {Verify} verify - Function to verify a signature
  * @property {RecoverPublicKey} recoverPublicKey - Function to recover a public key from a signature and message
  */
 export interface Signature extends UnifiedBase {
+  signatureAlgorithmName: SignatureAlgorithmName;
   sign: Sign;
   verify: Verify;
   recoverPublicKey: RecoverPublicKey;

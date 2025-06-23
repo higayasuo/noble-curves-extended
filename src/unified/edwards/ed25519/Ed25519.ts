@@ -7,6 +7,8 @@ import {
   Signature,
   SignParams,
   VerifyParams,
+  CurveName,
+  SignatureAlgorithmName,
 } from '@/unified/types';
 import { ed25519RandomPrivateKey } from './ed25519RandomPrivateKey';
 import { ed25519GetPublicKey } from './ed25519GetPublicKey';
@@ -39,7 +41,10 @@ export class Ed25519 implements Readonly<Signature> {
   readonly randomBytes: RandomBytes;
 
   /** Curve identifier for Ed25519 */
-  curveName = 'Ed25519';
+  curveName: CurveName = 'Ed25519';
+
+  /** Signature algorithm for Ed25519 */
+  signatureAlgorithmName: SignatureAlgorithmName = 'EdDSA';
 
   /**
    * Creates a new Ed25519 instance.

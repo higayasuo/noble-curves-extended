@@ -9,6 +9,8 @@ import {
   GetSharedSecretParams,
   Ecdh,
   RecoverPublicKeyParams,
+  CurveName,
+  SignatureAlgorithmName,
 } from '@/unified/types';
 import { weierstrassRandomPrivateKey } from './weierstrassRandomPrivateKey';
 import { weierstrassGetPublicKey } from './weierstrassGetPublicKey';
@@ -21,6 +23,8 @@ import { weierstrassToRawPrivateKey } from './weierstrassToRawPrivateKey';
 import { weierstrassToRawPublicKey } from './weierstrassToRawPublicKey';
 import { getWeierstrassCurveName } from '@/curves/weierstrass/getWeierstrassCurveName';
 import { weierstrassRecoverPublicKey } from './weierstrassRecoverPublicKey';
+import { WeierstrassCurveName } from '@/curves/weierstrass/types';
+import { getWeierstrassSignatureAlgorithm } from '@/curves/weierstrass/getWeierstrassSignatureAlgorithm';
 
 /**
  * Weierstrass curve implementation for digital signatures and ECDH.
@@ -45,7 +49,10 @@ export class Weierstrass implements Readonly<Signature>, Readonly<Ecdh> {
   readonly randomBytes: RandomBytes;
 
   /** Curve identifier for Weierstrass curves */
-  curveName: string;
+  curveName: CurveName;
+
+  /** Signature algorithm for Weierstrass curves */
+  signatureAlgorithmName: SignatureAlgorithmName;
 
   /**
    * Creates a new Weierstrass instance.
@@ -57,6 +64,7 @@ export class Weierstrass implements Readonly<Signature>, Readonly<Ecdh> {
     this.curve = curve;
     this.randomBytes = randomBytes;
     this.curveName = getWeierstrassCurveName(curve);
+    this.signatureAlgorithmName = getWeierstrassSignatureAlgorithm(curve);
   }
 
   /**

@@ -10,18 +10,22 @@ const curves = [
   {
     name: 'P-256',
     createCurve: createP256,
+    signatureAlgorithmName: 'ES256',
   },
   {
     name: 'P-384',
     createCurve: createP384,
+    signatureAlgorithmName: 'ES384',
   },
   {
     name: 'P-521',
     createCurve: createP521,
+    signatureAlgorithmName: 'ES512',
   },
   {
     name: 'secp256k1',
     createCurve: createSecp256k1,
+    signatureAlgorithmName: 'ES256K',
   },
 ];
 
@@ -29,13 +33,14 @@ describe('Weierstrass', () => {
   describe('constructor', () => {
     it.each(curves)(
       'should create Weierstrass instance for $name',
-      ({ createCurve, name }) => {
+      ({ createCurve, name, signatureAlgorithmName }) => {
         const curve = createCurve(randomBytes);
         const weierstrass = new Weierstrass(curve, randomBytes);
 
         expect(weierstrass.curve).toBe(curve);
         expect(weierstrass.randomBytes).toBe(randomBytes);
         expect(weierstrass.curveName).toBe(name);
+        expect(weierstrass.signatureAlgorithmName).toBe(signatureAlgorithmName);
       },
     );
   });

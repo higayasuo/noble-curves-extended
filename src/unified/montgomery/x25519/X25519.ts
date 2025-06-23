@@ -4,6 +4,7 @@ import {
   GetSharedSecretParams,
   JwkPrivateKey,
   JwkPublicKey,
+  CurveName,
 } from '@/unified/types';
 import { RandomBytes } from '@/curves/types';
 import { x25519RandomPrivateKey } from './x25519RandomPrivateKey';
@@ -35,7 +36,7 @@ export class X25519 implements Readonly<Ecdh> {
   readonly randomBytes: RandomBytes;
 
   /** Curve identifier for X25519 */
-  curveName = 'X25519';
+  curveName: CurveName = 'X25519';
 
   /**
    * Creates a new X25519 instance.
