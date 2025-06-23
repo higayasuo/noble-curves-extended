@@ -3,6 +3,7 @@ import { RandomBytes } from '@/curves/types';
 import {
   JwkPrivateKey,
   JwkPublicKey,
+  RecoverPublicKeyParams,
   Signature,
   SignParams,
   VerifyParams,
@@ -106,6 +107,17 @@ export class Ed25519 implements Readonly<Signature> {
    */
   verify = ({ signature, message, publicKey }: VerifyParams): boolean => {
     return ed25519Verify(this.curve, { signature, message, publicKey });
+  };
+
+  /**
+   * Attempts to recover a public key from a signature and message.
+   * Note: Public key recovery is not supported for the Ed25519 curve.
+   *
+   * @param {RecoverPublicKeyParams} _params - An object containing the signature and message.
+   * @throws {Error} Always throws an error as public key recovery is not supported.
+   */
+  recoverPublicKey = (_params: RecoverPublicKeyParams): Uint8Array => {
+    throw new Error('Public key recovery is not supported for this curve');
   };
 
   /**

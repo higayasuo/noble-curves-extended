@@ -47,6 +47,52 @@ describe('Ed25519', () => {
     });
   });
 
+  describe('sign', () => {
+    it('should sign a message with a valid private key', () => {
+      const { ed } = setup();
+      const priv = ed.randomPrivateKey();
+      const sig = ed.sign({ message, privateKey: priv });
+      expect(sig).toBeInstanceOf(Uint8Array);
+      expect(sig.length).toBe(64);
+    });
+    it('should throw for an invalid private key', () => {
+      const { ed } = setup();
+      const invalidPriv = new Uint8Array(16);
+      expect(() => ed.sign({ message, privateKey: invalidPriv })).toThrow();
+    });
+  });
+
+  describe('verify', () => {
+    it('should verify a valid signature', () => {
+      const { ed } = setup();
+      const priv = ed.randomPrivateKey();
+      const pub = ed.getPublicKey(priv);
+      const sig = ed.sign({ message, privateKey: priv });
+      expect(ed.verify({ signature: sig, message, publicKey: pub })).toBe(true);
+    });
+    it('should return false for an invalid signature', () => {
+      const { ed } = setup();
+      const priv = ed.randomPrivateKey();
+      const pub = ed.getPublicKey(priv);
+      const invalidSig = new Uint8Array(64);
+      expect(
+        ed.verify({ signature: invalidSig, message, publicKey: pub }),
+      ).toBe(false);
+    });
+  });
+
+  describe('recoverPublicKey', () => {
+    it('should throw error as public key recovery is not supported', () => {
+      const { ed } = setup();
+      const priv = ed.randomPrivateKey();
+      const sig = ed.sign({ message, privateKey: priv });
+
+      expect(() => ed.recoverPublicKey({ message, signature: sig })).toThrow(
+        'Public key recovery is not supported for this curve',
+      );
+    });
+  });
+
   describe('toJwkPrivateKey', () => {
     it('should convert a valid private key to JWK', () => {
       const { ed } = setup();
@@ -106,40 +152,6 @@ describe('Ed25519', () => {
       const { ed } = setup();
       const invalidJwk = { kty: 'EC', crv: 'Ed25519', x: 'AA' } as any;
       expect(() => ed.toRawPublicKey(invalidJwk)).toThrow();
-    });
-  });
-
-  describe('sign', () => {
-    it('should sign a message with a valid private key', () => {
-      const { ed } = setup();
-      const priv = ed.randomPrivateKey();
-      const sig = ed.sign({ message, privateKey: priv });
-      expect(sig).toBeInstanceOf(Uint8Array);
-      expect(sig.length).toBe(64);
-    });
-    it('should throw for an invalid private key', () => {
-      const { ed } = setup();
-      const invalidPriv = new Uint8Array(16);
-      expect(() => ed.sign({ message, privateKey: invalidPriv })).toThrow();
-    });
-  });
-
-  describe('verify', () => {
-    it('should verify a valid signature', () => {
-      const { ed } = setup();
-      const priv = ed.randomPrivateKey();
-      const pub = ed.getPublicKey(priv);
-      const sig = ed.sign({ message, privateKey: priv });
-      expect(ed.verify({ signature: sig, message, publicKey: pub })).toBe(true);
-    });
-    it('should return false for an invalid signature', () => {
-      const { ed } = setup();
-      const priv = ed.randomPrivateKey();
-      const pub = ed.getPublicKey(priv);
-      const invalidSig = new Uint8Array(64);
-      expect(
-        ed.verify({ signature: invalidSig, message, publicKey: pub }),
-      ).toBe(false);
     });
   });
 });

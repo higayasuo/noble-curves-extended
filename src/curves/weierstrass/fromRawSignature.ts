@@ -5,7 +5,7 @@ import { CurveFn, SignatureType } from '@noble/curves/abstract/weierstrass';
  *
  * @param {CurveFn} curve - The curve function used for signature conversion.
  * @param {Uint8Array} rawSignature - The raw signature as a Uint8Array.
- * @returns {SignatureType} The converted signature as a SignatureType.
+ * @returns {SignatureType} The converted signature as a RecoveredSignatureType.
  * @throws {Error} Throws an error if the raw signature length is invalid.
  */
 export const fromRawSignature = (
@@ -15,9 +15,10 @@ export const fromRawSignature = (
   if (rawSignature.length == curve.CURVE.nByteLength * 2) {
     return curve.Signature.fromCompact(rawSignature);
   } else if (rawSignature.length == curve.CURVE.nByteLength * 2 + 1) {
+    const recoveryBit = rawSignature[rawSignature.length - 1];
     const compact = rawSignature.slice(0, -1);
-    const signature = curve.Signature.fromCompact(compact);
-    signature.addRecoveryBit(rawSignature[rawSignature.length - 1]);
+    const signature =
+      curve.Signature.fromCompact(compact).addRecoveryBit(recoveryBit);
 
     return signature;
   }

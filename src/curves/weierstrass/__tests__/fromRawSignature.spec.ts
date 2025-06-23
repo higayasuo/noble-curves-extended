@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { fromRawSignature } from '../fromRawSignature';
+import { toRawRecoveredSignature } from '../toRawRecoveredSignature';
 import { createP256 } from '../p256';
 import { createP384 } from '../p384';
 import { createP521 } from '../p521';
@@ -79,77 +80,141 @@ describe('fromRawSignature', () => {
   });
 
   describe('recoverable signature conversion', () => {
-    it.each(curves)(
-      'should convert recoverable signature for $name',
-      ({ createCurve }) => {
-        const curve = createCurve(randomBytes);
-        const privateKey = curve.utils.randomPrivateKey();
-        const message = Uint8Array.from(
-          new TextEncoder().encode('Hello, World!'),
-        );
+    describe('recovery bit validation', () => {
+      it.each(curves)(
+        'should have valid recovery bit in recoverable signature for $name',
+        ({ createCurve }) => {
+          const curve = createCurve(randomBytes);
+          const privateKey = curve.utils.randomPrivateKey();
+          const message = Uint8Array.from(
+            new TextEncoder().encode('Hello, World!'),
+          );
 
-        // Create a recoverable signature using the curve
-        const signature = curve.sign(message, privateKey, {
-          prehash: true,
-        });
-        const compactSignature = signature.toCompactRawBytes();
+          // Create a recoverable signature using the curve
+          const signature = curve.sign(message, privateKey, {
+            prehash: true,
+          });
 
-        const recoverableSignature = new Uint8Array(
-          compactSignature.length + 1,
-        );
-        recoverableSignature.set(compactSignature);
-        recoverableSignature[recoverableSignature.length - 1] =
-          signature.recovery;
+          // Convert to raw signature using toRawRecoveredSignature
+          const rawSignature = toRawRecoveredSignature(signature);
 
-        // Convert using fromRawSignature
-        const convertedSignature = fromRawSignature(
-          curve,
-          recoverableSignature,
-        );
+          // Verify recovery bit is set correctly
+          expect(rawSignature[rawSignature.length - 1]).toBe(
+            signature.recovery,
+          );
+          expect(rawSignature[rawSignature.length - 1]).toBeGreaterThanOrEqual(
+            0,
+          );
 
-        expect(convertedSignature).toBeDefined();
-        expect(convertedSignature.toCompactRawBytes()).toEqual(
-          compactSignature,
-        );
-      },
-    );
+          // Convert using fromRawSignature
+          const convertedSignature = fromRawSignature(curve, rawSignature);
 
-    it.each(curves)(
-      'should verify recoverable signature after conversion for $name',
-      ({ createCurve }) => {
-        const curve = createCurve(randomBytes);
-        const privateKey = curve.utils.randomPrivateKey();
-        const publicKey = curve.getPublicKey(privateKey);
-        const message = Uint8Array.from(
-          new TextEncoder().encode('Hello, World!'),
-        );
+          // Verify converted signature has recovery bit
+          expect(convertedSignature.recovery).not.toBeNull();
+          expect(convertedSignature.recovery).not.toBeUndefined();
+          expect(convertedSignature.recovery).toBe(signature.recovery);
+        },
+      );
+    });
 
-        // Create a recoverable signature using the curve
-        const signature = curve.sign(message, privateKey, {
-          prehash: true,
-        });
-        const compactSignature = signature.toCompactRawBytes();
+    describe('verify recoverable signature', () => {
+      it.each(curves)(
+        'should verify recoverable signature after conversion for $name',
+        ({ createCurve }) => {
+          const curve = createCurve(randomBytes);
+          const privateKey = curve.utils.randomPrivateKey();
+          const publicKey = curve.getPublicKey(privateKey);
+          const message = Uint8Array.from(
+            new TextEncoder().encode('Hello, World!'),
+          );
 
-        const recoverableSignature = new Uint8Array(
-          compactSignature.length + 1,
-        );
-        recoverableSignature.set(compactSignature);
-        recoverableSignature[recoverableSignature.length - 1] =
-          signature.recovery;
+          // Create a recoverable signature using the curve
+          const signature = curve.sign(message, privateKey, {
+            prehash: true,
+          });
 
-        // Convert using fromRawSignature
-        const convertedSignature = fromRawSignature(
-          curve,
-          recoverableSignature,
-        );
+          // Convert to raw signature using toRawRecoveredSignature
+          const rawSignature = toRawRecoveredSignature(signature);
 
-        // Verify that the converted signature works
-        const isValid = curve.verify(convertedSignature, message, publicKey, {
-          prehash: true,
-        });
-        expect(isValid).toBe(true);
-      },
-    );
+          // Convert using fromRawSignature
+          const convertedSignature = fromRawSignature(curve, rawSignature);
+
+          // Verify that the converted signature works
+          const isValid = curve.verify(convertedSignature, message, publicKey, {
+            prehash: true,
+          });
+          expect(isValid).toBe(true);
+        },
+      );
+    });
+  });
+
+  describe('public key recovery', () => {
+    describe('uncompressed public key recovery', () => {
+      it.each(curves)(
+        'should recover public key from recoverable signature for $name',
+        ({ createCurve }) => {
+          const curve = createCurve(randomBytes);
+          const privateKey = curve.utils.randomPrivateKey();
+          const expectedPublicKey = curve.getPublicKey(privateKey, false); // uncompressed
+          const message = Uint8Array.from(
+            new TextEncoder().encode('Hello, World!'),
+          );
+
+          // Create a recoverable signature using the curve
+          const signature = curve.sign(message, privateKey, {
+            prehash: true,
+          });
+
+          // Convert to raw signature using toRawRecoveredSignature
+          const rawSignature = toRawRecoveredSignature(signature);
+
+          // Convert using fromRawSignature
+          const convertedSignature = fromRawSignature(curve, rawSignature);
+
+          // Recover public key
+          const messageHash = curve.CURVE.hash(message);
+          const recoveredPoint =
+            convertedSignature.recoverPublicKey(messageHash);
+          const recoveredPublicKey = recoveredPoint.toRawBytes(false); // uncompressed
+
+          expect(recoveredPublicKey).toEqual(expectedPublicKey);
+        },
+      );
+    });
+
+    describe('compressed public key recovery', () => {
+      it.each(curves)(
+        'should recover compressed public key from recoverable signature for $name',
+        ({ createCurve }) => {
+          const curve = createCurve(randomBytes);
+          const privateKey = curve.utils.randomPrivateKey();
+          const expectedPublicKey = curve.getPublicKey(privateKey, true); // compressed
+          const message = Uint8Array.from(
+            new TextEncoder().encode('Hello, World!'),
+          );
+
+          // Create a recoverable signature using the curve
+          const signature = curve.sign(message, privateKey, {
+            prehash: true,
+          });
+
+          // Convert to raw signature using toRawRecoveredSignature
+          const rawSignature = toRawRecoveredSignature(signature);
+
+          // Convert using fromRawSignature
+          const convertedSignature = fromRawSignature(curve, rawSignature);
+
+          // Recover public key (compressed)
+          const messageHash = curve.CURVE.hash(message);
+          const recoveredPoint =
+            convertedSignature.recoverPublicKey(messageHash);
+          const recoveredPublicKey = recoveredPoint.toRawBytes(true); // compressed
+
+          expect(recoveredPublicKey).toEqual(expectedPublicKey);
+        },
+      );
+    });
   });
 
   describe('error handling', () => {

@@ -148,6 +148,31 @@ export type Verify = ({
 }: VerifyParams) => boolean;
 
 /**
+ * Parameters for recovering a public key from a signature.
+ * @typedef {Object} RecoverPublicKeyParams
+ * @property {Uint8Array} signature - The signature used for recovery as a Uint8Array
+ * @property {Uint8Array} message - The message that was signed as a Uint8Array
+ * @property {boolean} [compressed] - Whether the recovered public key should be compressed
+ */
+export type RecoverPublicKeyParams = {
+  signature: Uint8Array;
+  message: Uint8Array;
+  compressed?: boolean;
+};
+
+/**
+ * Recovers a public key from a signature and message.
+ * @typedef {Function} RecoverPublicKey
+ * @param {RecoverPublicKeyParams} params - Parameters containing the signature, message, and compression option
+ * @returns {Uint8Array} The recovered public key as a Uint8Array
+ */
+export type RecoverPublicKey = ({
+  signature,
+  message,
+  compressed,
+}: RecoverPublicKeyParams) => Uint8Array;
+
+/**
  * Base interface for unified cryptographic operations.
  * @interface UnifiedBase
  * @property {string} curveName - Curve name
@@ -191,8 +216,10 @@ export interface Ecdh extends UnifiedBase {
  * @extends UnifiedBase
  * @property {Sign} sign - Function to sign a message
  * @property {Verify} verify - Function to verify a signature
+ * @property {RecoverPublicKey} recoverPublicKey - Function to recover a public key from a signature and message
  */
 export interface Signature extends UnifiedBase {
   sign: Sign;
   verify: Verify;
+  recoverPublicKey: RecoverPublicKey;
 }
