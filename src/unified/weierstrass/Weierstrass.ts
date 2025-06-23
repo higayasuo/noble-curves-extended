@@ -23,7 +23,6 @@ import { weierstrassToRawPrivateKey } from './weierstrassToRawPrivateKey';
 import { weierstrassToRawPublicKey } from './weierstrassToRawPublicKey';
 import { getWeierstrassCurveName } from '@/curves/weierstrass/getWeierstrassCurveName';
 import { weierstrassRecoverPublicKey } from './weierstrassRecoverPublicKey';
-import { WeierstrassCurveName } from '@/curves/weierstrass/types';
 import { getWeierstrassSignatureAlgorithm } from '@/curves/weierstrass/getWeierstrassSignatureAlgorithm';
 
 /**

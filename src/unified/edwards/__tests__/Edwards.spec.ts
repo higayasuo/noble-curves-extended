@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Ed25519 } from '../Ed25519';
+import { Edwards } from '../Edwards';
 import { createEd25519 } from '@/curves/edwards/ed25519';
 import { randomBytes } from '@noble/hashes/utils';
 
@@ -7,22 +7,27 @@ const message = new TextEncoder().encode('hello');
 
 const setup = () => {
   const curve = createEd25519(randomBytes);
-  const ed = new Ed25519(curve, randomBytes);
+  const ed = new Edwards(curve, randomBytes);
   return { ed, curve };
 };
 
-describe('Ed25519', () => {
-  it('should have correct curveName property', () => {
+describe('Edwards', () => {
+  it('should have correct curveName properties', () => {
     const { ed } = setup();
     expect(ed.curveName).toBe('Ed25519');
   });
 
+  it('should have correct signatureAlgorithmName property', () => {
+    const { ed } = setup();
+    expect(ed.signatureAlgorithmName).toBe('EdDSA');
+  });
+
   describe('randomPrivateKey', () => {
     it('should generate a valid private key', () => {
-      const { ed } = setup();
+      const { ed, curve } = setup();
       const priv = ed.randomPrivateKey();
       expect(priv).toBeInstanceOf(Uint8Array);
-      expect(priv.length).toBe(32);
+      expect(priv.length).toBe(curve.CURVE.nByteLength);
     });
     it('should generate different keys on each call', () => {
       const { ed } = setup();
@@ -34,11 +39,11 @@ describe('Ed25519', () => {
 
   describe('getPublicKey', () => {
     it('should derive a public key from a valid private key', () => {
-      const { ed } = setup();
+      const { ed, curve } = setup();
       const priv = ed.randomPrivateKey();
       const pub = ed.getPublicKey(priv);
       expect(pub).toBeInstanceOf(Uint8Array);
-      expect(pub.length).toBe(32);
+      expect(pub.length).toBe(curve.CURVE.nByteLength);
     });
     it('should throw for an invalid private key', () => {
       const { ed } = setup();
@@ -49,11 +54,11 @@ describe('Ed25519', () => {
 
   describe('sign', () => {
     it('should sign a message with a valid private key', () => {
-      const { ed } = setup();
+      const { ed, curve } = setup();
       const priv = ed.randomPrivateKey();
       const sig = ed.sign({ message, privateKey: priv });
       expect(sig).toBeInstanceOf(Uint8Array);
-      expect(sig.length).toBe(64);
+      expect(sig.length).toBe(curve.CURVE.nByteLength * 2);
     });
     it('should throw for an invalid private key', () => {
       const { ed } = setup();
@@ -124,12 +129,12 @@ describe('Ed25519', () => {
 
   describe('toRawPrivateKey', () => {
     it('should convert a valid JWK private key to raw', () => {
-      const { ed } = setup();
+      const { ed, curve } = setup();
       const priv = ed.randomPrivateKey();
       const jwk = ed.toJwkPrivateKey(priv);
       const raw = ed.toRawPrivateKey(jwk);
       expect(raw).toBeInstanceOf(Uint8Array);
-      expect(raw.length).toBe(32);
+      expect(raw.length).toBe(curve.CURVE.nByteLength);
     });
     it('should throw for an invalid JWK private key', () => {
       const { ed } = setup();
@@ -140,13 +145,13 @@ describe('Ed25519', () => {
 
   describe('toRawPublicKey', () => {
     it('should convert a valid JWK public key to raw', () => {
-      const { ed } = setup();
+      const { ed, curve } = setup();
       const priv = ed.randomPrivateKey();
       const pub = ed.getPublicKey(priv);
       const jwk = ed.toJwkPublicKey(pub);
       const raw = ed.toRawPublicKey(jwk);
       expect(raw).toBeInstanceOf(Uint8Array);
-      expect(raw.length).toBe(32);
+      expect(raw.length).toBe(curve.CURVE.nByteLength);
     });
     it('should throw for an invalid JWK public key', () => {
       const { ed } = setup();

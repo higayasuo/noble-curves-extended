@@ -3,7 +3,7 @@ import type { SignParams } from '@/unified/types';
 import { isUint8Array, ensureUint8Array } from 'u8a-utils';
 
 /**
- * Signs a message using the Ed25519 curve and a private key.
+ * Signs a message using the edwards curve and a private key.
  *
  * @param {CurveFn} curve - The curve function used for signing.
  * @param {SignParams} params - An object containing the message and private key.
@@ -13,7 +13,7 @@ import { isUint8Array, ensureUint8Array } from 'u8a-utils';
  * @returns {Uint8Array} The signature as a Uint8Array.
  * @throws {Error} Throws an error if recovered signature is requested or if signing fails.
  */
-export const ed25519Sign = (
+export const edwardsSign = (
   curve: CurveFn,
   { message, privateKey, recovered = false }: SignParams,
 ): Uint8Array => {
@@ -23,8 +23,11 @@ export const ed25519Sign = (
 
   try {
     const msg = isUint8Array(message) ? ensureUint8Array(message) : message;
+    const keyByteLength = curve.CURVE.nByteLength;
     const seed =
-      privateKey.length === 64 ? privateKey.slice(0, 32) : privateKey;
+      privateKey.length === keyByteLength * 2
+        ? privateKey.slice(0, keyByteLength)
+        : privateKey;
     return curve.sign(msg, seed);
   } catch (error) {
     console.error(error);

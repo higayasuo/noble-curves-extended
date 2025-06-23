@@ -3,19 +3,20 @@ import type { JwkPublicKey } from '@/unified/types';
 import { encodeBase64Url } from 'u8a-utils';
 
 /**
- * Converts an Ed25519 public key to a JWK format.
+ * Converts an edwards public key to a JWK format.
  *
- * @param {CurveFn} _curve - The curve function used for conversion (unused).
+ * @param {CurveFn} curve - The curve function used for conversion.
  * @param {Uint8Array} publicKey - The public key as a Uint8Array.
  * @returns {JwkPublicKey} The public key in JWK format.
  * @throws {Error} Throws an error if the public key conversion fails.
  */
-export const ed25519ToJwkPublicKey = (
-  _curve: CurveFn,
+export const edwardsToJwkPublicKey = (
+  curve: CurveFn,
   publicKey: Uint8Array,
 ): JwkPublicKey => {
   try {
-    if (publicKey.length !== 32) {
+    const keyByteLength = curve.CURVE.nByteLength;
+    if (publicKey.length !== keyByteLength) {
       throw new Error('Invalid public key length');
     }
 

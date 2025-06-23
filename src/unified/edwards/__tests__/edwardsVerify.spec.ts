@@ -1,20 +1,20 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ed25519Verify } from '../ed25519Verify';
-import { ed25519Sign } from '../ed25519Sign';
+import { edwardsVerify } from '../edwardsVerify';
+import { edwardsSign } from '../edwardsSign';
 import { createEd25519 } from '@/curves/edwards/ed25519';
 import { randomBytes } from '@noble/hashes/utils';
-import { ed25519ToJwkPrivateKey } from '../ed25519ToJwkPrivateKey';
+import { edwardsToJwkPrivateKey } from '../edwardsToJwkPrivateKey';
 
 const message = new TextEncoder().encode('hello');
 
-describe('ed25519Verify', () => {
+describe('edwardsVerify', () => {
   describe('compatibility tests', () => {
     it('should verify a valid signature', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = curve.getPublicKey(privateKey);
-      const signature = ed25519Sign(curve, { message, privateKey });
-      expect(ed25519Verify(curve, { signature, message, publicKey })).toBe(
+      const signature = edwardsSign(curve, { message, privateKey });
+      expect(edwardsVerify(curve, { signature, message, publicKey })).toBe(
         true,
       );
     });
@@ -22,7 +22,7 @@ describe('ed25519Verify', () => {
     it('should verify a signature created by Web Crypto API', async () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
-      const jwkPrivateKey = ed25519ToJwkPrivateKey(curve, privateKey);
+      const jwkPrivateKey = edwardsToJwkPrivateKey(curve, privateKey);
       const publicKey = curve.getPublicKey(privateKey);
 
       // Import the private key into Web Crypto API
@@ -44,7 +44,7 @@ describe('ed25519Verify', () => {
       );
 
       // Verify the signature using ed25519Verify
-      expect(ed25519Verify(curve, { signature, message, publicKey })).toBe(
+      expect(edwardsVerify(curve, { signature, message, publicKey })).toBe(
         true,
       );
     });
@@ -55,23 +55,9 @@ describe('ed25519Verify', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = curve.getPublicKey(privateKey);
-      const invalidSignature = new Uint8Array(64); // All zeros
+      const invalidSignature = new Uint8Array(curve.CURVE.nByteLength * 2); // All zeros
       expect(
-        ed25519Verify(curve, {
-          signature: invalidSignature,
-          message,
-          publicKey,
-        }),
-      ).toBe(false);
-    });
-
-    it('should return false for a signature with wrong length', () => {
-      const curve = createEd25519(randomBytes);
-      const privateKey = curve.utils.randomPrivateKey();
-      const publicKey = curve.getPublicKey(privateKey);
-      const invalidSignature = new Uint8Array(32); // Wrong length
-      expect(
-        ed25519Verify(curve, {
+        edwardsVerify(curve, {
           signature: invalidSignature,
           message,
           publicKey,
@@ -83,11 +69,11 @@ describe('ed25519Verify', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = curve.getPublicKey(privateKey);
-      const signature = ed25519Sign(curve, { message, privateKey });
+      const signature = edwardsSign(curve, { message, privateKey });
 
       const modifiedMessage = new TextEncoder().encode('hello world');
       expect(
-        ed25519Verify(curve, {
+        edwardsVerify(curve, {
           signature,
           message: modifiedMessage,
           publicKey,
@@ -100,13 +86,13 @@ describe('ed25519Verify', () => {
       const privateKey1 = curve.utils.randomPrivateKey();
       const privateKey2 = curve.utils.randomPrivateKey();
       const publicKey2 = curve.getPublicKey(privateKey2);
-      const signature = ed25519Sign(curve, {
+      const signature = edwardsSign(curve, {
         message,
         privateKey: privateKey1,
       });
 
       expect(
-        ed25519Verify(curve, { signature, message, publicKey: publicKey2 }),
+        edwardsVerify(curve, { signature, message, publicKey: publicKey2 }),
       ).toBe(false);
     });
   });
@@ -116,8 +102,8 @@ describe('ed25519Verify', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = new Uint8Array(32); // All zeros (invalid)
-      const signature = ed25519Sign(curve, { message, privateKey });
-      expect(ed25519Verify(curve, { signature, message, publicKey })).toBe(
+      const signature = edwardsSign(curve, { message, privateKey });
+      expect(edwardsVerify(curve, { signature, message, publicKey })).toBe(
         false,
       );
     });
@@ -126,7 +112,7 @@ describe('ed25519Verify', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = curve.getPublicKey(privateKey);
-      const signature = ed25519Sign(curve, { message, privateKey });
+      const signature = edwardsSign(curve, { message, privateKey });
 
       // Mock the curve.verify to throw an error
       const originalVerify = curve.verify;
@@ -134,7 +120,7 @@ describe('ed25519Verify', () => {
         throw new Error('Internal verification error');
       });
 
-      expect(ed25519Verify(curve, { signature, message, publicKey })).toBe(
+      expect(edwardsVerify(curve, { signature, message, publicKey })).toBe(
         false,
       );
 

@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ed25519RandomPrivateKey } from '../ed25519RandomPrivateKey';
+import { edwardsRandomPrivateKey } from '../edwardsRandomPrivateKey';
 import { createEd25519 } from '@/curves/edwards/ed25519';
 import { randomBytes } from '@noble/hashes/utils';
 
-describe('ed25519RandomPrivateKey', () => {
+describe('edwardsRandomPrivateKey', () => {
   it('should generate a valid private key with correct bit patterns', () => {
     const curve = createEd25519(randomBytes);
-    const privateKey = ed25519RandomPrivateKey(curve);
+    const privateKey = edwardsRandomPrivateKey(curve);
 
     // Check that the private key is a Uint8Array
     expect(privateKey).toBeInstanceOf(Uint8Array);
@@ -23,8 +23,8 @@ describe('ed25519RandomPrivateKey', () => {
 
   it('should generate different private keys on each call', () => {
     const curve = createEd25519(randomBytes);
-    const privateKey1 = ed25519RandomPrivateKey(curve);
-    const privateKey2 = ed25519RandomPrivateKey(curve);
+    const privateKey1 = edwardsRandomPrivateKey(curve);
+    const privateKey2 = edwardsRandomPrivateKey(curve);
 
     // Check that the private keys are different
     expect(privateKey1).not.toEqual(privateKey2);
@@ -39,7 +39,7 @@ describe('ed25519RandomPrivateKey', () => {
       throw new Error('Internal random generation error');
     });
 
-    expect(() => ed25519RandomPrivateKey(curve)).toThrow(
+    expect(() => edwardsRandomPrivateKey(curve)).toThrow(
       'Failed to generate random private key',
     );
 
@@ -49,7 +49,7 @@ describe('ed25519RandomPrivateKey', () => {
 
   it('should generate valid private keys that can be used with getPublicKey', () => {
     const curve = createEd25519(randomBytes);
-    const privateKey = ed25519RandomPrivateKey(curve);
+    const privateKey = edwardsRandomPrivateKey(curve);
 
     // Verify that the generated private key can be used to generate a public key
     const publicKey = curve.getPublicKey(privateKey);

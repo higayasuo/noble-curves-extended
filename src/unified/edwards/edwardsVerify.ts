@@ -4,7 +4,7 @@ import { isUint8Array } from 'u8a-utils';
 import { ensureUint8Array } from 'u8a-utils';
 
 /**
- * Verifies a signature using the Ed25519 curve and a public key.
+ * Verifies a signature using the edwards curve and a public key.
  *
  * @param {CurveFn} curve - The curve function used for verification.
  * @param {VerifyParams} params - An object containing the signature, message, and public key.
@@ -13,7 +13,7 @@ import { ensureUint8Array } from 'u8a-utils';
  * @param {Uint8Array} params.publicKey - The public key as a Uint8Array.
  * @returns {boolean} True if the signature is valid, false otherwise.
  */
-export const ed25519Verify = (
+export const edwardsVerify = (
   curve: CurveFn,
   { signature, message, publicKey }: VerifyParams,
 ): boolean => {
