@@ -1,7 +1,7 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
 
 /**
- * Generates a random private key for the X25519 curve.
+ * Generates a random private key for the Montgomery curve.
  *
  * This function utilizes the curve's utility method to generate a random private key.
  *
@@ -9,7 +9,7 @@ import { CurveFn } from '@noble/curves/abstract/montgomery';
  * @returns {Uint8Array} A randomly generated private key.
  * @throws {Error} Throws an error if the random private key generation fails.
  */
-export const x25519RandomPrivateKey = (curve: CurveFn): Uint8Array => {
+export const montgomeryRandomPrivateKey = (curve: CurveFn): Uint8Array => {
   try {
     return curve.utils.randomPrivateKey();
   } catch (error) {

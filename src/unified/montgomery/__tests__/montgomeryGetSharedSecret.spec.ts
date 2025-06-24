@@ -1,25 +1,26 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createX25519 } from '@/curves/montgomery/x25519';
 import { randomBytes } from '@noble/hashes/utils';
-import { x25519GetSharedSecret } from '../x25519GetSharedSecret';
-import { x25519ToJwkPrivateKey } from '../x25519ToJwkPrivateKey';
-import { x25519ToJwkPublicKey } from '../x25519ToJwkPublicKey';
+import { montgomeryGetSharedSecret } from '../montgomeryGetSharedSecret';
+import { montgomeryToJwkPrivateKey } from '../montgomeryToJwkPrivateKey';
+import { montgomeryToJwkPublicKey } from '../montgomeryToJwkPublicKey';
 import { decodeHex } from 'u8a-utils';
 
-describe('x25519GetSharedSecret', () => {
+describe('montgomeryGetSharedSecret', () => {
+  const curve = createX25519(randomBytes);
+
   describe('compatibility tests', () => {
     it('should compute the same shared secret for both parties', () => {
-      const curve = createX25519(randomBytes);
       const alicePrivateKey = curve.utils.randomPrivateKey();
       const alicePublicKey = curve.getPublicKey(alicePrivateKey);
       const bobPrivateKey = curve.utils.randomPrivateKey();
       const bobPublicKey = curve.getPublicKey(bobPrivateKey);
 
-      const aliceSharedSecret = x25519GetSharedSecret(curve, {
+      const aliceSharedSecret = montgomeryGetSharedSecret(curve, {
         privateKey: alicePrivateKey,
         publicKey: bobPublicKey,
       });
-      const bobSharedSecret = x25519GetSharedSecret(curve, {
+      const bobSharedSecret = montgomeryGetSharedSecret(curve, {
         privateKey: bobPrivateKey,
         publicKey: alicePublicKey,
       });
@@ -28,14 +29,16 @@ describe('x25519GetSharedSecret', () => {
     });
 
     it('should match Web Crypto API deriveBits result', async () => {
-      const curve = createX25519(randomBytes);
       const alicePrivateKey = curve.utils.randomPrivateKey();
       const bobPrivateKey = curve.utils.randomPrivateKey();
       const bobPublicKey = curve.getPublicKey(bobPrivateKey);
 
       // Convert keys to JWK format
-      const aliceJwkPrivateKey = x25519ToJwkPrivateKey(curve, alicePrivateKey);
-      const bobJwkPublicKey = x25519ToJwkPublicKey(curve, bobPublicKey);
+      const aliceJwkPrivateKey = montgomeryToJwkPrivateKey(
+        curve,
+        alicePrivateKey,
+      );
+      const bobJwkPublicKey = montgomeryToJwkPublicKey(curve, bobPublicKey);
 
       // Import keys using Web Crypto API
       const aliceCryptoKey = await crypto.subtle.importKey(
@@ -70,8 +73,8 @@ describe('x25519GetSharedSecret', () => {
         ),
       );
 
-      // Derive shared secret using x25519GetSharedSecret
-      const x25519SharedSecret = x25519GetSharedSecret(curve, {
+      // Derive shared secret using montgomeryGetSharedSecret
+      const x25519SharedSecret = montgomeryGetSharedSecret(curve, {
         privateKey: alicePrivateKey,
         publicKey: bobPublicKey,
       });
@@ -83,7 +86,6 @@ describe('x25519GetSharedSecret', () => {
 
   describe('security tests', () => {
     it('should throw an error for RFC 7748 §6.1 small order points', () => {
-      const curve = createX25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
 
       // RFC 7748 §6.1 small order points
@@ -106,7 +108,7 @@ describe('x25519GetSharedSecret', () => {
 
       for (const smallOrderPoint of smallOrderPoints) {
         expect(() =>
-          x25519GetSharedSecret(curve, {
+          montgomeryGetSharedSecret(curve, {
             privateKey,
             publicKey: smallOrderPoint,
           }),
@@ -115,16 +117,17 @@ describe('x25519GetSharedSecret', () => {
     });
 
     it('should throw a generic error when curve.getSharedSecret returns all zeros', () => {
-      const curve = createX25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = curve.getPublicKey(curve.utils.randomPrivateKey());
 
       // Mock the curve.getSharedSecret to return all zeros
       const originalGetSharedSecret = curve.getSharedSecret;
-      curve.getSharedSecret = vi.fn().mockReturnValue(new Uint8Array(32));
+      curve.getSharedSecret = vi
+        .fn()
+        .mockReturnValue(new Uint8Array(curve.GuBytes.length));
 
       expect(() =>
-        x25519GetSharedSecret(curve, {
+        montgomeryGetSharedSecret(curve, {
           privateKey,
           publicKey,
         }),
@@ -137,12 +140,11 @@ describe('x25519GetSharedSecret', () => {
 
   describe('invalid input tests', () => {
     it('should throw an error for private key with wrong length', () => {
-      const curve = createX25519(randomBytes);
-      const invalidPrivateKey = new Uint8Array(31); // Wrong length
+      const invalidPrivateKey = new Uint8Array(curve.GuBytes.length - 1); // Wrong length
       const publicKey = curve.getPublicKey(curve.utils.randomPrivateKey());
 
       expect(() =>
-        x25519GetSharedSecret(curve, {
+        montgomeryGetSharedSecret(curve, {
           privateKey: invalidPrivateKey,
           publicKey,
         }),
@@ -150,12 +152,11 @@ describe('x25519GetSharedSecret', () => {
     });
 
     it('should throw an error for public key with wrong length', () => {
-      const curve = createX25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
-      const invalidPublicKey = new Uint8Array(31); // Wrong length
+      const invalidPublicKey = new Uint8Array(curve.GuBytes.length - 1); // Wrong length
 
       expect(() =>
-        x25519GetSharedSecret(curve, {
+        montgomeryGetSharedSecret(curve, {
           privateKey,
           publicKey: invalidPublicKey,
         }),
@@ -165,7 +166,6 @@ describe('x25519GetSharedSecret', () => {
 
   describe('error handling tests', () => {
     it('should throw a generic error when curve.getSharedSecret throws an error', () => {
-      const curve = createX25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = curve.getPublicKey(curve.utils.randomPrivateKey());
 
@@ -176,7 +176,7 @@ describe('x25519GetSharedSecret', () => {
       });
 
       expect(() =>
-        x25519GetSharedSecret(curve, {
+        montgomeryGetSharedSecret(curve, {
           privateKey,
           publicKey,
         }),

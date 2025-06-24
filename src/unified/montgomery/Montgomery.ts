@@ -7,39 +7,40 @@ import {
   CurveName,
 } from '@/unified/types';
 import { RandomBytes } from '@/curves/types';
-import { x25519RandomPrivateKey } from './x25519RandomPrivateKey';
-import { x25519GetPublicKey } from './x25519GetPublicKey';
-import { x25519ToJwkPrivateKey } from './x25519ToJwkPrivateKey';
-import { x25519ToJwkPublicKey } from './x25519ToJwkPublicKey';
-import { x25519ToRawPrivateKey } from './x25519ToRawPrivateKey';
-import { x25519ToRawPublicKey } from './x25519ToRawPublicKey';
-import { x25519GetSharedSecret } from './x25519GetSharedSecret';
+import { montgomeryRandomPrivateKey } from './montgomeryRandomPrivateKey';
+import { montgomeryGetPublicKey } from './montgomeryGetPublicKey';
+import { montgomeryToJwkPrivateKey } from './montgomeryToJwkPrivateKey';
+import { montgomeryToJwkPublicKey } from './montgomeryToJwkPublicKey';
+import { montgomeryToRawPrivateKey } from './montgomeryToRawPrivateKey';
+import { montgomeryToRawPublicKey } from './montgomeryToRawPublicKey';
+import { montgomeryGetSharedSecret } from './montgomeryGetSharedSecret';
+import { getMontgomeryCurveName } from '@/curves/montgomery';
 
 /**
- * X25519 implementation for Elliptic Curve Diffie-Hellman (ECDH) key exchange.
- * This class provides a high-level interface for X25519 operations, including
+ * Montgomery implementation for Elliptic Curve Diffie-Hellman (ECDH) key exchange.
+ * This class provides a high-level interface for Montgomery operations, including
  * key generation, validation, and shared secret computation.
  *
  * @example
  * ```typescript
- * const x25519 = new X25519(curve, randomBytes);
- * const privateKey = x25519.randomPrivateKey();
- * const publicKey = x25519.getPublicKey(privateKey);
+ * const montgomery = new Montgomery(curve, randomBytes);
+ * const privateKey = montgomery.randomPrivateKey();
+ * const publicKey = montgomery.getPublicKey(privateKey);
  * const peerPublicKey = ...; // Uint8Array from peer
- * const sharedSecret = x25519.getSharedSecret({ privateKey, publicKey: peerPublicKey });
+ * const sharedSecret = montgomery.getSharedSecret({ privateKey, publicKey: peerPublicKey });
  * ```
  */
-export class X25519 implements Readonly<Ecdh> {
+export class Montgomery implements Readonly<Ecdh> {
   /** The underlying curve implementation */
   readonly curve: CurveFn;
   /** Function to generate random bytes */
   readonly randomBytes: RandomBytes;
 
-  /** Curve identifier for X25519 */
-  curveName: CurveName = 'X25519';
+  /** Curve identifier for Montgomery */
+  curveName: CurveName;
 
   /**
-   * Creates a new X25519 instance.
+   * Creates a new Montgomery instance.
    *
    * @param {CurveFn} curve - The curve implementation to use
    * @param {RandomBytes} randomBytes - Function to generate random bytes
@@ -47,6 +48,7 @@ export class X25519 implements Readonly<Ecdh> {
   constructor(curve: CurveFn, randomBytes: RandomBytes) {
     this.curve = curve;
     this.randomBytes = randomBytes;
+    this.curveName = getMontgomeryCurveName(curve);
   }
 
   /**
@@ -61,13 +63,12 @@ export class X25519 implements Readonly<Ecdh> {
   }
 
   /**
-   * Generates a random private key for X25519.
-   * The generated key is 32 bytes long and follows RFC 7748 specifications.
+   * Generates a random private key for the Montgomery curve.
    *
-   * @returns {Uint8Array} A 32-byte random private key
+   * @returns {Uint8Array} The random private key
    */
   randomPrivateKey(): Uint8Array {
-    return x25519RandomPrivateKey(this.curve);
+    return montgomeryRandomPrivateKey(this.curve);
   }
 
   /**
@@ -79,7 +80,7 @@ export class X25519 implements Readonly<Ecdh> {
    * @throws {Error} If the private key is invalid or uncompressed keys are requested
    */
   getPublicKey(privateKey: Uint8Array, compressed = true): Uint8Array {
-    return x25519GetPublicKey(this.curve, privateKey, compressed);
+    return montgomeryGetPublicKey(this.curve, privateKey, compressed);
   }
 
   /**
@@ -95,7 +96,7 @@ export class X25519 implements Readonly<Ecdh> {
     privateKey,
     publicKey,
   }: GetSharedSecretParams): Uint8Array {
-    return x25519GetSharedSecret(this.curve, { privateKey, publicKey });
+    return montgomeryGetSharedSecret(this.curve, { privateKey, publicKey });
   }
 
   /**
@@ -106,7 +107,7 @@ export class X25519 implements Readonly<Ecdh> {
    * @throws {Error} If the private key is invalid
    */
   toJwkPrivateKey(privateKey: Uint8Array): JwkPrivateKey {
-    return x25519ToJwkPrivateKey(this.curve, privateKey);
+    return montgomeryToJwkPrivateKey(this.curve, privateKey);
   }
 
   /**
@@ -117,7 +118,7 @@ export class X25519 implements Readonly<Ecdh> {
    * @throws {Error} If the public key is invalid
    */
   toJwkPublicKey(publicKey: Uint8Array): JwkPublicKey {
-    return x25519ToJwkPublicKey(this.curve, publicKey);
+    return montgomeryToJwkPublicKey(this.curve, publicKey);
   }
 
   /**
@@ -128,7 +129,7 @@ export class X25519 implements Readonly<Ecdh> {
    * @throws {Error} If the JWK is invalid
    */
   toRawPrivateKey(jwkPrivateKey: JwkPrivateKey): Uint8Array {
-    return x25519ToRawPrivateKey(this.curve, jwkPrivateKey);
+    return montgomeryToRawPrivateKey(this.curve, jwkPrivateKey);
   }
 
   /**
@@ -139,6 +140,6 @@ export class X25519 implements Readonly<Ecdh> {
    * @throws {Error} If the JWK is invalid
    */
   toRawPublicKey(jwkPublicKey: JwkPublicKey): Uint8Array {
-    return x25519ToRawPublicKey(this.curve, jwkPublicKey);
+    return montgomeryToRawPublicKey(this.curve, jwkPublicKey);
   }
 }

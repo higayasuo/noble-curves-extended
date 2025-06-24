@@ -30,6 +30,7 @@ export type CurveType = {
 };
 
 export type CurveFn = {
+  CURVE: CurveType;
   scalarMult: (scalar: Hex, u: Hex) => Uint8Array;
   scalarMultBase: (scalar: Hex) => Uint8Array;
   getSharedSecret: (privateKeyA: Hex, publicKeyB: Hex) => Uint8Array;
@@ -164,6 +165,7 @@ export function montgomery(curveDef: CurveType): CurveFn {
   }
 
   return {
+    CURVE,
     scalarMult,
     scalarMultBase,
     getSharedSecret: (privateKey: Hex, publicKey: Hex) =>

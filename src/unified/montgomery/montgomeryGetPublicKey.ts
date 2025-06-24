@@ -1,7 +1,7 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
 
 /**
- * Generates a public key for the x25519 curve from a given private key.
+ * Generates a public key for the Montgomery curve from a given private key.
  *
  * @param {CurveFn} curve - The curve function used to generate the public key.
  * @param {Uint8Array} privateKey - The private key as a Uint8Array.
@@ -10,7 +10,7 @@ import { CurveFn } from '@noble/curves/abstract/montgomery';
  * @returns {Uint8Array} The generated public key as a Uint8Array.
  * @throws {Error} Throws an error if uncompressed public keys are requested or if the private key is invalid.
  */
-export const x25519GetPublicKey = (
+export const montgomeryGetPublicKey = (
   curve: CurveFn,
   privateKey: Uint8Array,
   compressed = true,

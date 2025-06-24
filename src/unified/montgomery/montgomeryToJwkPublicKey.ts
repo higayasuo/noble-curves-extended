@@ -1,27 +1,28 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
-import type { JwkPublicKey } from '../../types';
+import type { JwkPublicKey } from '../types';
 import { encodeBase64Url } from 'u8a-utils';
+import { getMontgomeryCurveName } from '@/curves/montgomery';
 
 /**
- * Converts a raw X25519 public key to JWK format.
+ * Converts a raw Montgomery public key to JWK format.
  *
- * @param {CurveFn} _curve - The curve function used for conversion (unused).
+ * @param {CurveFn} curve - The curve function used for conversion.
  * @param {Uint8Array} publicKey - The public key in raw format.
  * @returns {JwkPublicKey} The public key in JWK format.
  * @throws {Error} Throws an error if the conversion fails.
  */
-export const x25519ToJwkPublicKey = (
-  _curve: CurveFn,
+export const montgomeryToJwkPublicKey = (
+  curve: CurveFn,
   publicKey: Uint8Array,
 ): JwkPublicKey => {
   try {
-    if (publicKey.length !== 32) {
+    if (publicKey.length !== curve.GuBytes.length) {
       throw new Error('Invalid public key length');
     }
 
     return {
       kty: 'OKP',
-      crv: 'X25519',
+      crv: getMontgomeryCurveName(curve),
       x: encodeBase64Url(publicKey),
     };
   } catch (error) {

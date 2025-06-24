@@ -1,23 +1,23 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
-import { JwkPrivateKey } from '../../types';
-import { x25519ToJwkPublicKey } from './x25519ToJwkPublicKey';
+import { JwkPrivateKey } from '../types';
+import { montgomeryToJwkPublicKey } from './montgomeryToJwkPublicKey';
 import { encodeBase64Url } from 'u8a-utils';
 
 /**
- * Converts a raw X25519 private key to JWK format.
+ * Converts a raw Montgomery private key to JWK format.
  *
  * @param {CurveFn} curve - The curve function used for conversion.
  * @param {Uint8Array} privateKey - The private key in raw format.
  * @returns {JwkPrivateKey} The private key in JWK format.
  * @throws {Error} Throws an error if the conversion fails.
  */
-export const x25519ToJwkPrivateKey = (
+export const montgomeryToJwkPrivateKey = (
   curve: CurveFn,
   privateKey: Uint8Array,
 ): JwkPrivateKey => {
   try {
     const publicKey = curve.getPublicKey(privateKey);
-    const jwkPublicKey = x25519ToJwkPublicKey(curve, publicKey);
+    const jwkPublicKey = montgomeryToJwkPublicKey(curve, publicKey);
     const jwkPrivateKey: JwkPrivateKey = {
       ...jwkPublicKey,
       d: encodeBase64Url(privateKey),
