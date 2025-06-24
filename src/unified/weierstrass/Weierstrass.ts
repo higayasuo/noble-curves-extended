@@ -3,11 +3,11 @@ import { RandomBytes } from '@/curves/types';
 import {
   JwkPrivateKey,
   JwkPublicKey,
-  Signature,
+  SignatureCurve,
   SignParams,
   VerifyParams,
   GetSharedSecretParams,
-  Ecdh,
+  EcdhCurve,
   RecoverPublicKeyParams,
   CurveName,
   SignatureAlgorithmName,
@@ -41,7 +41,9 @@ import { getWeierstrassSignatureAlgorithm } from '@/curves/weierstrass/getWeiers
  * const sharedSecret = weierstrass.getSharedSecret({ privateKey, publicKey: otherPublicKey });
  * ```
  */
-export class Weierstrass implements Readonly<Signature>, Readonly<Ecdh> {
+export class Weierstrass
+  implements Readonly<SignatureCurve>, Readonly<EcdhCurve>
+{
   /** The underlying curve implementation */
   readonly curve: CurveFn;
   /** Function to generate random bytes */
@@ -104,10 +106,15 @@ export class Weierstrass implements Readonly<Signature>, Readonly<Ecdh> {
    * @param {SignParams} params - An object containing the message and private key.
    * @param {Uint8Array} params.message - The message to be signed as a Uint8Array.
    * @param {Uint8Array} params.privateKey - The private key as a Uint8Array.
+   * @param {boolean} [params.recovered=false] - Indicates if the signature should be in recovered format.
    * @returns {Uint8Array} The signature as a Uint8Array.
    */
-  sign = ({ message, privateKey }: SignParams): Uint8Array => {
-    return weierstrassSign(this.curve, { message, privateKey });
+  sign = ({
+    message,
+    privateKey,
+    recovered = false,
+  }: SignParams): Uint8Array => {
+    return weierstrassSign(this.curve, { message, privateKey, recovered });
   };
 
   /**
@@ -129,15 +136,18 @@ export class Weierstrass implements Readonly<Signature>, Readonly<Ecdh> {
    * @param {RecoverPublicKeyParams} params - An object containing the signature and message.
    * @param {Uint8Array} params.signature - The signature from which to recover the public key.
    * @param {Uint8Array} params.message - The message that was signed.
+   * @param {boolean} [params.compressed=true] - Indicates if the recovered public key should be compressed.
    * @returns {Uint8Array} The recovered public key as a Uint8Array.
    */
   recoverPublicKey = ({
     signature,
     message,
+    compressed = true,
   }: RecoverPublicKeyParams): Uint8Array => {
     return weierstrassRecoverPublicKey(this.curve, {
       signature,
       message,
+      compressed,
     });
   };
 

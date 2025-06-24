@@ -117,6 +117,25 @@ describe('Weierstrass', () => {
       expect(signature).toBeInstanceOf(Uint8Array);
       expect(signature.length).toBe(2 * curve.CURVE.nByteLength); // r and s components
     });
+
+    it.each(curves)(
+      'should sign message with recovered signature for $name',
+      ({ createCurve }) => {
+        const curve = createCurve(randomBytes);
+        const weierstrass = new Weierstrass(curve, randomBytes);
+        const privateKey = weierstrass.randomPrivateKey();
+        const message = new TextEncoder().encode('Hello, World!');
+
+        const signature = weierstrass.sign({
+          message,
+          privateKey,
+          recovered: true,
+        });
+
+        expect(signature).toBeInstanceOf(Uint8Array);
+        expect(signature.length).toBe(2 * curve.CURVE.nByteLength + 1); // r, s, and recovery components
+      },
+    );
   });
 
   describe('verify', () => {
@@ -133,6 +152,60 @@ describe('Weierstrass', () => {
         const isValid = weierstrass.verify({ signature, message, publicKey });
 
         expect(isValid).toBe(true);
+      },
+    );
+  });
+
+  describe('recoverPublicKey', () => {
+    it.each(curves)(
+      'should recover compressed public key for $name',
+      ({ createCurve }) => {
+        const curve = createCurve(randomBytes);
+        const weierstrass = new Weierstrass(curve, randomBytes);
+        const privateKey = weierstrass.randomPrivateKey();
+        const expectedPublicKey = weierstrass.getPublicKey(privateKey, true); // compressed
+        const message = new TextEncoder().encode('Hello, World!');
+
+        const signature = weierstrass.sign({
+          message,
+          privateKey,
+          recovered: true,
+        });
+        const recoveredPublicKey = weierstrass.recoverPublicKey({
+          signature,
+          message,
+          compressed: true,
+        });
+
+        expect(recoveredPublicKey).toBeInstanceOf(Uint8Array);
+        expect(recoveredPublicKey.length).toBe(curve.CURVE.nByteLength + 1); // compressed format
+        expect(recoveredPublicKey).toEqual(expectedPublicKey);
+      },
+    );
+
+    it.each(curves)(
+      'should recover uncompressed public key for $name',
+      ({ createCurve }) => {
+        const curve = createCurve(randomBytes);
+        const weierstrass = new Weierstrass(curve, randomBytes);
+        const privateKey = weierstrass.randomPrivateKey();
+        const expectedPublicKey = weierstrass.getPublicKey(privateKey, false); // uncompressed
+        const message = new TextEncoder().encode('Hello, World!');
+
+        const signature = weierstrass.sign({
+          message,
+          privateKey,
+          recovered: true,
+        });
+        const recoveredPublicKey = weierstrass.recoverPublicKey({
+          signature,
+          message,
+          compressed: false,
+        });
+
+        expect(recoveredPublicKey).toBeInstanceOf(Uint8Array);
+        expect(recoveredPublicKey.length).toBe(2 * curve.CURVE.nByteLength + 1); // uncompressed format
+        expect(recoveredPublicKey).toEqual(expectedPublicKey);
       },
     );
   });

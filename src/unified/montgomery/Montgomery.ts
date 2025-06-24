@@ -1,6 +1,6 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
 import {
-  Ecdh,
+  EcdhCurve,
   GetSharedSecretParams,
   JwkPrivateKey,
   JwkPublicKey,
@@ -30,7 +30,7 @@ import { getMontgomeryCurveName } from '@/curves/montgomery';
  * const sharedSecret = montgomery.getSharedSecret({ privateKey, publicKey: peerPublicKey });
  * ```
  */
-export class Montgomery implements Readonly<Ecdh> {
+export class Montgomery implements Readonly<EcdhCurve> {
   /** The underlying curve implementation */
   readonly curve: CurveFn;
   /** Function to generate random bytes */

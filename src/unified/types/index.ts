@@ -242,7 +242,7 @@ export interface UnifiedBase {
  * @extends UnifiedBase
  * @property {GetSharedSecret} getSharedSecret - Function to generate a shared secret
  */
-export interface Ecdh extends UnifiedBase {
+export interface EcdhCurve extends UnifiedBase {
   getSharedSecret: GetSharedSecret;
 }
 
@@ -256,7 +256,7 @@ export interface Ecdh extends UnifiedBase {
  * @property {Verify} verify - Function to verify a signature
  * @property {RecoverPublicKey} recoverPublicKey - Function to recover a public key from a signature and message
  */
-export interface Signature extends UnifiedBase {
+export interface SignatureCurve extends UnifiedBase {
   signatureAlgorithmName: SignatureAlgorithmName;
   sign: Sign;
   verify: Verify;

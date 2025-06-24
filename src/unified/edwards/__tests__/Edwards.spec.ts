@@ -50,6 +50,13 @@ describe('Edwards', () => {
       const invalidPriv = new Uint8Array(16);
       expect(() => ed.getPublicKey(invalidPriv)).toThrow();
     });
+    it('should throw error when compressed is set to false', () => {
+      const { ed } = setup();
+      const priv = ed.randomPrivateKey();
+      expect(() => ed.getPublicKey(priv, false)).toThrow(
+        'Uncompressed public key is not supported',
+      );
+    });
   });
 
   describe('sign', () => {
@@ -64,6 +71,13 @@ describe('Edwards', () => {
       const { ed } = setup();
       const invalidPriv = new Uint8Array(16);
       expect(() => ed.sign({ message, privateKey: invalidPriv })).toThrow();
+    });
+    it('should throw error when recovered is set to true', () => {
+      const { ed } = setup();
+      const priv = ed.randomPrivateKey();
+      expect(() =>
+        ed.sign({ message, privateKey: priv, recovered: true }),
+      ).toThrow('Recovered signature is not supported');
     });
   });
 
@@ -93,7 +107,7 @@ describe('Edwards', () => {
       const sig = ed.sign({ message, privateKey: priv });
 
       expect(() => ed.recoverPublicKey({ message, signature: sig })).toThrow(
-        'Public key recovery is not supported for this curve',
+        'Public key recovery is not supported',
       );
     });
   });

@@ -4,7 +4,7 @@ import {
   JwkPrivateKey,
   JwkPublicKey,
   RecoverPublicKeyParams,
-  Signature,
+  SignatureCurve,
   SignParams,
   VerifyParams,
   CurveName,
@@ -35,7 +35,7 @@ import { getEdwardsCurveName } from '@/curves/edwards';
  * const isValid = edwards.verify({ signature, message, publicKey });
  * ```
  */
-export class Edwards implements Readonly<Signature> {
+export class Edwards implements Readonly<SignatureCurve> {
   /** The underlying curve implementation */
   readonly curve: CurveFn;
   /** Function to generate random bytes */
@@ -67,8 +67,8 @@ export class Edwards implements Readonly<Signature> {
    * @returns {T} The underlying curve implementation
    * @template T The type of the curve implementation
    */
-  getCurve<T extends CurveFn = CurveFn>(): T {
-    return this.curve as T;
+  getCurve(): CurveFn {
+    return this.curve;
   }
 
   /**
@@ -85,11 +85,12 @@ export class Edwards implements Readonly<Signature> {
    * Derives a public key from a private key.
    *
    * @param {Uint8Array} privateKey - The private key to derive from
+   * @param {boolean} [compressed=true] - Indicates if the public key should be compressed.
    * @returns {Uint8Array} The derived public key
    * @throws {Error} If the private key is invalid
    */
-  getPublicKey = (privateKey: Uint8Array): Uint8Array => {
-    return edwardsGetPublicKey(this.curve, privateKey);
+  getPublicKey = (privateKey: Uint8Array, compressed = true): Uint8Array => {
+    return edwardsGetPublicKey(this.curve, privateKey, compressed);
   };
 
   /**
@@ -100,8 +101,12 @@ export class Edwards implements Readonly<Signature> {
    * @param {Uint8Array} params.privateKey - The private key as a Uint8Array.
    * @returns {Uint8Array} The signature as a Uint8Array.
    */
-  sign = ({ message, privateKey }: SignParams): Uint8Array => {
-    return edwardsSign(this.curve, { message, privateKey });
+  sign = ({
+    message,
+    privateKey,
+    recovered = false,
+  }: SignParams): Uint8Array => {
+    return edwardsSign(this.curve, { message, privateKey, recovered });
   };
 
   /**
@@ -125,7 +130,7 @@ export class Edwards implements Readonly<Signature> {
    * @throws {Error} Always throws an error as public key recovery is not supported.
    */
   recoverPublicKey = (_params: RecoverPublicKeyParams): Uint8Array => {
-    throw new Error('Public key recovery is not supported for this curve');
+    throw new Error('Public key recovery is not supported');
   };
 
   /**
