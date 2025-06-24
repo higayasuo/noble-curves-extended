@@ -300,13 +300,13 @@ describe('Weierstrass', () => {
         const curve = createCurve(randomBytes);
         const weierstrass = new Weierstrass(curve, randomBytes);
         const privateKey = weierstrass.randomPrivateKey();
-        const publicKey = weierstrass.getPublicKey(privateKey);
+        const publicKey = weierstrass.getPublicKey(privateKey, false);
         const jwkPublicKey = weierstrass.toJwkPublicKey(publicKey);
 
         const rawPublicKey = weierstrass.toRawPublicKey(jwkPublicKey);
 
         expect(rawPublicKey).toBeInstanceOf(Uint8Array);
-        expect(rawPublicKey.length).toBe(curve.CURVE.nByteLength + 1); // compressed format
+        expect(rawPublicKey.length).toBe(2 * curve.CURVE.nByteLength + 1); // uncompressed format
         expect(rawPublicKey).toEqual(publicKey);
       },
     );

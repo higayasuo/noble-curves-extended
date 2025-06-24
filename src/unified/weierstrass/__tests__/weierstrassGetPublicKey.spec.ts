@@ -72,7 +72,6 @@ describe('weierstrassGetPublicKey', () => {
 
         expect(publicKey).toBeInstanceOf(Uint8Array);
         expect(publicKey.length).toBe(expectedUncompressedLength);
-        console.log('publicKey[0]', publicKey[0]);
         expect(publicKey[0]).toBe(0x04);
       },
     );
