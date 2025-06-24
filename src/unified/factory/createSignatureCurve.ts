@@ -1,5 +1,5 @@
 import { RandomBytes } from '@/curves/types';
-import { SignatureCurve, SignatureCurveName } from '../types';
+import { SignatureCurve } from '../types';
 import { createP256 } from '@/curves/weierstrass/p256';
 import { createP384 } from '@/curves/weierstrass/p384';
 import { createP521 } from '@/curves/weierstrass/p521';
