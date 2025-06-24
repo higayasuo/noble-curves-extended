@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-06-24
+
+### Added
+
+- Added support for multiple Weierstrass curves in public key recovery compatibility tests (P-256, P-384, P-521, secp256k1)
+- Added `ellipticCurveName` property to curve configurations for cleaner mapping to elliptic library
+- Added `getEdwardsCurveName` function for dynamic Edwards curve name detection
+- Added `getMontgomeryCurveName` function for dynamic Montgomery curve name detection
+- Added comprehensive test coverage for curve name detection functions
+- Added unified factory functions for creating signature and ECDH curves
+
+### Changed
+
+- **BREAKING**: Replaced `Ed25519` class with generic `Edwards` class that dynamically determines curve name
+- **BREAKING**: Renamed `signatureAlgorithm` property to `signatureAlgorithmName` in `Signature` interface and related classes for naming consistency
+- Refactored Montgomery curve utilities to use consistent naming (replaced `x25519` with `montgomery`)
+- Updated all test files to use dynamic length checks based on `curve.GuBytes.length` for Montgomery curves
+- Moved curve creation to top-level `describe` blocks in test files for better performance
+- Reorganized unified curve utilities into separate directories for better maintainability
+- Updated export lists to be alphabetically ordered and exclude test directories
+
+### Fixed
+
+- Fixed deprecation warnings in Vitest tests by replacing `it.skip.each()` with `it.each()`
+- Fixed type errors with `curveName` property in Edwards curve implementations
+- Fixed import paths and function names for consistency across the codebase
+- Fixed test structure to use proper curve instantiation patterns
+
+### Removed
+
+- Removed Web Crypto API compatibility tests for public key recovery (not supported by Web Crypto API)
+- Removed redundant test files and consolidated test structure
+
 ## [0.1.4] - 2025-06-13
 
 ### Added
