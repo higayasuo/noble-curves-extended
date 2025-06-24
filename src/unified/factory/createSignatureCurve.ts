@@ -11,13 +11,13 @@ import { Weierstrass } from '@/unified/weierstrass/Weierstrass';
 /**
  * Creates a signature curve instance based on the specified curve name.
  *
- * @param {SignatureCurveName} curveName - The name of the curve to use for the signature.
+ * @param {string} curveName - The name of the curve to use for the signature. Supported values: 'P-256', 'P-384', 'P-521', 'secp256k1', 'Ed25519'.
  * @param {RandomBytes} randomBytes - A function to generate random bytes.
  * @returns {SignatureCurve} A signature curve instance for the specified curve.
  * @throws {Error} Throws an error if the curve name is unsupported.
  */
 export const createSignatureCurve = (
-  curveName: SignatureCurveName,
+  curveName: string,
   randomBytes: RandomBytes,
 ): SignatureCurve => {
   switch (curveName) {

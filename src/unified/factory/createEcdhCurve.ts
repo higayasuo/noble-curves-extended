@@ -1,5 +1,5 @@
 import { RandomBytes } from '@/curves/types';
-import { EcdhCurve, EcdhCurveName } from '../types';
+import { EcdhCurve } from '../types';
 import { createP256 } from '@/curves/weierstrass/p256';
 import { createP384 } from '@/curves/weierstrass/p384';
 import { createP521 } from '@/curves/weierstrass/p521';
@@ -11,13 +11,13 @@ import { Montgomery } from '@/unified/montgomery/Montgomery';
 /**
  * Creates an ECDH curve instance based on the specified curve name.
  *
- * @param {EcdhCurveName} curveName - The name of the curve to use for ECDH.
+ * @param {string} curveName - The name of the curve to use for ECDH. Supported values: 'P-256', 'P-384', 'P-521', 'secp256k1', 'X25519'.
  * @param {RandomBytes} randomBytes - A function to generate random bytes.
  * @returns {EcdhCurve} An ECDH curve instance for the specified curve.
  * @throws {Error} Throws an error if the curve name is unsupported.
  */
 export const createEcdhCurve = (
-  curveName: EcdhCurveName,
+  curveName: string,
   randomBytes: RandomBytes,
 ): EcdhCurve => {
   switch (curveName) {
