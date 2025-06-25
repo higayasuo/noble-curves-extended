@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createX25519 } from '@/curves/montgomery/x25519';
 import { Montgomery } from '../Montgomery';
-import type { CurveFn } from '@noble/curves/abstract/montgomery';
 import { randomBytes } from '@noble/hashes/utils';
 
 describe('Montgomery', () => {
@@ -17,7 +16,7 @@ describe('Montgomery', () => {
       // Default type
       expect(montgomery.getCurve()).toBe(curve);
       // Explicit type
-      const returned = montgomery.getCurve<CurveFn>();
+      const returned = montgomery.getCurve();
       expect(returned).toBe(curve);
     });
   });
