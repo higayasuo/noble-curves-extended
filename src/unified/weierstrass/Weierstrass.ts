@@ -72,11 +72,10 @@ export class Weierstrass
    * Gets the underlying curve implementation.
    * This method allows access to the raw CurveFn implementation when needed.
    *
-   * @returns {T} The underlying curve implementation
-   * @template T The type of the curve implementation
+   * @returns {CurveFn} The underlying curve implementation
    */
-  getCurve<T extends CurveFn = CurveFn>(): T {
-    return this.curve as T;
+  getCurve(): CurveFn {
+    return this.curve;
   }
 
   /**
