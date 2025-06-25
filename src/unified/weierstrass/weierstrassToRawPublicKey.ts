@@ -41,15 +41,20 @@ export const weierstrassToRawPublicKeyInternal = (
   }
 
   if (jwkPublicKey.kty !== 'EC') {
-    throw new Error('Invalid JWK: unsupported key type');
+    throw new Error(
+      `Invalid JWK: invalid key type: ${jwkPublicKey.kty}, expected EC`,
+    );
   }
 
   if (jwkPublicKey.crv === undefined || jwkPublicKey.crv === null) {
     throw new Error('Invalid JWK: missing required parameter for crv');
   }
 
-  if (jwkPublicKey.crv !== getWeierstrassCurveName(curve)) {
-    throw new Error('Invalid JWK: unsupported curve');
+  const expectedCrv = getWeierstrassCurveName(curve);
+  if (jwkPublicKey.crv !== expectedCrv) {
+    throw new Error(
+      `Invalid JWK: invalid curve: ${jwkPublicKey.crv}, expected ${expectedCrv}`,
+    );
   }
 
   if (jwkPublicKey.x === undefined || jwkPublicKey.x === null) {
@@ -68,12 +73,15 @@ export const weierstrassToRawPublicKeyInternal = (
     throw new Error('Invalid JWK: invalid parameter type for y');
   }
 
+  const expectedAlg = getWeierstrassSignatureAlgorithm(curve);
   if (
     jwkPublicKey.alg !== undefined &&
     jwkPublicKey.alg !== null &&
-    jwkPublicKey.alg !== getWeierstrassSignatureAlgorithm(curve)
+    jwkPublicKey.alg !== expectedAlg
   ) {
-    throw new Error('Invalid JWK: unsupported algorithm');
+    throw new Error(
+      `Invalid JWK: invalid algorithm: ${jwkPublicKey.alg}, expected ${expectedAlg}`,
+    );
   }
 
   let decodedX!: Uint8Array;
@@ -84,7 +92,9 @@ export const weierstrassToRawPublicKeyInternal = (
   }
 
   if (decodedX.length !== curve.CURVE.nByteLength) {
-    throw new Error('Invalid JWK: invalid key data for x');
+    throw new Error(
+      `Invalid JWK: invalid the length of the key data for x: ${decodedX.length}, expected ${curve.CURVE.nByteLength}`,
+    );
   }
 
   let decodedY!: Uint8Array;
@@ -95,7 +105,9 @@ export const weierstrassToRawPublicKeyInternal = (
   }
 
   if (decodedY.length !== curve.CURVE.nByteLength) {
-    throw new Error('Invalid JWK: invalid key data for y');
+    throw new Error(
+      `Invalid JWK: invalid the length of the key data for y: ${decodedY.length}, expected ${curve.CURVE.nByteLength}`,
+    );
   }
 
   return new Uint8Array([0x04, ...decodedX, ...decodedY]);
