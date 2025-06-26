@@ -117,7 +117,7 @@ describe('weierstrassToRawPublicKey', () => {
               curve,
               jwkWithoutKty as JwkPublicKey,
             ),
-          ).toThrow('Invalid JWK: missing required parameter for kty');
+          ).toThrow('Missing required parameter for kty');
         },
       );
 
@@ -133,7 +133,7 @@ describe('weierstrassToRawPublicKey', () => {
 
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithNullKty),
-          ).toThrow('Invalid JWK: missing required parameter for kty');
+          ).toThrow('Missing required parameter for kty');
         },
       );
 
@@ -152,7 +152,7 @@ describe('weierstrassToRawPublicKey', () => {
               curve,
               jwkWithWrongKty as JwkPublicKey,
             ),
-          ).toThrow('Invalid JWK: invalid key type: RSA, expected EC');
+          ).toThrow('Invalid key type: RSA, expected EC');
         },
       );
     });
@@ -173,7 +173,7 @@ describe('weierstrassToRawPublicKey', () => {
               curve,
               jwkWithoutCrv as JwkPublicKey,
             ),
-          ).toThrow('Invalid JWK: missing required parameter for crv');
+          ).toThrow('Missing required parameter for crv');
         },
       );
 
@@ -189,7 +189,7 @@ describe('weierstrassToRawPublicKey', () => {
 
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithNullCrv),
-          ).toThrow('Invalid JWK: missing required parameter for crv');
+          ).toThrow('Missing required parameter for crv');
         },
       );
 
@@ -208,9 +208,7 @@ describe('weierstrassToRawPublicKey', () => {
               curve,
               jwkWithWrongCrv as JwkPublicKey,
             ),
-          ).toThrow(
-            `Invalid JWK: invalid curve: WrongCurve, expected ${jwk.crv}`,
-          );
+          ).toThrow(`Invalid curve: WrongCurve, expected ${jwk.crv}`);
         },
       );
     });
@@ -231,7 +229,7 @@ describe('weierstrassToRawPublicKey', () => {
               curve,
               jwkWithoutX as JwkPublicKey,
             ),
-          ).toThrow('Invalid JWK: missing required parameter for x');
+          ).toThrow('Missing required parameter for x');
         },
       );
 
@@ -247,7 +245,7 @@ describe('weierstrassToRawPublicKey', () => {
 
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithNullX),
-          ).toThrow('Invalid JWK: missing required parameter for x');
+          ).toThrow('Missing required parameter for x');
         },
       );
 
@@ -263,7 +261,7 @@ describe('weierstrassToRawPublicKey', () => {
 
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithInvalidXType),
-          ).toThrow('Invalid JWK: invalid parameter type for x');
+          ).toThrow('Invalid parameter type for x');
         },
       );
 
@@ -279,7 +277,7 @@ describe('weierstrassToRawPublicKey', () => {
 
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithInvalidX),
-          ).toThrow('Invalid JWK: malformed encoding for x');
+          ).toThrow('Malformed encoding for x');
         },
       );
 
@@ -302,7 +300,7 @@ describe('weierstrassToRawPublicKey', () => {
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithShortX),
           ).toThrow(
-            `Invalid JWK: invalid the length of the key data for x: ${Math.floor(
+            `Invalid the length of the key data for x: ${Math.floor(
               coordinateLength / 2,
             )}, expected ${coordinateLength}`,
           );
@@ -326,7 +324,7 @@ describe('weierstrassToRawPublicKey', () => {
               curve,
               jwkWithoutY as JwkPublicKey,
             ),
-          ).toThrow('Invalid JWK: missing required parameter for y');
+          ).toThrow('Missing required parameter for y');
         },
       );
 
@@ -342,7 +340,7 @@ describe('weierstrassToRawPublicKey', () => {
 
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithNullY),
-          ).toThrow('Invalid JWK: missing required parameter for y');
+          ).toThrow('Missing required parameter for y');
         },
       );
 
@@ -358,7 +356,7 @@ describe('weierstrassToRawPublicKey', () => {
 
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithInvalidYType),
-          ).toThrow('Invalid JWK: invalid parameter type for y');
+          ).toThrow('Invalid parameter type for y');
         },
       );
 
@@ -374,7 +372,7 @@ describe('weierstrassToRawPublicKey', () => {
 
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithInvalidY),
-          ).toThrow('Invalid JWK: malformed encoding for y');
+          ).toThrow('Malformed encoding for y');
         },
       );
 
@@ -397,7 +395,7 @@ describe('weierstrassToRawPublicKey', () => {
           expect(() =>
             weierstrassToRawPublicKeyInternal(curve, jwkWithLongY),
           ).toThrow(
-            `Invalid JWK: invalid the length of the key data for y: ${
+            `Invalid the length of the key data for y: ${
               coordinateLength + 1
             }, expected ${coordinateLength}`,
           );
@@ -421,9 +419,7 @@ describe('weierstrassToRawPublicKey', () => {
               curve,
               jwkWithWrongAlg as JwkPublicKey,
             ),
-          ).toThrow(
-            `Invalid JWK: invalid algorithm: ES123, expected ${jwk.alg}`,
-          );
+          ).toThrow(`Invalid algorithm: ES123, expected ${jwk.alg}`);
         },
       );
 

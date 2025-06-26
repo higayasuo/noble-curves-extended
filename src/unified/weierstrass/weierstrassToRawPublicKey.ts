@@ -3,6 +3,7 @@ import { JwkPublicKey } from '@/unified/types';
 import { decodeBase64Url } from 'u8a-utils';
 import { getWeierstrassCurveName } from '@/curves/weierstrass/getWeierstrassCurveName';
 import { getWeierstrassSignatureAlgorithm } from '@/curves/weierstrass/getWeierstrassSignatureAlgorithm';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Converts a JWK formatted Weierstrass public key to a raw public key.
@@ -19,7 +20,7 @@ export const weierstrassToRawPublicKey = (
   try {
     return weierstrassToRawPublicKeyInternal(curve, jwkPublicKey);
   } catch (e) {
-    console.error(e);
+    console.log(getErrorMessage(e));
     throw new Error('Failed to convert JWK to raw public key');
   }
 };
@@ -37,40 +38,38 @@ export const weierstrassToRawPublicKeyInternal = (
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
   if (jwkPublicKey.kty === undefined || jwkPublicKey.kty === null) {
-    throw new Error('Invalid JWK: missing required parameter for kty');
+    throw new Error('Missing required parameter for kty');
   }
 
   if (jwkPublicKey.kty !== 'EC') {
-    throw new Error(
-      `Invalid JWK: invalid key type: ${jwkPublicKey.kty}, expected EC`,
-    );
+    throw new Error(`Invalid key type: ${jwkPublicKey.kty}, expected EC`);
   }
 
   if (jwkPublicKey.crv === undefined || jwkPublicKey.crv === null) {
-    throw new Error('Invalid JWK: missing required parameter for crv');
+    throw new Error('Missing required parameter for crv');
   }
 
   const expectedCrv = getWeierstrassCurveName(curve);
   if (jwkPublicKey.crv !== expectedCrv) {
     throw new Error(
-      `Invalid JWK: invalid curve: ${jwkPublicKey.crv}, expected ${expectedCrv}`,
+      `Invalid curve: ${jwkPublicKey.crv}, expected ${expectedCrv}`,
     );
   }
 
   if (jwkPublicKey.x === undefined || jwkPublicKey.x === null) {
-    throw new Error('Invalid JWK: missing required parameter for x');
+    throw new Error('Missing required parameter for x');
   }
 
   if (typeof jwkPublicKey.x !== 'string') {
-    throw new Error('Invalid JWK: invalid parameter type for x');
+    throw new Error('Invalid parameter type for x');
   }
 
   if (jwkPublicKey.y === undefined || jwkPublicKey.y === null) {
-    throw new Error('Invalid JWK: missing required parameter for y');
+    throw new Error('Missing required parameter for y');
   }
 
   if (typeof jwkPublicKey.y !== 'string') {
-    throw new Error('Invalid JWK: invalid parameter type for y');
+    throw new Error('Invalid parameter type for y');
   }
 
   const expectedAlg = getWeierstrassSignatureAlgorithm(curve);
@@ -80,7 +79,7 @@ export const weierstrassToRawPublicKeyInternal = (
     jwkPublicKey.alg !== expectedAlg
   ) {
     throw new Error(
-      `Invalid JWK: invalid algorithm: ${jwkPublicKey.alg}, expected ${expectedAlg}`,
+      `Invalid algorithm: ${jwkPublicKey.alg}, expected ${expectedAlg}`,
     );
   }
 
@@ -88,12 +87,12 @@ export const weierstrassToRawPublicKeyInternal = (
   try {
     decodedX = decodeBase64Url(jwkPublicKey.x);
   } catch (e) {
-    throw new Error('Invalid JWK: malformed encoding for x');
+    throw new Error('Malformed encoding for x');
   }
 
   if (decodedX.length !== curve.CURVE.nByteLength) {
     throw new Error(
-      `Invalid JWK: invalid the length of the key data for x: ${decodedX.length}, expected ${curve.CURVE.nByteLength}`,
+      `Invalid the length of the key data for x: ${decodedX.length}, expected ${curve.CURVE.nByteLength}`,
     );
   }
 
@@ -101,12 +100,12 @@ export const weierstrassToRawPublicKeyInternal = (
   try {
     decodedY = decodeBase64Url(jwkPublicKey.y);
   } catch (e) {
-    throw new Error('Invalid JWK: malformed encoding for y');
+    throw new Error('Malformed encoding for y');
   }
 
   if (decodedY.length !== curve.CURVE.nByteLength) {
     throw new Error(
-      `Invalid JWK: invalid the length of the key data for y: ${decodedY.length}, expected ${curve.CURVE.nByteLength}`,
+      `Invalid the length of the key data for y: ${decodedY.length}, expected ${curve.CURVE.nByteLength}`,
     );
   }
 
