@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.3] - 2025-06-26
+
+### Changed
+
+- Improved error messages in `toRawPublicKey` and `toRawPrivateKey` functions across all curve types (Weierstrass, Edwards, Montgomery):
+  - Removed "Invalid JWK:" prefix from all error messages for cleaner output
+  - Made error messages start with capital letters for better readability
+  - Enhanced error messages to be more specific and informative
+  - Added `getErrorMessage` utility usage for consistent error handling
+  - Updated test expectations to match the new error message format
+  - Simplified test structure for non-critical parameters while maintaining comprehensive coverage for key validation
+
 ## [0.2.2] - 2025-06-25
 
 ### Added
