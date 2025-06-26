@@ -2,6 +2,7 @@ import { CurveFn } from '@noble/curves/abstract/montgomery';
 import { JwkPublicKey } from '../types';
 import { decodeBase64Url } from 'u8a-utils';
 import { getMontgomeryCurveName } from '@/curves/montgomery';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Converts a JWK formatted Montgomery public key to a raw public key.
@@ -18,7 +19,7 @@ export const montgomeryToRawPublicKey = (
   try {
     return montgomeryToRawPublicKeyInternal(curve, jwkPublicKey);
   } catch (e) {
-    console.error(e);
+    console.log(getErrorMessage(e));
     throw new Error('Failed to convert JWK to raw public key');
   }
 };
@@ -36,38 +37,43 @@ export const montgomeryToRawPublicKeyInternal = (
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
   if (jwkPublicKey.kty === undefined || jwkPublicKey.kty === null) {
-    throw new Error('Invalid JWK: missing required parameter for kty');
+    throw new Error('Missing required parameter for kty');
   }
 
   if (jwkPublicKey.kty !== 'OKP') {
-    throw new Error('Invalid JWK: unsupported key type');
+    throw new Error(`Invalid key type: ${jwkPublicKey.kty}, expected OKP`);
   }
 
   if (jwkPublicKey.crv === undefined || jwkPublicKey.crv === null) {
-    throw new Error('Invalid JWK: missing required parameter for crv');
+    throw new Error('Missing required parameter for crv');
   }
 
-  if (jwkPublicKey.crv !== getMontgomeryCurveName(curve)) {
-    throw new Error('Invalid JWK: unsupported curve');
+  const expectedCrv = getMontgomeryCurveName(curve);
+  if (jwkPublicKey.crv !== expectedCrv) {
+    throw new Error(
+      `Invalid curve: ${jwkPublicKey.crv}, expected ${expectedCrv}`,
+    );
   }
 
   if (jwkPublicKey.x === undefined || jwkPublicKey.x === null) {
-    throw new Error('Invalid JWK: missing required parameter for x');
+    throw new Error('Missing required parameter for x');
   }
 
   if (typeof jwkPublicKey.x !== 'string') {
-    throw new Error('Invalid JWK: invalid parameter type for x');
+    throw new Error('Invalid parameter type for x');
   }
 
   let decodedX!: Uint8Array;
   try {
     decodedX = decodeBase64Url(jwkPublicKey.x);
   } catch (e) {
-    throw new Error('Invalid JWK: malformed encoding for x');
+    throw new Error('Malformed encoding for x');
   }
 
   if (decodedX.length !== curve.GuBytes.length) {
-    throw new Error('Invalid JWK: invalid key data for x');
+    throw new Error(
+      `Invalid the length of the key data for x: ${decodedX.length}, expected ${curve.GuBytes.length}`,
+    );
   }
 
   return decodedX;

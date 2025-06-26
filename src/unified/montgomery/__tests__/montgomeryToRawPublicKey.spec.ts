@@ -11,7 +11,7 @@ import type { JwkPublicKey } from '../../types';
 describe('montgomeryToRawPublicKey', () => {
   const curve = createX25519(randomBytes);
 
-  describe('valid JWK conversion', () => {
+  describe('montgomeryToRawPublicKey', () => {
     it('should convert a valid JWK to a raw public key', () => {
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = curve.getPublicKey(privateKey);
@@ -19,184 +19,161 @@ describe('montgomeryToRawPublicKey', () => {
       const rawPublicKey = montgomeryToRawPublicKey(curve, jwk);
       expect(rawPublicKey).toEqual(publicKey);
     });
+
+    it('should throw generic error for invalid JWK', () => {
+      const invalidJwk = { kty: 'EC' } as JwkPublicKey;
+      expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
+        'Failed to convert JWK to raw public key',
+      );
+    });
   });
 
-  describe('error handling', () => {
-    describe('kty parameter', () => {
-      it('should throw an error for missing kty parameter', () => {
+  describe('montgomeryToRawPublicKeyInternal', () => {
+    describe('valid JWK conversion', () => {
+      it('should convert a valid JWK to a raw public key', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const { kty, ...invalidJwk } = jwk;
-        expect(() =>
-          montgomeryToRawPublicKey(curve, invalidJwk as JwkPublicKey),
-        ).toThrow('Failed to convert JWK to raw public key');
-      });
-
-      it('should throw an error for null kty parameter', () => {
-        const privateKey = curve.utils.randomPrivateKey();
-        const publicKey = curve.getPublicKey(privateKey);
-        const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = { ...jwk, kty: null } as unknown as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
-      });
-
-      it('should throw an error for undefined kty parameter', () => {
-        const privateKey = curve.utils.randomPrivateKey();
-        const publicKey = curve.getPublicKey(privateKey);
-        const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = {
-          ...jwk,
-          kty: undefined,
-        } as unknown as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
-      });
-
-      it('should throw an error for invalid kty', () => {
-        const privateKey = curve.utils.randomPrivateKey();
-        const publicKey = curve.getPublicKey(privateKey);
-        const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = { ...jwk, kty: 'EC' } as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
+        const rawPublicKey = montgomeryToRawPublicKeyInternal(curve, jwk);
+        expect(rawPublicKey).toEqual(publicKey);
       });
     });
 
-    describe('crv parameter', () => {
-      it('should throw an error for missing crv parameter', () => {
+    describe('kty parameter validation', () => {
+      it('should throw error for missing kty', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const { crv, ...invalidJwk } = jwk;
+        const { kty, ...jwkWithoutKty } = jwk;
         expect(() =>
-          montgomeryToRawPublicKey(curve, invalidJwk as JwkPublicKey),
-        ).toThrow('Failed to convert JWK to raw public key');
+          montgomeryToRawPublicKeyInternal(
+            curve,
+            jwkWithoutKty as JwkPublicKey,
+          ),
+        ).toThrow('Missing required parameter for kty');
       });
 
-      it('should throw an error for null crv parameter', () => {
+      it('should throw error for null kty', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = { ...jwk, crv: null } as unknown as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
+        const jwkWithNullKty = { ...jwk, kty: null } as unknown as JwkPublicKey;
+        expect(() =>
+          montgomeryToRawPublicKeyInternal(curve, jwkWithNullKty),
+        ).toThrow('Missing required parameter for kty');
       });
 
-      it('should throw an error for undefined crv parameter', () => {
+      it('should throw error for wrong kty', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = {
-          ...jwk,
-          crv: undefined,
-        } as unknown as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
-      });
-
-      it('should throw an error for invalid crv', () => {
-        const privateKey = curve.utils.randomPrivateKey();
-        const publicKey = curve.getPublicKey(privateKey);
-        const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = { ...jwk, crv: 'Ed25519' } as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
+        const jwkWithWrongKty = { ...jwk, kty: 'EC' } as JwkPublicKey;
+        expect(() =>
+          montgomeryToRawPublicKeyInternal(curve, jwkWithWrongKty),
+        ).toThrow('Invalid key type: EC, expected OKP');
       });
     });
 
-    describe('x parameter', () => {
-      it('should throw an error for missing x parameter', () => {
+    describe('crv parameter validation', () => {
+      it('should throw error for missing crv', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const { x, ...invalidJwk } = jwk;
+        const { crv, ...jwkWithoutCrv } = jwk;
         expect(() =>
-          montgomeryToRawPublicKey(curve, invalidJwk as JwkPublicKey),
-        ).toThrow('Failed to convert JWK to raw public key');
+          montgomeryToRawPublicKeyInternal(
+            curve,
+            jwkWithoutCrv as JwkPublicKey,
+          ),
+        ).toThrow('Missing required parameter for crv');
       });
 
-      it('should throw an error for null x parameter', () => {
+      it('should throw error for null crv', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = { ...jwk, x: null } as unknown as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
+        const jwkWithNullCrv = { ...jwk, crv: null } as unknown as JwkPublicKey;
+        expect(() =>
+          montgomeryToRawPublicKeyInternal(curve, jwkWithNullCrv),
+        ).toThrow('Missing required parameter for crv');
       });
 
-      it('should throw an error for undefined x parameter', () => {
+      it('should throw error for wrong crv', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = { ...jwk, x: undefined } as unknown as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
+        const jwkWithWrongCrv = { ...jwk, crv: 'Ed25519' } as JwkPublicKey;
+        expect(() =>
+          montgomeryToRawPublicKeyInternal(curve, jwkWithWrongCrv),
+        ).toThrow('Invalid curve: Ed25519, expected X25519');
       });
+    });
 
-      it('should throw an error for empty string x parameter (results in length 0)', () => {
+    describe('x parameter validation', () => {
+      it('should throw error for missing x', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = { ...jwk, x: '' } as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
+        const { x, ...jwkWithoutX } = jwk;
+        expect(() =>
+          montgomeryToRawPublicKeyInternal(curve, jwkWithoutX as JwkPublicKey),
+        ).toThrow('Missing required parameter for x');
       });
 
-      it('should throw an error for non-string x parameter', () => {
+      it('should throw error for null x', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = { ...jwk, x: 123 } as unknown as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
+        const jwkWithNullX = { ...jwk, x: null } as unknown as JwkPublicKey;
+        expect(() =>
+          montgomeryToRawPublicKeyInternal(curve, jwkWithNullX),
+        ).toThrow('Missing required parameter for x');
       });
 
-      it('should throw an error for malformed Base64URL in x parameter', () => {
+      it('should throw error for invalid x type', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
         const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-        const invalidJwk = { ...jwk, x: 'invalid-base64url!' } as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
-        );
+        const jwkWithInvalidXType = {
+          ...jwk,
+          x: 123,
+        } as unknown as JwkPublicKey;
+        expect(() =>
+          montgomeryToRawPublicKeyInternal(curve, jwkWithInvalidXType),
+        ).toThrow('Invalid parameter type for x');
       });
 
-      it('should throw an error for public key with invalidlength', () => {
+      it('should throw error for invalid x encoding', () => {
+        const privateKey = curve.utils.randomPrivateKey();
+        const publicKey = curve.getPublicKey(privateKey);
+        const jwk = montgomeryToJwkPublicKey(curve, publicKey);
+        const jwkWithInvalidX = {
+          ...jwk,
+          x: 'invalid-base64url!',
+        } as JwkPublicKey;
+        expect(() =>
+          montgomeryToRawPublicKeyInternal(curve, jwkWithInvalidX),
+        ).toThrow('Malformed encoding for x');
+      });
+
+      it('should throw error for wrong x length', () => {
         const invalidPublicKey = new Uint8Array(curve.GuBytes.length - 1);
         const jwk = montgomeryToJwkPublicKey(
           curve,
           curve.getPublicKey(curve.utils.randomPrivateKey()),
         );
-        const invalidJwk = {
+        const jwkWithWrongX = {
           ...jwk,
           x: Buffer.from(invalidPublicKey).toString('base64url'),
         } as JwkPublicKey;
-        expect(() => montgomeryToRawPublicKey(curve, invalidJwk)).toThrow(
-          'Failed to convert JWK to raw public key',
+        expect(() =>
+          montgomeryToRawPublicKeyInternal(curve, jwkWithWrongX),
+        ).toThrow(
+          `Invalid the length of the key data for x: ${
+            curve.GuBytes.length - 1
+          }, expected ${curve.GuBytes.length}`,
         );
       });
-    });
-  });
-
-  describe('internal function', () => {
-    it('should work with internal function', () => {
-      const privateKey = curve.utils.randomPrivateKey();
-      const publicKey = curve.getPublicKey(privateKey);
-      const jwk = montgomeryToJwkPublicKey(curve, publicKey);
-      const rawPublicKey = montgomeryToRawPublicKeyInternal(curve, jwk);
-      expect(rawPublicKey).toEqual(publicKey);
     });
   });
 });

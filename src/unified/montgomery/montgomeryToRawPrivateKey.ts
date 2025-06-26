@@ -2,6 +2,7 @@ import { CurveFn } from '@noble/curves/abstract/montgomery';
 import { JwkPrivateKey } from '../types';
 import { compareUint8Arrays, decodeBase64Url } from 'u8a-utils';
 import { montgomeryToRawPublicKeyInternal } from './montgomeryToRawPublicKey';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Converts a JWK (JSON Web Key) to a raw Montgomery private key.
@@ -18,7 +19,7 @@ export const montgomeryToRawPrivateKey = (
   try {
     return montgomeryToRawPrivateKeyInternal(curve, jwkPrivateKey);
   } catch (e) {
-    console.error(e);
+    console.log(getErrorMessage(e));
     throw new Error('Failed to convert JWK to raw private key');
   }
 };
@@ -39,26 +40,30 @@ export const montgomeryToRawPrivateKeyInternal = (
   const publicKey = montgomeryToRawPublicKeyInternal(curve, jwkPrivateKey);
 
   if (jwkPrivateKey.d === undefined || jwkPrivateKey.d === null) {
-    throw new Error('Invalid JWK: missing required parameter for d');
+    throw new Error('Missing required parameter for d');
   }
 
   if (typeof jwkPrivateKey.d !== 'string') {
-    throw new Error('Invalid JWK: invalid parameter type for d');
+    throw new Error('Invalid parameter type for d');
   }
 
   let decodedD!: Uint8Array;
   try {
     decodedD = decodeBase64Url(jwkPrivateKey.d);
   } catch (e) {
-    throw new Error('Invalid JWK: malformed encoding for d');
+    throw new Error('Malformed encoding for d');
   }
 
   if (decodedD.length !== curve.GuBytes.length) {
-    throw new Error('Invalid JWK: invalid key data for d');
+    throw new Error(
+      `Invalid the length of the key data for d: ${decodedD.length}, expected ${curve.GuBytes.length}`,
+    );
   }
 
   if (!compareUint8Arrays(curve.getPublicKey(decodedD), publicKey)) {
-    throw new Error('Invalid JWK: invalid key data for d');
+    throw new Error(
+      'The public key derived from the private key does not match the public key in the JWK',
+    );
   }
 
   return decodedD;
