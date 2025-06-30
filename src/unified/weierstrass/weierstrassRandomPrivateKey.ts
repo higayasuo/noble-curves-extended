@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { CurveFn } from '@noble/curves/abstract/weierstrass';
 
 /**
@@ -12,7 +13,7 @@ export const weierstrassRandomPrivateKey = (curve: CurveFn): Uint8Array => {
   try {
     return curve.utils.randomPrivateKey();
   } catch (e) {
-    console.error(e);
+    console.log(getErrorMessage(e));
     throw new Error('Failed to generate random private key');
   }
 };

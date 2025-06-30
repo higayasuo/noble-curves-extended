@@ -3,6 +3,7 @@ import type { VerifyParams } from '@/unified/types';
 import { isUint8Array } from 'u8a-utils';
 import { ensureUint8Array } from 'u8a-utils';
 import { fromRawSignature } from '@/curves/weierstrass/fromRawSignature';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Verifies a signature using the Weierstrass curve and a public key.
@@ -23,7 +24,7 @@ export const weierstrassVerify = (
     const sig = fromRawSignature(curve, signature);
     return curve.verify(sig, msg, publicKey, { prehash: true });
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     return false;
   }
 };

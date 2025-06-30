@@ -2,6 +2,7 @@ import { CurveFn } from '@noble/curves/abstract/weierstrass';
 import type { SignParams } from '@/unified/types';
 import { isUint8Array, ensureUint8Array } from 'u8a-utils';
 import { toRawRecoveredSignature } from '@/curves/weierstrass/toRawRecoveredSignature';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Signs a message using the Weierstrass curve and a private key.
@@ -28,7 +29,7 @@ export const weierstrassSign = (
 
     return signature.toCompactRawBytes();
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to sign message');
   }
 };

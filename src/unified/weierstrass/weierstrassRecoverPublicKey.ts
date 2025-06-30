@@ -3,6 +3,7 @@ import type { RecoverPublicKeyParams } from '@/unified/types';
 import { isUint8Array } from 'u8a-utils';
 import { ensureUint8Array } from 'u8a-utils';
 import { fromRawSignature } from '@/curves/weierstrass/fromRawSignature';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Recovers a public key from a given signature and message using the Weierstrass curve.
@@ -27,7 +28,7 @@ export const weierstrassRecoverPublicKey = (
 
     return point.toRawBytes(compressed);
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to recover public key');
   }
 };

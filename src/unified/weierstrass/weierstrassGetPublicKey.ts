@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { CurveFn } from '@noble/curves/abstract/weierstrass';
 
 /**
@@ -17,7 +18,7 @@ export const weierstrassGetPublicKey = (
   try {
     return curve.getPublicKey(privateKey, compressed);
   } catch (e) {
-    console.error(e);
+    console.log(getErrorMessage(e));
     throw new Error('Failed to get public key');
   }
 };

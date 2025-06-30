@@ -3,6 +3,7 @@ import { getWeierstrassCurveName } from '@/curves/weierstrass';
 import { JwkPublicKey } from '../types';
 import { encodeBase64Url } from 'u8a-utils';
 import { getWeierstrassSignatureAlgorithm } from '@/curves/weierstrass/getWeierstrassSignatureAlgorithm';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Converts a Weierstrass public key to a JWK format.
@@ -31,7 +32,7 @@ export const weierstrassToJwkPublickKey = (
       y: encodeBase64Url(y),
     };
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to convert public key to JWK');
   }
 };
