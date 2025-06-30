@@ -1,4 +1,5 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { compareUint8Arrays } from 'u8a-utils';
 
 /**
@@ -35,7 +36,7 @@ export const edwardsGetPublicKey = (
 
     return curve.getPublicKey(privateKey);
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to get public key');
   }
 };

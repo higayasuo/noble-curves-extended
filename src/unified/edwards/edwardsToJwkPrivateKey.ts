@@ -2,6 +2,7 @@ import { CurveFn } from '@noble/curves/abstract/edwards';
 import { JwkPrivateKey } from '@/unified/types';
 import { edwardsToJwkPublicKey } from './edwardsToJwkPublicKey';
 import { encodeBase64Url } from 'u8a-utils';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Converts an edwards private key to a JWK format.
@@ -24,7 +25,7 @@ export const edwardsToJwkPrivateKey = (
       d: encodeBase64Url(privateKey),
     };
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to convert private key to JWK');
   }
 };

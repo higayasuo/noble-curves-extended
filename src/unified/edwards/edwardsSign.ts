@@ -1,6 +1,7 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
 import type { SignParams } from '@/unified/types';
 import { isUint8Array, ensureUint8Array } from 'u8a-utils';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Signs a message using the edwards curve and a private key.
@@ -30,7 +31,7 @@ export const edwardsSign = (
         : privateKey;
     return curve.sign(msg, seed);
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to sign message');
   }
 };

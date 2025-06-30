@@ -2,6 +2,7 @@ import { CurveFn } from '@noble/curves/abstract/edwards';
 import type { VerifyParams } from '@/unified/types';
 import { isUint8Array } from 'u8a-utils';
 import { ensureUint8Array } from 'u8a-utils';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Verifies a signature using the edwards curve and a public key.
@@ -21,7 +22,7 @@ export const edwardsVerify = (
     const msg = isUint8Array(message) ? ensureUint8Array(message) : message;
     return curve.verify(signature, msg, publicKey);
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     return false;
   }
 };
