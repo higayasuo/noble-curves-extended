@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { CurveFn } from '@noble/curves/abstract/montgomery';
 
 /**
@@ -22,7 +23,7 @@ export const montgomeryGetPublicKey = (
   try {
     return curve.getPublicKey(privateKey);
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to get public key');
   }
 };

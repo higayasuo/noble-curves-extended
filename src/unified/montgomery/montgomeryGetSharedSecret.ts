@@ -2,6 +2,7 @@ import { CurveFn } from '@noble/curves/abstract/montgomery';
 import { x25519IsSmallOrderPoint } from './x25519IsSmallOrderPoint';
 import type { GetSharedSecretParams } from '../types';
 import { getMontgomeryCurveName } from '@/curves/montgomery/getMontgomeryCurveName';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Computes the shared secret for the Montgomery curve using a private key and a public key.
@@ -33,7 +34,7 @@ export const montgomeryGetSharedSecret = (
 
     throw new Error('Shared secret is zero');
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to compute shared secret');
   }
 };

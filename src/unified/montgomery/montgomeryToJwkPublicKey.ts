@@ -2,6 +2,7 @@ import { CurveFn } from '@noble/curves/abstract/montgomery';
 import type { JwkPublicKey } from '../types';
 import { encodeBase64Url } from 'u8a-utils';
 import { getMontgomeryCurveName } from '@/curves/montgomery';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Converts a raw Montgomery public key to JWK format.
@@ -26,7 +27,7 @@ export const montgomeryToJwkPublicKey = (
       x: encodeBase64Url(publicKey),
     };
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to convert public key to JWK');
   }
 };

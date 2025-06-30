@@ -2,6 +2,7 @@ import { CurveFn } from '@noble/curves/abstract/montgomery';
 import { JwkPrivateKey } from '../types';
 import { montgomeryToJwkPublicKey } from './montgomeryToJwkPublicKey';
 import { encodeBase64Url } from 'u8a-utils';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Converts a raw Montgomery private key to JWK format.
@@ -25,7 +26,7 @@ export const montgomeryToJwkPrivateKey = (
 
     return jwkPrivateKey;
   } catch (error) {
-    console.error(error);
+    console.log(getErrorMessage(error));
     throw new Error('Failed to convert private key to JWK');
   }
 };
