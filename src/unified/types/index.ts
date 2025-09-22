@@ -38,31 +38,43 @@ export type SignatureAlgorithmName =
   | 'EdDSA';
 
 /**
- * JSON Web Key (JWK) representation of a public key.
- * @typedef {Object} JwkPublicKey
+ * Base JSON Web Key (JWK) structure containing common properties.
+ * @typedef {Object} JwkBase
  * @property {string} kty - Key type
  * @property {string} crv - Curve name
  * @property {string} [alg] - Algorithm
  * @property {string} x - X coordinate in base64url format
  * @property {string} [y] - Y coordinate in base64url format
+ * @property {string[]} [key_ops] - Key operations
  */
-export type JwkPublicKey = {
+export type JwkBase = {
   kty: string;
   crv: string;
   alg?: string;
   x: string;
   y?: string;
+  key_ops?: string[];
+};
+
+/**
+ * JSON Web Key (JWK) representation of a public key.
+ * Extends JwkBase with an optional key identifier.
+ * @typedef {Object} JwkPublicKey
+ * @property {string} [kid] - Key identifier
+ */
+export type JwkPublicKey = JwkBase & {
+  kid?: string;
 };
 
 /**
  * JSON Web Key (JWK) representation of a private key.
- * Extends JwkPublicKey with a private key component.
+ * Extends JwkBase with a private key component.
  * @typedef {Object} JwkPrivateKey
  * @property {string} d - Private key in base64url format
  */
-export type JwkPrivateKey = {
+export type JwkPrivateKey = JwkBase & {
   d: string;
-} & JwkPublicKey;
+};
 
 /**
  * Converts a private key to a JWK object.
