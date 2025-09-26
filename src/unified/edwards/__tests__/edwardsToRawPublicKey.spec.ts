@@ -9,6 +9,7 @@ import { randomBytes } from '@noble/hashes/utils';
 import { JwkPublicKey } from '@/unified/types';
 
 const keyByteLength = 32;
+const curveName = 'Ed25519';
 
 describe('edwardsToRawPublicKey', () => {
   describe('edwardsToRawPublicKey', () => {
@@ -17,7 +18,12 @@ describe('edwardsToRawPublicKey', () => {
       const privateKey = curve.utils.randomPrivateKey();
       const publicKey = curve.getPublicKey(privateKey);
       const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
-      const rawPublicKey = edwardsToRawPublicKey(curve, keyByteLength, jwk);
+      const rawPublicKey = edwardsToRawPublicKey(
+        curve,
+        keyByteLength,
+        curveName,
+        jwk,
+      );
       expect(rawPublicKey).toEqual(publicKey);
     });
 
@@ -25,7 +31,7 @@ describe('edwardsToRawPublicKey', () => {
       const curve = createEd25519(randomBytes);
       const invalidJwk = { kty: 'EC' } as JwkPublicKey;
       expect(() =>
-        edwardsToRawPublicKey(curve, keyByteLength, invalidJwk),
+        edwardsToRawPublicKey(curve, keyByteLength, curveName, invalidJwk),
       ).toThrow('Failed to convert JWK to raw public key');
     });
   });
@@ -40,6 +46,7 @@ describe('edwardsToRawPublicKey', () => {
         const rawPublicKey = edwardsToRawPublicKeyInternal(
           curve,
           keyByteLength,
+          curveName,
           jwk,
         );
         expect(rawPublicKey).toEqual(publicKey);
@@ -54,6 +61,7 @@ describe('edwardsToRawPublicKey', () => {
         const rawPublicKey = edwardsToRawPublicKeyInternal(
           curve,
           keyByteLength,
+          curveName,
           jwkWithoutAlg as unknown as JwkPublicKey,
         );
         expect(rawPublicKey).toEqual(publicKey);
@@ -71,6 +79,7 @@ describe('edwardsToRawPublicKey', () => {
           edwardsToRawPublicKeyInternal(
             curve,
             keyByteLength,
+            curveName,
             jwkWithoutKty as unknown as JwkPublicKey,
           ),
         ).toThrow('Missing required parameter for kty');
@@ -83,7 +92,12 @@ describe('edwardsToRawPublicKey', () => {
         const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
         const jwkWithNullKty = { ...jwk, kty: null as unknown as string };
         expect(() =>
-          edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkWithNullKty),
+          edwardsToRawPublicKeyInternal(
+            curve,
+            keyByteLength,
+            curveName,
+            jwkWithNullKty,
+          ),
         ).toThrow('Missing required parameter for kty');
       });
 
@@ -94,7 +108,12 @@ describe('edwardsToRawPublicKey', () => {
         const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
         const jwkWithWrongKty = { ...jwk, kty: 'EC' };
         expect(() =>
-          edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkWithWrongKty),
+          edwardsToRawPublicKeyInternal(
+            curve,
+            keyByteLength,
+            curveName,
+            jwkWithWrongKty,
+          ),
         ).toThrow('Invalid key type: EC, expected OKP');
       });
     });
@@ -110,6 +129,7 @@ describe('edwardsToRawPublicKey', () => {
           edwardsToRawPublicKeyInternal(
             curve,
             keyByteLength,
+            curveName,
             jwkWithoutCrv as unknown as JwkPublicKey,
           ),
         ).toThrow('Missing required parameter for crv');
@@ -122,7 +142,12 @@ describe('edwardsToRawPublicKey', () => {
         const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
         const jwkWithNullCrv = { ...jwk, crv: null as any };
         expect(() =>
-          edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkWithNullCrv),
+          edwardsToRawPublicKeyInternal(
+            curve,
+            keyByteLength,
+            curveName,
+            jwkWithNullCrv,
+          ),
         ).toThrow('Missing required parameter for crv');
       });
 
@@ -133,7 +158,12 @@ describe('edwardsToRawPublicKey', () => {
         const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
         const jwkWithWrongCrv = { ...jwk, crv: 'X25519' };
         expect(() =>
-          edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkWithWrongCrv),
+          edwardsToRawPublicKeyInternal(
+            curve,
+            keyByteLength,
+            curveName,
+            jwkWithWrongCrv,
+          ),
         ).toThrow('Invalid curve: X25519, expected Ed25519');
       });
     });
@@ -149,6 +179,7 @@ describe('edwardsToRawPublicKey', () => {
           edwardsToRawPublicKeyInternal(
             curve,
             keyByteLength,
+            curveName,
             jwkWithoutX as unknown as JwkPublicKey,
           ),
         ).toThrow('Missing required parameter for x');
@@ -161,7 +192,12 @@ describe('edwardsToRawPublicKey', () => {
         const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
         const jwkWithNullX = { ...jwk, x: null as unknown as string };
         expect(() =>
-          edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkWithNullX),
+          edwardsToRawPublicKeyInternal(
+            curve,
+            keyByteLength,
+            curveName,
+            jwkWithNullX,
+          ),
         ).toThrow('Missing required parameter for x');
       });
 
@@ -175,6 +211,7 @@ describe('edwardsToRawPublicKey', () => {
           edwardsToRawPublicKeyInternal(
             curve,
             keyByteLength,
+            curveName,
             jwkWithInvalidXType,
           ),
         ).toThrow('Invalid parameter type for x');
@@ -187,7 +224,12 @@ describe('edwardsToRawPublicKey', () => {
         const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
         const jwkWithInvalidX = { ...jwk, x: 'invalid-base64url!' };
         expect(() =>
-          edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkWithInvalidX),
+          edwardsToRawPublicKeyInternal(
+            curve,
+            keyByteLength,
+            curveName,
+            jwkWithInvalidX,
+          ),
         ).toThrow('Malformed encoding for x');
       });
 
@@ -202,9 +244,14 @@ describe('edwardsToRawPublicKey', () => {
           x: Buffer.from(invalidPublicKey).toString('base64url'),
         };
         expect(() =>
-          edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkWithWrongX),
+          edwardsToRawPublicKeyInternal(
+            curve,
+            keyByteLength,
+            curveName,
+            jwkWithWrongX,
+          ),
         ).toThrow(
-          `Invalid the length of the key data for x: 16, expected ${curve.CURVE.nByteLength}`,
+          `Invalid the length of the key data for x: 16, expected ${keyByteLength}`,
         );
       });
     });
@@ -217,7 +264,12 @@ describe('edwardsToRawPublicKey', () => {
         const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
         const jwkWithWrongAlg = { ...jwk, alg: 'ES256' };
         expect(() =>
-          edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkWithWrongAlg),
+          edwardsToRawPublicKeyInternal(
+            curve,
+            keyByteLength,
+            curveName,
+            jwkWithWrongAlg,
+          ),
         ).toThrow('Invalid algorithm: ES256, expected EdDSA');
       });
 
@@ -230,6 +282,7 @@ describe('edwardsToRawPublicKey', () => {
         const rawPublicKey = edwardsToRawPublicKeyInternal(
           curve,
           keyByteLength,
+          curveName,
           jwkWithNullAlg,
         );
         expect(rawPublicKey).toEqual(publicKey);
@@ -247,6 +300,7 @@ describe('edwardsToRawPublicKey', () => {
         const rawPublicKey = edwardsToRawPublicKeyInternal(
           curve,
           keyByteLength,
+          curveName,
           jwkWithUndefinedAlg,
         );
         expect(rawPublicKey).toEqual(publicKey);
