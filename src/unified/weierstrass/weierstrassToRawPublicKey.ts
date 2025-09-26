@@ -1,24 +1,38 @@
 import { CurveFn } from '@noble/curves/abstract/weierstrass';
-import { JwkPublicKey } from '@/unified/types';
+import {
+  CurveName,
+  JwkPublicKey,
+  SignatureAlgorithmName,
+} from '@/unified/types';
 import { decodeBase64Url } from 'u8a-utils';
-import { getWeierstrassCurveName } from '@/curves/weierstrass/getWeierstrassCurveName';
-import { getWeierstrassSignatureAlgorithm } from '@/curves/weierstrass/getWeierstrassSignatureAlgorithm';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
- * Converts a JWK formatted Weierstrass public key to a raw public key.
+ * Converts a JWK formatted Weierstrass public key to a raw uncompressed public key.
  *
- * @param {CurveFn} _curve - The curve function used for conversion (unused).
+ * @param {CurveFn} curve - The curve implementation (unused in the current implementation).
+ * @param {number} keyByteLength - Expected coordinate byte length (length of x and y in bytes).
+ * @param {CurveName} curveName - Expected `crv` value in the JWK (e.g. 'P-256').
+ * @param {SignatureAlgorithmName} signatureAlgorithmName - Expected `alg` value in the JWK (e.g. 'ES256').
  * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
- * @returns {Uint8Array} The public key as a raw Uint8Array.
- * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
+ * @returns {Uint8Array} The raw uncompressed public key as a Uint8Array: [0x04 || x || y].
+ * @throws {Error} If required parameters are missing, malformed, mismatched, or decoding fails.
  */
 export const weierstrassToRawPublicKey = (
   curve: CurveFn,
+  keyByteLength: number,
+  curveName: CurveName,
+  signatureAlgorithmName: SignatureAlgorithmName,
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
   try {
-    return weierstrassToRawPublicKeyInternal(curve, jwkPublicKey);
+    return weierstrassToRawPublicKeyInternal(
+      curve,
+      keyByteLength,
+      curveName,
+      signatureAlgorithmName,
+      jwkPublicKey,
+    );
   } catch (e) {
     console.log(getErrorMessage(e));
     throw new Error('Failed to convert JWK to raw public key');
@@ -26,15 +40,21 @@ export const weierstrassToRawPublicKey = (
 };
 
 /**
- * Converts a JWK formatted Weierstrass public key to a raw public key.
+ * Internal conversion from a JWK formatted Weierstrass public key to raw uncompressed form.
  *
- * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {CurveFn} curve - The curve implementation (unused in the current implementation).
+ * @param {number} keyByteLength - Expected coordinate byte length (length of x and y in bytes).
+ * @param {CurveName} curveName - Expected `crv` value in the JWK (e.g. 'P-256').
+ * @param {SignatureAlgorithmName} signatureAlgorithmName - Expected `alg` value in the JWK (e.g. 'ES256').
  * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
- * @returns {Uint8Array} The public key as a raw Uint8Array.
- * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
+ * @returns {Uint8Array} The raw uncompressed public key as a Uint8Array: [0x04 || x || y].
+ * @throws {Error} If required parameters are missing, malformed, mismatched, or decoding fails.
  */
 export const weierstrassToRawPublicKeyInternal = (
   curve: CurveFn,
+  keyByteLength: number,
+  curveName: CurveName,
+  signatureAlgorithmName: SignatureAlgorithmName,
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
   if (jwkPublicKey.kty === undefined || jwkPublicKey.kty === null) {
@@ -45,18 +65,17 @@ export const weierstrassToRawPublicKeyInternal = (
     throw new Error(`Invalid key type: ${jwkPublicKey.kty}, expected EC`);
   }
 
-  if (jwkPublicKey.crv === undefined || jwkPublicKey.crv === null) {
+  if (jwkPublicKey.crv == null) {
     throw new Error('Missing required parameter for crv');
   }
 
-  const expectedCrv = getWeierstrassCurveName(curve);
-  if (jwkPublicKey.crv !== expectedCrv) {
+  if (jwkPublicKey.crv !== curveName) {
     throw new Error(
-      `Invalid curve: ${jwkPublicKey.crv}, expected ${expectedCrv}`,
+      `Invalid curve: ${jwkPublicKey.crv}, expected ${curveName}`,
     );
   }
 
-  if (jwkPublicKey.x === undefined || jwkPublicKey.x === null) {
+  if (jwkPublicKey.x == null) {
     throw new Error('Missing required parameter for x');
   }
 
@@ -64,7 +83,7 @@ export const weierstrassToRawPublicKeyInternal = (
     throw new Error('Invalid parameter type for x');
   }
 
-  if (jwkPublicKey.y === undefined || jwkPublicKey.y === null) {
+  if (jwkPublicKey.y == null) {
     throw new Error('Missing required parameter for y');
   }
 
@@ -72,14 +91,9 @@ export const weierstrassToRawPublicKeyInternal = (
     throw new Error('Invalid parameter type for y');
   }
 
-  const expectedAlg = getWeierstrassSignatureAlgorithm(curve);
-  if (
-    jwkPublicKey.alg !== undefined &&
-    jwkPublicKey.alg !== null &&
-    jwkPublicKey.alg !== expectedAlg
-  ) {
+  if (jwkPublicKey.alg != null && jwkPublicKey.alg !== signatureAlgorithmName) {
     throw new Error(
-      `Invalid algorithm: ${jwkPublicKey.alg}, expected ${expectedAlg}`,
+      `Invalid algorithm: ${jwkPublicKey.alg}, expected ${signatureAlgorithmName}`,
     );
   }
 
@@ -90,9 +104,9 @@ export const weierstrassToRawPublicKeyInternal = (
     throw new Error('Malformed encoding for x');
   }
 
-  if (decodedX.length !== curve.CURVE.nByteLength) {
+  if (decodedX.length !== keyByteLength) {
     throw new Error(
-      `Invalid the length of the key data for x: ${decodedX.length}, expected ${curve.CURVE.nByteLength}`,
+      `Invalid the length of the key data for x: ${decodedX.length}, expected ${keyByteLength}`,
     );
   }
 
@@ -103,9 +117,9 @@ export const weierstrassToRawPublicKeyInternal = (
     throw new Error('Malformed encoding for y');
   }
 
-  if (decodedY.length !== curve.CURVE.nByteLength) {
+  if (decodedY.length !== keyByteLength) {
     throw new Error(
-      `Invalid the length of the key data for y: ${decodedY.length}, expected ${curve.CURVE.nByteLength}`,
+      `Invalid the length of the key data for y: ${decodedY.length}, expected ${keyByteLength}`,
     );
   }
 
