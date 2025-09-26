@@ -5,27 +5,39 @@ import { createP384 } from '@/curves/weierstrass/p384';
 import { createP521 } from '@/curves/weierstrass/p521';
 import { createSecp256k1 } from '@/curves/weierstrass/secp256k1';
 import { randomBytes } from '@noble/hashes/utils';
+import { CurveFn } from '@noble/curves/abstract/weierstrass';
+import { CurveName, SignatureAlgorithmName } from '@/unified/types';
+import { RandomBytes } from '@/curves/types';
 
-const curves = [
+const curves: {
+  name: CurveName;
+  createCurve: (randomBytes: RandomBytes) => CurveFn;
+  signatureAlgorithmName: SignatureAlgorithmName;
+  keyByteLength: number;
+}[] = [
   {
     name: 'P-256',
     createCurve: createP256,
     signatureAlgorithmName: 'ES256',
+    keyByteLength: 32,
   },
   {
     name: 'P-384',
     createCurve: createP384,
     signatureAlgorithmName: 'ES384',
+    keyByteLength: 48,
   },
   {
     name: 'P-521',
     createCurve: createP521,
     signatureAlgorithmName: 'ES512',
+    keyByteLength: 66,
   },
   {
     name: 'secp256k1',
     createCurve: createSecp256k1,
     signatureAlgorithmName: 'ES256K',
+    keyByteLength: 32,
   },
 ];
 
@@ -33,9 +45,15 @@ describe('Weierstrass', () => {
   describe('constructor', () => {
     it.each(curves)(
       'should create Weierstrass instance for $name',
-      ({ createCurve, name, signatureAlgorithmName }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
 
         expect(weierstrass.curve).toBe(curve);
         expect(weierstrass.randomBytes).toBe(randomBytes);
@@ -48,9 +66,15 @@ describe('Weierstrass', () => {
   describe('getCurve', () => {
     it.each(curves)(
       'should return the underlying curve for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
 
         const returnedCurve = weierstrass.getCurve();
         expect(returnedCurve).toBe(curve);
@@ -61,14 +85,20 @@ describe('Weierstrass', () => {
   describe('randomPrivateKey', () => {
     it.each(curves)(
       'should generate valid private key for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
 
         const privateKey = weierstrass.randomPrivateKey();
 
         expect(privateKey).toBeInstanceOf(Uint8Array);
-        expect(privateKey.length).toBe(curve.CURVE.nByteLength);
+        expect(privateKey.length).toBe(keyByteLength);
       },
     );
   });
@@ -76,53 +106,80 @@ describe('Weierstrass', () => {
   describe('getPublicKey', () => {
     it.each(curves)(
       'should derive public key from private key for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
 
         const publicKey = weierstrass.getPublicKey(privateKey);
 
         expect(publicKey).toBeInstanceOf(Uint8Array);
-        expect(publicKey.length).toBe(curve.CURVE.nByteLength + 1); // compressed format
+        expect(publicKey.length).toBe(keyByteLength + 1); // compressed format
         expect([0x02, 0x03]).toContain(publicKey[0]); // compressed point prefix
       },
     );
 
     it.each(curves)(
       'should derive uncompressed public key for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
 
         const publicKey = weierstrass.getPublicKey(privateKey, false);
 
         expect(publicKey).toBeInstanceOf(Uint8Array);
-        expect(publicKey.length).toBe(2 * curve.CURVE.nByteLength + 1); // uncompressed format
+        expect(publicKey.length).toBe(2 * keyByteLength + 1); // uncompressed format
         expect(publicKey[0]).toBe(0x04); // uncompressed point prefix
       },
     );
   });
 
   describe('sign', () => {
-    it.each(curves)('should sign message for $name', ({ createCurve }) => {
-      const curve = createCurve(randomBytes);
-      const weierstrass = new Weierstrass(curve, randomBytes);
-      const privateKey = weierstrass.randomPrivateKey();
-      const message = new TextEncoder().encode('Hello, World!');
+    it.each(curves)(
+      'should sign message for $name',
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
+        const curve = createCurve(randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
+        const privateKey = weierstrass.randomPrivateKey();
+        const message = new TextEncoder().encode('Hello, World!');
 
-      const signature = weierstrass.sign({ message, privateKey });
+        const signature = weierstrass.sign({ message, privateKey });
 
-      expect(signature).toBeInstanceOf(Uint8Array);
-      expect(signature.length).toBe(2 * curve.CURVE.nByteLength); // r and s components
-    });
+        expect(signature).toBeInstanceOf(Uint8Array);
+        expect(signature.length).toBe(2 * keyByteLength); // r and s components
+      },
+    );
 
     it.each(curves)(
       'should sign message with recovered signature for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
         const message = new TextEncoder().encode('Hello, World!');
 
@@ -133,7 +190,7 @@ describe('Weierstrass', () => {
         });
 
         expect(signature).toBeInstanceOf(Uint8Array);
-        expect(signature.length).toBe(2 * curve.CURVE.nByteLength + 1); // r, s, and recovery components
+        expect(signature.length).toBe(2 * keyByteLength + 1); // r, s, and recovery components
       },
     );
   });
@@ -141,9 +198,15 @@ describe('Weierstrass', () => {
   describe('verify', () => {
     it.each(curves)(
       'should verify valid signature for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
         const publicKey = weierstrass.getPublicKey(privateKey);
         const message = new TextEncoder().encode('Hello, World!');
@@ -159,9 +222,15 @@ describe('Weierstrass', () => {
   describe('recoverPublicKey', () => {
     it.each(curves)(
       'should recover compressed public key for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
         const expectedPublicKey = weierstrass.getPublicKey(privateKey, true); // compressed
         const message = new TextEncoder().encode('Hello, World!');
@@ -178,16 +247,22 @@ describe('Weierstrass', () => {
         });
 
         expect(recoveredPublicKey).toBeInstanceOf(Uint8Array);
-        expect(recoveredPublicKey.length).toBe(curve.CURVE.nByteLength + 1); // compressed format
+        expect(recoveredPublicKey.length).toBe(keyByteLength + 1); // compressed format
         expect(recoveredPublicKey).toEqual(expectedPublicKey);
       },
     );
 
     it.each(curves)(
       'should recover uncompressed public key for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
         const expectedPublicKey = weierstrass.getPublicKey(privateKey, false); // uncompressed
         const message = new TextEncoder().encode('Hello, World!');
@@ -204,7 +279,7 @@ describe('Weierstrass', () => {
         });
 
         expect(recoveredPublicKey).toBeInstanceOf(Uint8Array);
-        expect(recoveredPublicKey.length).toBe(2 * curve.CURVE.nByteLength + 1); // uncompressed format
+        expect(recoveredPublicKey.length).toBe(2 * keyByteLength + 1); // uncompressed format
         expect(recoveredPublicKey).toEqual(expectedPublicKey);
       },
     );
@@ -213,9 +288,15 @@ describe('Weierstrass', () => {
   describe('getSharedSecret', () => {
     it.each(curves)(
       'should compute shared secret for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const alicePrivateKey = weierstrass.randomPrivateKey();
         const alicePublicKey = weierstrass.getPublicKey(alicePrivateKey);
         const bobPrivateKey = weierstrass.randomPrivateKey();
@@ -231,7 +312,7 @@ describe('Weierstrass', () => {
         });
 
         expect(aliceSharedSecret).toBeInstanceOf(Uint8Array);
-        expect(aliceSharedSecret.length).toBe(curve.CURVE.nByteLength);
+        expect(aliceSharedSecret.length).toBe(keyByteLength);
         expect(aliceSharedSecret).toEqual(bobSharedSecret);
       },
     );
@@ -240,9 +321,15 @@ describe('Weierstrass', () => {
   describe('toJwkPrivateKey', () => {
     it.each(curves)(
       'should convert private key to JWK format for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
 
         const jwkPrivateKey = weierstrass.toJwkPrivateKey(privateKey);
@@ -259,9 +346,15 @@ describe('Weierstrass', () => {
   describe('toJwkPublicKey', () => {
     it.each(curves)(
       'should convert public key to JWK format for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
         const publicKey = weierstrass.getPublicKey(privateKey);
 
@@ -278,16 +371,22 @@ describe('Weierstrass', () => {
   describe('toRawPrivateKey', () => {
     it.each(curves)(
       'should convert JWK private key to raw format for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
         const jwkPrivateKey = weierstrass.toJwkPrivateKey(privateKey);
 
         const rawPrivateKey = weierstrass.toRawPrivateKey(jwkPrivateKey);
 
         expect(rawPrivateKey).toBeInstanceOf(Uint8Array);
-        expect(rawPrivateKey.length).toBe(curve.CURVE.nByteLength);
+        expect(rawPrivateKey.length).toBe(keyByteLength);
         expect(rawPrivateKey).toEqual(privateKey);
       },
     );
@@ -296,9 +395,15 @@ describe('Weierstrass', () => {
   describe('toRawPublicKey', () => {
     it.each(curves)(
       'should convert JWK public key to raw format for $name',
-      ({ createCurve }) => {
+      ({ createCurve, name, signatureAlgorithmName, keyByteLength }) => {
         const curve = createCurve(randomBytes);
-        const weierstrass = new Weierstrass(curve, randomBytes);
+        const weierstrass = new Weierstrass({
+          curve,
+          randomBytes,
+          curveName: name,
+          signatureAlgorithmName,
+          keyByteLength,
+        });
         const privateKey = weierstrass.randomPrivateKey();
         const publicKey = weierstrass.getPublicKey(privateKey, false);
         const jwkPublicKey = weierstrass.toJwkPublicKey(publicKey);
@@ -306,7 +411,7 @@ describe('Weierstrass', () => {
         const rawPublicKey = weierstrass.toRawPublicKey(jwkPublicKey);
 
         expect(rawPublicKey).toBeInstanceOf(Uint8Array);
-        expect(rawPublicKey.length).toBe(2 * curve.CURVE.nByteLength + 1); // uncompressed format
+        expect(rawPublicKey.length).toBe(2 * keyByteLength + 1); // uncompressed format
         expect(rawPublicKey).toEqual(publicKey);
       },
     );
