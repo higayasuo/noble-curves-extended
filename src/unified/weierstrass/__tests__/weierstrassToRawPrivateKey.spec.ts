@@ -9,10 +9,20 @@ import { createP384 } from '@/curves/weierstrass/p384';
 import { createP521 } from '@/curves/weierstrass/p521';
 import { createSecp256k1 } from '@/curves/weierstrass/secp256k1';
 import { randomBytes } from '@noble/hashes/utils';
-import { JwkPrivateKey } from '@/unified/types';
+import {
+  CurveName,
+  JwkPrivateKey,
+  SignatureAlgorithmName,
+} from '@/unified/types';
+import { CurveFn } from '@noble/curves/abstract/weierstrass';
 
 describe('weierstrassToRawPrivateKey', () => {
-  const curves = [
+  const curves: {
+    name: CurveName;
+    createCurve: () => CurveFn;
+    coordinateLength: number;
+    signatureAlgorithm: SignatureAlgorithmName;
+  }[] = [
     {
       name: 'P-256',
       createCurve: () => createP256(randomBytes),
@@ -45,19 +55,25 @@ describe('weierstrassToRawPrivateKey', () => {
       const privateKey = curve.utils.randomPrivateKey();
       const jwk = weierstrassToJwkPrivateKey(curve, privateKey);
 
-      const rawPrivateKey = weierstrassToRawPrivateKey(curve, jwk);
+      const rawPrivateKey = weierstrassToRawPrivateKey(
+        curve,
+        32,
+        'P-256',
+        'ES256',
+        jwk,
+      );
 
       expect(rawPrivateKey).toEqual(privateKey);
-      expect(rawPrivateKey.length).toBe(curve.CURVE.nByteLength);
+      expect(rawPrivateKey.length).toBe(32);
     });
 
     it('should throw generic error for invalid JWK', () => {
       const curve = createP256(randomBytes);
       const invalidJwk = { kty: 'RSA' } as JwkPrivateKey;
 
-      expect(() => weierstrassToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Failed to convert JWK to raw private key',
-      );
+      expect(() =>
+        weierstrassToRawPrivateKey(curve, 32, 'P-256', 'ES256', invalidJwk),
+      ).toThrow('Failed to convert JWK to raw private key');
     });
   });
 
@@ -65,21 +81,27 @@ describe('weierstrassToRawPrivateKey', () => {
     describe('valid JWK conversion', () => {
       it.each(curves)(
         'should convert a valid $name JWK to raw private key',
-        ({ createCurve }) => {
+        ({ createCurve, coordinateLength, name, signatureAlgorithm }) => {
           const curve = createCurve();
           const privateKey = curve.utils.randomPrivateKey();
           const jwk = weierstrassToJwkPrivateKey(curve, privateKey);
 
-          const rawPrivateKey = weierstrassToRawPrivateKeyInternal(curve, jwk);
+          const rawPrivateKey = weierstrassToRawPrivateKeyInternal(
+            curve,
+            coordinateLength,
+            name,
+            signatureAlgorithm,
+            jwk,
+          );
 
           expect(rawPrivateKey).toEqual(privateKey);
-          expect(rawPrivateKey.length).toBe(curve.CURVE.nByteLength);
+          expect(rawPrivateKey.length).toBe(coordinateLength);
         },
       );
 
       it.each(curves)(
         'should accept JWK without alg parameter for $name',
-        ({ createCurve }) => {
+        ({ createCurve, coordinateLength, name, signatureAlgorithm }) => {
           const curve = createCurve();
           const privateKey = curve.utils.randomPrivateKey();
           const jwk = weierstrassToJwkPrivateKey(curve, privateKey);
@@ -87,6 +109,9 @@ describe('weierstrassToRawPrivateKey', () => {
 
           const rawPrivateKey = weierstrassToRawPrivateKeyInternal(
             curve,
+            coordinateLength,
+            name,
+            signatureAlgorithm,
             jwkWithoutAlg as JwkPrivateKey,
           );
 
@@ -98,7 +123,7 @@ describe('weierstrassToRawPrivateKey', () => {
     describe('d parameter validation', () => {
       it.each(curves)(
         'should throw error for missing d in $name JWK',
-        ({ createCurve }) => {
+        ({ createCurve, coordinateLength, name, signatureAlgorithm }) => {
           const curve = createCurve();
           const privateKey = curve.utils.randomPrivateKey();
           const jwk = weierstrassToJwkPrivateKey(curve, privateKey);
@@ -107,6 +132,9 @@ describe('weierstrassToRawPrivateKey', () => {
           expect(() =>
             weierstrassToRawPrivateKeyInternal(
               curve,
+              coordinateLength,
+              name,
+              signatureAlgorithm,
               jwkWithoutD as JwkPrivateKey,
             ),
           ).toThrow('Missing required parameter for d');
@@ -115,57 +143,73 @@ describe('weierstrassToRawPrivateKey', () => {
 
       it.each(curves)(
         'should throw error for null d in $name JWK',
-        ({ createCurve }) => {
+        ({ createCurve, coordinateLength, name, signatureAlgorithm }) => {
           const curve = createCurve();
           const privateKey = curve.utils.randomPrivateKey();
           const jwk = weierstrassToJwkPrivateKey(curve, privateKey);
           const jwkWithNullD = { ...jwk, d: null as any };
 
           expect(() =>
-            weierstrassToRawPrivateKeyInternal(curve, jwkWithNullD),
+            weierstrassToRawPrivateKeyInternal(
+              curve,
+              coordinateLength,
+              name,
+              signatureAlgorithm,
+              jwkWithNullD,
+            ),
           ).toThrow('Missing required parameter for d');
         },
       );
 
       it.each(curves)(
         'should throw error for invalid d type in $name JWK',
-        ({ createCurve }) => {
+        ({ createCurve, coordinateLength, name, signatureAlgorithm }) => {
           const curve = createCurve();
           const privateKey = curve.utils.randomPrivateKey();
           const jwk = weierstrassToJwkPrivateKey(curve, privateKey);
           const jwkWithInvalidDType = { ...jwk, d: 789 as any };
 
           expect(() =>
-            weierstrassToRawPrivateKeyInternal(curve, jwkWithInvalidDType),
+            weierstrassToRawPrivateKeyInternal(
+              curve,
+              coordinateLength,
+              name,
+              signatureAlgorithm,
+              jwkWithInvalidDType,
+            ),
           ).toThrow('Invalid parameter type for d');
         },
       );
 
       it.each(curves)(
         'should throw error for invalid d encoding in $name JWK',
-        ({ createCurve }) => {
+        ({ createCurve, coordinateLength, name, signatureAlgorithm }) => {
           const curve = createCurve();
           const privateKey = curve.utils.randomPrivateKey();
           const jwk = weierstrassToJwkPrivateKey(curve, privateKey);
           const jwkWithInvalidD = { ...jwk, d: 'invalid-base64url!@#' };
 
           expect(() =>
-            weierstrassToRawPrivateKeyInternal(curve, jwkWithInvalidD),
+            weierstrassToRawPrivateKeyInternal(
+              curve,
+              coordinateLength,
+              name,
+              signatureAlgorithm,
+              jwkWithInvalidD,
+            ),
           ).toThrow('Malformed encoding for d');
         },
       );
 
       it.each(curves)(
         'should throw error for wrong d length in $name JWK',
-        ({ createCurve }) => {
+        ({ createCurve, coordinateLength, name, signatureAlgorithm }) => {
           const curve = createCurve();
           const privateKey = curve.utils.randomPrivateKey();
           const jwk = weierstrassToJwkPrivateKey(curve, privateKey);
 
           // Create a shorter d parameter using proper base64url encoding
-          const shortDBytes = new Uint8Array(
-            Math.floor(curve.CURVE.nByteLength / 2),
-          );
+          const shortDBytes = new Uint8Array(Math.floor(coordinateLength / 2));
           const shortD = btoa(String.fromCharCode(...shortDBytes))
             .replace(/\+/g, '-')
             .replace(/\//g, '_')
@@ -173,18 +217,24 @@ describe('weierstrassToRawPrivateKey', () => {
           const jwkWithShortD = { ...jwk, d: shortD };
 
           expect(() =>
-            weierstrassToRawPrivateKeyInternal(curve, jwkWithShortD),
+            weierstrassToRawPrivateKeyInternal(
+              curve,
+              coordinateLength,
+              name,
+              signatureAlgorithm,
+              jwkWithShortD,
+            ),
           ).toThrow(
             `Invalid the length of the key data for d: ${Math.floor(
-              curve.CURVE.nByteLength / 2,
-            )}, expected ${curve.CURVE.nByteLength}`,
+              coordinateLength / 2,
+            )}, expected ${coordinateLength}`,
           );
         },
       );
 
       it.each(curves)(
         'should throw error for d that does not match public key in $name JWK',
-        ({ createCurve }) => {
+        ({ createCurve, coordinateLength, name, signatureAlgorithm }) => {
           const curve = createCurve();
           const privateKey1 = curve.utils.randomPrivateKey();
           const privateKey2 = curve.utils.randomPrivateKey();
@@ -201,6 +251,9 @@ describe('weierstrassToRawPrivateKey', () => {
           expect(() =>
             weierstrassToRawPrivateKeyInternal(
               curve,
+              coordinateLength,
+              name,
+              signatureAlgorithm,
               jwkWithMismatchedD as JwkPrivateKey,
             ),
           ).toThrow(
@@ -220,6 +273,9 @@ describe('weierstrassToRawPrivateKey', () => {
         expect(() =>
           weierstrassToRawPrivateKeyInternal(
             curve,
+            32,
+            'P-256',
+            'ES256',
             jwkWithWrongKty as JwkPrivateKey,
           ),
         ).toThrow('Invalid key type: RSA, expected EC');
@@ -236,6 +292,9 @@ describe('weierstrassToRawPrivateKey', () => {
         expect(() =>
           weierstrassToRawPrivateKeyInternal(
             curve,
+            32,
+            'P-256',
+            'ES256',
             jwkWithWrongCrv as JwkPrivateKey,
           ),
         ).toThrow(`Invalid curve: WrongCurve, expected ${jwk.crv}`);
@@ -252,6 +311,9 @@ describe('weierstrassToRawPrivateKey', () => {
         expect(() =>
           weierstrassToRawPrivateKeyInternal(
             curve,
+            32,
+            'P-256',
+            'ES256',
             jwkWithoutX as JwkPrivateKey,
           ),
         ).toThrow('Missing required parameter for x');
@@ -268,6 +330,9 @@ describe('weierstrassToRawPrivateKey', () => {
         expect(() =>
           weierstrassToRawPrivateKeyInternal(
             curve,
+            32,
+            'P-256',
+            'ES256',
             jwkWithoutY as JwkPrivateKey,
           ),
         ).toThrow('Missing required parameter for y');
@@ -284,6 +349,9 @@ describe('weierstrassToRawPrivateKey', () => {
         expect(() =>
           weierstrassToRawPrivateKeyInternal(
             curve,
+            32,
+            'P-256',
+            'ES256',
             jwkWithWrongAlg as JwkPrivateKey,
           ),
         ).toThrow(`Invalid algorithm: ES123, expected ${jwk.alg}`);

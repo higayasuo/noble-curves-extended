@@ -21,9 +21,15 @@ import { weierstrassToJwkPrivateKey } from './weierstrassToJwkPrivateKey';
 import { weierstrassToJwkPublickKey } from './weierstrassToJwkPublickKey';
 import { weierstrassToRawPrivateKey } from './weierstrassToRawPrivateKey';
 import { weierstrassToRawPublicKey } from './weierstrassToRawPublicKey';
-import { getWeierstrassCurveName } from '@/curves/weierstrass/getWeierstrassCurveName';
 import { weierstrassRecoverPublicKey } from './weierstrassRecoverPublicKey';
-import { getWeierstrassSignatureAlgorithm } from '@/curves/weierstrass/getWeierstrassSignatureAlgorithm';
+
+type WeierstrassParams = {
+  curve: CurveFn;
+  randomBytes: RandomBytes;
+  curveName: CurveName;
+  signatureAlgorithmName: SignatureAlgorithmName;
+  keyByteLength: number;
+};
 
 /**
  * Weierstrass curve implementation for digital signatures and ECDH.
@@ -49,11 +55,14 @@ export class Weierstrass
   /** Function to generate random bytes */
   readonly randomBytes: RandomBytes;
 
+  /** Key byte length for Weierstrass curves */
+  readonly keyByteLength: number;
+
   /** Curve identifier for Weierstrass curves */
-  curveName: CurveName;
+  readonly curveName: CurveName;
 
   /** Signature algorithm for Weierstrass curves */
-  signatureAlgorithmName: SignatureAlgorithmName;
+  readonly signatureAlgorithmName: SignatureAlgorithmName;
 
   /**
    * Creates a new Weierstrass instance.
@@ -61,11 +70,18 @@ export class Weierstrass
    * @param {CurveFn} curve - The curve implementation to use
    * @param {RandomBytes} randomBytes - Function to generate random bytes
    */
-  constructor(curve: CurveFn, randomBytes: RandomBytes) {
+  constructor({
+    curve,
+    randomBytes,
+    curveName,
+    signatureAlgorithmName,
+    keyByteLength,
+  }: WeierstrassParams) {
     this.curve = curve;
     this.randomBytes = randomBytes;
-    this.curveName = getWeierstrassCurveName(curve);
-    this.signatureAlgorithmName = getWeierstrassSignatureAlgorithm(curve);
+    this.keyByteLength = keyByteLength;
+    this.curveName = curveName;
+    this.signatureAlgorithmName = signatureAlgorithmName;
   }
 
   /**
@@ -196,7 +212,13 @@ export class Weierstrass
    * @throws {Error} If the JWK is invalid
    */
   toRawPrivateKey = (jwkPrivateKey: JwkPrivateKey): Uint8Array => {
-    return weierstrassToRawPrivateKey(this.curve, jwkPrivateKey);
+    return weierstrassToRawPrivateKey(
+      this.curve,
+      this.keyByteLength,
+      this.curveName,
+      this.signatureAlgorithmName,
+      jwkPrivateKey,
+    );
   };
 
   /**
@@ -207,6 +229,12 @@ export class Weierstrass
    * @throws {Error} If the JWK is invalid
    */
   toRawPublicKey = (jwkPublicKey: JwkPublicKey): Uint8Array => {
-    return weierstrassToRawPublicKey(this.curve, jwkPublicKey);
+    return weierstrassToRawPublicKey(
+      this.curve,
+      this.keyByteLength,
+      this.curveName,
+      this.signatureAlgorithmName,
+      jwkPublicKey,
+    );
   };
 }
