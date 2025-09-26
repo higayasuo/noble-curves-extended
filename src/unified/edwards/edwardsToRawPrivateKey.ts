@@ -1,5 +1,5 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
-import { JwkPrivateKey } from '@/unified/types';
+import { CurveName, JwkPrivateKey } from '@/unified/types';
 import { compareUint8Arrays, decodeBase64Url } from 'u8a-utils';
 import { edwardsToRawPublicKeyInternal } from './edwardsToRawPublicKey';
 import { getErrorMessage } from '@/utils/getErrorMessage';
@@ -9,6 +9,7 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
  *
  * @param {CurveFn} curve - The curve function used for conversion.
  * @param {number} keyByteLength - The expected byte length of the key.
+ * @param {CurveName} curveName - The expected curve name for validation.
  * @param {JwkPrivateKey} jwkPrivateKey - The private key in JWK format.
  * @returns {Uint8Array} The private key as a raw Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
@@ -16,10 +17,16 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
 export const edwardsToRawPrivateKey = (
   curve: CurveFn,
   keyByteLength: number,
+  curveName: CurveName,
   jwkPrivateKey: JwkPrivateKey,
 ): Uint8Array => {
   try {
-    return edwardsToRawPrivateKeyInternal(curve, keyByteLength, jwkPrivateKey);
+    return edwardsToRawPrivateKeyInternal(
+      curve,
+      keyByteLength,
+      curveName,
+      jwkPrivateKey,
+    );
   } catch (e) {
     console.log(getErrorMessage(e));
     throw new Error('Failed to convert JWK to raw private key');
@@ -31,6 +38,7 @@ export const edwardsToRawPrivateKey = (
  *
  * @param {CurveFn} curve - The curve function used for conversion.
  * @param {number} keyByteLength - The expected byte length of the key.
+ * @param {CurveName} curveName - The expected curve name for validation.
  * @param {JwkPrivateKey} jwkPrivateKey - The private key in JWK format.
  * @returns {Uint8Array} The private key as a raw Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
@@ -39,11 +47,13 @@ export const edwardsToRawPrivateKey = (
 export const edwardsToRawPrivateKeyInternal = (
   curve: CurveFn,
   keyByteLength: number,
+  curveName: CurveName,
   jwkPrivateKey: JwkPrivateKey,
 ): Uint8Array => {
   const publicKey = edwardsToRawPublicKeyInternal(
     curve,
     keyByteLength,
+    curveName,
     jwkPrivateKey,
   );
 

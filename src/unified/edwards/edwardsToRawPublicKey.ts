@@ -1,7 +1,6 @@
 import { CurveFn } from '@noble/curves/abstract/edwards';
-import { JwkPublicKey } from '@/unified/types';
+import { CurveName, JwkPublicKey } from '@/unified/types';
 import { decodeBase64Url } from 'u8a-utils';
-import { getEdwardsCurveName } from '@/curves/edwards';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
@@ -9,6 +8,7 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
  *
  * @param {CurveFn} curve - The curve function used for conversion.
  * @param {number} keyByteLength - The expected byte length of the public key.
+ * @param {CurveName} curveName - The expected curve name for validation.
  * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
  * @returns {Uint8Array} The public key as a raw Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or if the conversion fails.
@@ -16,10 +16,16 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
 export const edwardsToRawPublicKey = (
   curve: CurveFn,
   keyByteLength: number,
+  curveName: CurveName,
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
   try {
-    return edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkPublicKey);
+    return edwardsToRawPublicKeyInternal(
+      curve,
+      keyByteLength,
+      curveName,
+      jwkPublicKey,
+    );
   } catch (e) {
     console.log(getErrorMessage(e));
     throw new Error('Failed to convert JWK to raw public key');
@@ -27,17 +33,20 @@ export const edwardsToRawPublicKey = (
 };
 
 /**
- * Converts a JWK formatted edwards public key to a raw public key.
+ * Internal function to convert a JWK formatted edwards public key to a raw public key.
  *
- * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {CurveFn} _curve - The curve function (unused in this implementation).
  * @param {number} keyByteLength - The expected byte length of the public key.
+ * @param {CurveName} curveName - The expected curve name for validation.
  * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
  * @returns {Uint8Array} The public key as a raw Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
+ * @internal
  */
 export const edwardsToRawPublicKeyInternal = (
-  curve: CurveFn,
+  _curve: CurveFn,
   keyByteLength: number,
+  curveName: CurveName,
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
   if (jwkPublicKey.kty == null) {
@@ -48,18 +57,17 @@ export const edwardsToRawPublicKeyInternal = (
     throw new Error(`Invalid key type: ${jwkPublicKey.kty}, expected OKP`);
   }
 
-  if (jwkPublicKey.crv === undefined || jwkPublicKey.crv === null) {
+  if (jwkPublicKey.crv == null) {
     throw new Error('Missing required parameter for crv');
   }
 
-  const expectedCrv = getEdwardsCurveName(curve);
-  if (jwkPublicKey.crv !== expectedCrv) {
+  if (jwkPublicKey.crv !== curveName) {
     throw new Error(
-      `Invalid curve: ${jwkPublicKey.crv}, expected ${expectedCrv}`,
+      `Invalid curve: ${jwkPublicKey.crv}, expected ${curveName}`,
     );
   }
 
-  if (jwkPublicKey.x === undefined || jwkPublicKey.x === null) {
+  if (jwkPublicKey.x == null) {
     throw new Error('Missing required parameter for x');
   }
 

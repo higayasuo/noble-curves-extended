@@ -202,6 +202,7 @@ export class Edwards implements Readonly<SignatureCurve> {
     return edwardsToRawPrivateKey(
       this.curve,
       this.keyByteLength,
+      this.curveName,
       jwkPrivateKey,
     );
   };
@@ -214,6 +215,11 @@ export class Edwards implements Readonly<SignatureCurve> {
    * @throws {Error} If the JWK is invalid
    */
   toRawPublicKey = (jwkPublicKey: JwkPublicKey): Uint8Array => {
-    return edwardsToRawPublicKey(this.curve, this.keyByteLength, jwkPublicKey);
+    return edwardsToRawPublicKey(
+      this.curve,
+      this.keyByteLength,
+      this.curveName,
+      jwkPublicKey,
+    );
   };
 }

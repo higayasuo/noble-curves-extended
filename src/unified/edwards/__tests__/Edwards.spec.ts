@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Edwards } from '../Edwards';
 import { createEd25519 } from '@/curves/edwards/ed25519';
-import { getEdwardsCurveName, getEdwardsKeyByteLength } from '@/curves/edwards';
 import { randomBytes } from '@noble/hashes/utils';
 
 const message = new TextEncoder().encode('hello');
