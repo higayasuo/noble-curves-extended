@@ -4,9 +4,8 @@ import { createP256 } from '@/curves/weierstrass/p256';
 import { createP384 } from '@/curves/weierstrass/p384';
 import { createP521 } from '@/curves/weierstrass/p521';
 import { createSecp256k1 } from '@/curves/weierstrass/secp256k1';
-import { createEd25519 } from '@/curves/edwards/ed25519';
-import { Edwards } from '@/unified/edwards/Edwards';
 import { Weierstrass } from '@/unified/weierstrass/Weierstrass';
+import { Ed25519 } from '../edwards/Ed25519';
 
 /**
  * Creates a signature curve instance based on the specified curve name.
@@ -30,7 +29,7 @@ export const createSignatureCurve = (
     case 'secp256k1':
       return new Weierstrass(createSecp256k1(randomBytes), randomBytes);
     case 'Ed25519':
-      return new Edwards(createEd25519(randomBytes), randomBytes);
+      return new Ed25519(randomBytes);
     default:
       throw new Error(`Unsupported signature curve: ${curveName}`);
   }

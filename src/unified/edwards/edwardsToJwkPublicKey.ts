@@ -6,19 +6,22 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
 /**
  * Converts an edwards public key to a JWK format.
  *
- * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {CurveFn} _curve - The curve function (unused in current implementation).
+ * @param {number} keyByteLength - The expected byte length of the public key.
  * @param {Uint8Array} publicKey - The public key as a Uint8Array.
  * @returns {JwkPublicKey} The public key in JWK format.
  * @throws {Error} Throws an error if the public key conversion fails.
  */
 export const edwardsToJwkPublicKey = (
-  curve: CurveFn,
+  _curve: CurveFn,
+  keyByteLength: number,
   publicKey: Uint8Array,
 ): JwkPublicKey => {
   try {
-    const keyByteLength = curve.CURVE.nByteLength;
-    if (publicKey.length !== keyByteLength) {
-      throw new Error('Invalid public key length');
+    if (publicKey.byteLength !== keyByteLength) {
+      throw new Error(
+        `Invalid public key byte length: ${publicKey.byteLength}, expected ${keyByteLength}`,
+      );
     }
 
     return {

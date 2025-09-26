@@ -8,16 +8,18 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
  * Converts a JWK formatted edwards private key to a raw private key.
  *
  * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {number} keyByteLength - The expected byte length of the key.
  * @param {JwkPrivateKey} jwkPrivateKey - The private key in JWK format.
  * @returns {Uint8Array} The private key as a raw Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
  */
 export const edwardsToRawPrivateKey = (
   curve: CurveFn,
+  keyByteLength: number,
   jwkPrivateKey: JwkPrivateKey,
 ): Uint8Array => {
   try {
-    return edwardsToRawPrivateKeyInternal(curve, jwkPrivateKey);
+    return edwardsToRawPrivateKeyInternal(curve, keyByteLength, jwkPrivateKey);
   } catch (e) {
     console.log(getErrorMessage(e));
     throw new Error('Failed to convert JWK to raw private key');
@@ -28,6 +30,7 @@ export const edwardsToRawPrivateKey = (
  * Internal function to convert a JWK formatted edwards private key to a raw private key.
  *
  * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {number} keyByteLength - The expected byte length of the key.
  * @param {JwkPrivateKey} jwkPrivateKey - The private key in JWK format.
  * @returns {Uint8Array} The private key as a raw Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
@@ -35,11 +38,16 @@ export const edwardsToRawPrivateKey = (
  */
 export const edwardsToRawPrivateKeyInternal = (
   curve: CurveFn,
+  keyByteLength: number,
   jwkPrivateKey: JwkPrivateKey,
 ): Uint8Array => {
-  const publicKey = edwardsToRawPublicKeyInternal(curve, jwkPrivateKey);
+  const publicKey = edwardsToRawPublicKeyInternal(
+    curve,
+    keyByteLength,
+    jwkPrivateKey,
+  );
 
-  if (jwkPrivateKey.d === undefined || jwkPrivateKey.d === null) {
+  if (jwkPrivateKey.d == null) {
     throw new Error('Missing required parameter for d');
   }
 
@@ -54,9 +62,9 @@ export const edwardsToRawPrivateKeyInternal = (
     throw new Error('Malformed encoding for d');
   }
 
-  if (decodedD.length !== curve.CURVE.nByteLength) {
+  if (decodedD.length !== keyByteLength) {
     throw new Error(
-      `Invalid the length of the key data for d: ${decodedD.length}, expected ${curve.CURVE.nByteLength}`,
+      `Invalid the length of the key data for d: ${decodedD.length}, expected ${keyByteLength}`,
     );
   }
 

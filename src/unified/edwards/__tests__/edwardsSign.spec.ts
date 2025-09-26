@@ -5,13 +5,17 @@ import { randomBytes } from '@noble/hashes/utils';
 import tweetnacl from 'tweetnacl';
 
 const message = new TextEncoder().encode('hello');
+const keyByteLength = 32;
 
 describe('edwardsSign', () => {
   describe('basic tests', () => {
     it('should sign a message with a valid private key', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
-      const signature = edwardsSign(curve, { message, privateKey });
+      const signature = edwardsSign(curve, keyByteLength, {
+        message,
+        privateKey,
+      });
       expect(signature).toBeInstanceOf(Uint8Array);
       expect(signature.length).toBe(64);
     });
@@ -20,7 +24,11 @@ describe('edwardsSign', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       expect(() =>
-        edwardsSign(curve, { message, privateKey, recovered: true }),
+        edwardsSign(curve, keyByteLength, {
+          message,
+          privateKey,
+          recovered: true,
+        }),
       ).toThrow('Recovered signature is not supported');
     });
   });
@@ -31,11 +39,14 @@ describe('edwardsSign', () => {
         const curve = createEd25519(randomBytes);
         const tweetnaclKeyPair = tweetnacl.sign.keyPair();
         const privateKey = new Uint8Array(tweetnaclKeyPair.secretKey);
-        expect(privateKey.length).toBe(64);
+        expect(privateKey.length).toBe(keyByteLength * 2);
 
-        const signature = edwardsSign(curve, { message, privateKey });
+        const signature = edwardsSign(curve, keyByteLength, {
+          message,
+          privateKey,
+        });
         expect(signature).toBeInstanceOf(Uint8Array);
-        expect(signature.length).toBe(64);
+        expect(signature.length).toBe(keyByteLength * 2);
 
         // Verify the signature with tweetnacl
         const isValid = tweetnacl.sign.detached.verify(
@@ -52,12 +63,15 @@ describe('edwardsSign', () => {
         const curve = createEd25519(randomBytes);
         const privateKey = curve.utils.randomPrivateKey();
         const publicKey = curve.getPublicKey(privateKey);
-        const signature = edwardsSign(curve, { message, privateKey });
+        const signature = edwardsSign(curve, keyByteLength, {
+          message,
+          privateKey,
+        });
 
         // Import the public key into Web Crypto API
         const cryptoKey = await crypto.subtle.importKey(
           'raw',
-          publicKey,
+          Buffer.from(publicKey),
           { name: 'Ed25519' },
           false,
           ['verify'],
@@ -67,7 +81,7 @@ describe('edwardsSign', () => {
         const isValid = await crypto.subtle.verify(
           { name: 'Ed25519' },
           cryptoKey,
-          signature,
+          Buffer.from(signature),
           message,
         );
 
@@ -79,23 +93,29 @@ describe('edwardsSign', () => {
   describe('invalid input tests', () => {
     it('should throw an error for invalid private key length', () => {
       const curve = createEd25519(randomBytes);
-      const invalidKey = new Uint8Array(curve.CURVE.nByteLength - 1); // Too short
+      const invalidKey = new Uint8Array(keyByteLength - 1); // Too short
       expect(() =>
-        edwardsSign(curve, { message, privateKey: invalidKey }),
+        edwardsSign(curve, 32, { message, privateKey: invalidKey }),
       ).toThrow('Failed to sign message');
     });
 
     it('should throw an error for null private key', () => {
       const curve = createEd25519(randomBytes);
       expect(() =>
-        edwardsSign(curve, { message, privateKey: null as any }),
+        edwardsSign(curve, keyByteLength, {
+          message,
+          privateKey: null as unknown as Uint8Array,
+        }),
       ).toThrow('Failed to sign message');
     });
 
     it('should throw an error for undefined private key', () => {
       const curve = createEd25519(randomBytes);
       expect(() =>
-        edwardsSign(curve, { message, privateKey: undefined as any }),
+        edwardsSign(curve, keyByteLength, {
+          message,
+          privateKey: undefined as unknown as Uint8Array,
+        }),
       ).toThrow('Failed to sign message');
     });
 
@@ -103,7 +123,10 @@ describe('edwardsSign', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       expect(() =>
-        edwardsSign(curve, { message: null as any, privateKey }),
+        edwardsSign(curve, keyByteLength, {
+          message: null as unknown as Uint8Array,
+          privateKey,
+        }),
       ).toThrow('Failed to sign message');
     });
 
@@ -111,7 +134,10 @@ describe('edwardsSign', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
       expect(() =>
-        edwardsSign(curve, { message: undefined as any, privateKey }),
+        edwardsSign(curve, keyByteLength, {
+          message: undefined as unknown as Uint8Array,
+          privateKey,
+        }),
       ).toThrow('Failed to sign message');
     });
   });
@@ -127,9 +153,9 @@ describe('edwardsSign', () => {
         throw new Error('Internal signing error');
       });
 
-      expect(() => edwardsSign(curve, { message, privateKey })).toThrow(
-        'Failed to sign message',
-      );
+      expect(() =>
+        edwardsSign(curve, keyByteLength, { message, privateKey }),
+      ).toThrow('Failed to sign message');
 
       // Restore the original method
       curve.sign = originalSign;

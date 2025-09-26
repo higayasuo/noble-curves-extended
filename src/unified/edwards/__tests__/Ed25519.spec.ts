@@ -1,25 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { Edwards } from '../Edwards';
-import { createEd25519 } from '@/curves/edwards/ed25519';
-import { getEdwardsCurveName, getEdwardsKeyByteLength } from '@/curves/edwards';
+import { Ed25519 } from '../Ed25519';
 import { randomBytes } from '@noble/hashes/utils';
 
 const message = new TextEncoder().encode('hello');
 
 const setup = () => {
-  const curve = createEd25519(randomBytes);
-  const ed = new Edwards({
-    curve,
-    randomBytes,
-    curveName: 'Ed25519',
-    signatureAlgorithmName: 'EdDSA',
-    keyByteLength: 32,
-  });
-  return { ed, curve };
+  const ed = new Ed25519(randomBytes);
+  return { ed };
 };
 
-describe('Edwards', () => {
-  it('should have correct curveName properties', () => {
+describe('Ed25519', () => {
+  it('should have correct curveName property', () => {
     const { ed } = setup();
     expect(ed.curveName).toBe('Ed25519');
   });
@@ -109,18 +100,6 @@ describe('Edwards', () => {
       expect(
         ed.verify({ signature: invalidSig, message, publicKey: pub }),
       ).toBe(false);
-    });
-  });
-
-  describe('recoverPublicKey', () => {
-    it('should throw error as public key recovery is not supported', () => {
-      const { ed } = setup();
-      const priv = ed.randomPrivateKey();
-      const sig = ed.sign({ message, privateKey: priv });
-
-      expect(() => ed.recoverPublicKey({ message, signature: sig })).toThrow(
-        'Public key recovery is not supported',
-      );
     });
   });
 

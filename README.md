@@ -158,6 +158,7 @@ Each curve instance provides the same API as its counterpart in `@noble/curves`.
 All unified curve instances provide:
 
 - `curveName: CurveName`: The name of the curve
+- `keyByteLength: number`: The byte length of the key
 - `randomPrivateKey(): Uint8Array`: Generate a random private key
 - `getPublicKey(privateKey: Uint8Array, compressed?: boolean): Uint8Array`: Derive public key from private key
 - `toJwkPrivateKey(privateKey: Uint8Array): JwkPrivateKey`: Convert private key to JWK format

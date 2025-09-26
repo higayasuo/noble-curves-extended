@@ -8,17 +8,19 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
  * Converts an edwards private key to a JWK format.
  *
  * @param {CurveFn} curve - The curve function used to derive the public key.
+ * @param {number} keyByteLength - The expected byte length of the key.
  * @param {Uint8Array} privateKey - The private key as a Uint8Array.
  * @returns {JwkPrivateKey} The private key in JWK format.
  * @throws {Error} Throws an error if the private key conversion fails.
  */
 export const edwardsToJwkPrivateKey = (
   curve: CurveFn,
+  keyByteLength: number,
   privateKey: Uint8Array,
 ): JwkPrivateKey => {
   try {
     const publicKey = curve.getPublicKey(privateKey);
-    const jwkPublicKey = edwardsToJwkPublicKey(curve, publicKey);
+    const jwkPublicKey = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
 
     return {
       ...jwkPublicKey,

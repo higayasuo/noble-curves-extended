@@ -4,12 +4,14 @@ import { createEd25519 } from '@/curves/edwards/ed25519';
 import { randomBytes } from '@noble/hashes/utils';
 import { decodeBase64Url } from 'u8a-utils';
 
+const keyByteLength = 32;
+
 describe('edwardsToJwkPublicKey', () => {
   it('should convert a valid public key to JWK format', () => {
     const curve = createEd25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
-    const jwk = edwardsToJwkPublicKey(curve, publicKey);
+    const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
     expect(jwk).toEqual({
       kty: 'OKP',
       crv: 'Ed25519',
@@ -24,16 +26,16 @@ describe('edwardsToJwkPublicKey', () => {
   it('should throw an error for invalid public key length', () => {
     const curve = createEd25519(randomBytes);
     const invalidKey = new Uint8Array(16); // Too short
-    expect(() => edwardsToJwkPublicKey(curve, invalidKey)).toThrow(
-      'Failed to convert public key to JWK',
-    );
+    expect(() =>
+      edwardsToJwkPublicKey(curve, keyByteLength, invalidKey),
+    ).toThrow('Failed to convert public key to JWK');
   });
 
   it('should generate a JWK that can be imported by Web Crypto API', async () => {
     const curve = createEd25519(randomBytes);
     const privateKey = curve.utils.randomPrivateKey();
     const publicKey = curve.getPublicKey(privateKey);
-    const jwk = edwardsToJwkPublicKey(curve, publicKey);
+    const jwk = edwardsToJwkPublicKey(curve, keyByteLength, publicKey);
     const importedKey = await crypto.subtle.importKey(
       'jwk',
       jwk,

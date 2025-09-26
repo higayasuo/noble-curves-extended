@@ -8,16 +8,18 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
  * Converts a JWK formatted edwards public key to a raw public key.
  *
  * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {number} keyByteLength - The expected byte length of the public key.
  * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
  * @returns {Uint8Array} The public key as a raw Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or if the conversion fails.
  */
 export const edwardsToRawPublicKey = (
   curve: CurveFn,
+  keyByteLength: number,
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
   try {
-    return edwardsToRawPublicKeyInternal(curve, jwkPublicKey);
+    return edwardsToRawPublicKeyInternal(curve, keyByteLength, jwkPublicKey);
   } catch (e) {
     console.log(getErrorMessage(e));
     throw new Error('Failed to convert JWK to raw public key');
@@ -28,15 +30,17 @@ export const edwardsToRawPublicKey = (
  * Converts a JWK formatted edwards public key to a raw public key.
  *
  * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {number} keyByteLength - The expected byte length of the public key.
  * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
  * @returns {Uint8Array} The public key as a raw Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
  */
 export const edwardsToRawPublicKeyInternal = (
   curve: CurveFn,
+  keyByteLength: number,
   jwkPublicKey: JwkPublicKey,
 ): Uint8Array => {
-  if (jwkPublicKey.kty === undefined || jwkPublicKey.kty === null) {
+  if (jwkPublicKey.kty == null) {
     throw new Error('Missing required parameter for kty');
   }
 
@@ -78,9 +82,9 @@ export const edwardsToRawPublicKeyInternal = (
     throw new Error('Malformed encoding for x');
   }
 
-  if (decodedX.length !== curve.CURVE.nByteLength) {
+  if (decodedX.length !== keyByteLength) {
     throw new Error(
-      `Invalid the length of the key data for x: ${decodedX.length}, expected ${curve.CURVE.nByteLength}`,
+      `Invalid the length of the key data for x: ${decodedX.length}, expected ${keyByteLength}`,
     );
   }
 

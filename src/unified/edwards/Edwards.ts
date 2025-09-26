@@ -18,7 +18,14 @@ import { edwardsToJwkPrivateKey } from './edwardsToJwkPrivateKey';
 import { edwardsToJwkPublicKey } from './edwardsToJwkPublicKey';
 import { edwardsToRawPrivateKey } from './edwardsToRawPrivateKey';
 import { edwardsToRawPublicKey } from './edwardsToRawPublicKey';
-import { getEdwardsCurveName } from '@/curves/edwards';
+
+type EdwardsParams = {
+  curve: CurveFn;
+  randomBytes: RandomBytes;
+  curveName: CurveName;
+  signatureAlgorithmName: SignatureAlgorithmName;
+  keyByteLength: number;
+};
 
 /**
  * Edwards implementation for digital signatures.
@@ -27,7 +34,13 @@ import { getEdwardsCurveName } from '@/curves/edwards';
  *
  * @example
  * ```typescript
- * const edwards = new Edwards(curve, randomBytes);
+ * const edwards = new Edwards({
+ *   curve,
+ *   randomBytes,
+ *   curveName: 'ed25519',
+ *   signatureAlgorithmName: 'EdDSA',
+ *   keyByteLength: 32,
+ * });
  * const privateKey = edwards.randomPrivateKey();
  * const publicKey = edwards.getPublicKey(privateKey);
  * const message = new TextEncoder().encode('hello');
@@ -42,7 +55,10 @@ export class Edwards implements Readonly<SignatureCurve> {
   readonly randomBytes: RandomBytes;
 
   /** Curve identifier for Edwards */
-  curveName: CurveName;
+  readonly curveName: CurveName;
+
+  /** Key byte length for Edwards */
+  readonly keyByteLength: number;
 
   /** Signature algorithm for Edwards */
   signatureAlgorithmName: SignatureAlgorithmName;
@@ -50,22 +66,32 @@ export class Edwards implements Readonly<SignatureCurve> {
   /**
    * Creates a new Edwards instance.
    *
-   * @param {CurveFn} curve - The curve implementation to use
-   * @param {RandomBytes} randomBytes - Function to generate random bytes
+   * @param {Object} params - Edwards constructor parameters
+   * @param {CurveFn} params.curve - The curve implementation to use
+   * @param {RandomBytes} params.randomBytes - Function to generate random bytes
+   * @param {CurveName} params.curveName - Curve identifier (e.g. 'ed25519')
+   * @param {SignatureAlgorithmName} params.signatureAlgorithmName - Signature algorithm name
+   * @param {number} params.keyByteLength - Private/public key length in bytes
    */
-  constructor(curve: CurveFn, randomBytes: RandomBytes) {
+  constructor({
+    curve,
+    randomBytes,
+    curveName,
+    signatureAlgorithmName,
+    keyByteLength,
+  }: EdwardsParams) {
     this.curve = curve;
     this.randomBytes = randomBytes;
-    this.curveName = getEdwardsCurveName(curve);
-    this.signatureAlgorithmName = 'EdDSA';
+    this.curveName = curveName;
+    this.keyByteLength = keyByteLength;
+    this.signatureAlgorithmName = signatureAlgorithmName;
   }
 
   /**
    * Gets the underlying curve implementation.
    * This method allows access to the raw CurveFn implementation when needed.
    *
-   * @returns {T} The underlying curve implementation
-   * @template T The type of the curve implementation
+   * @returns {CurveFn} The underlying curve implementation
    */
   getCurve(): CurveFn {
     return this.curve;
@@ -85,12 +111,17 @@ export class Edwards implements Readonly<SignatureCurve> {
    * Derives a public key from a private key.
    *
    * @param {Uint8Array} privateKey - The private key to derive from
-   * @param {boolean} [compressed=true] - Indicates if the public key should be compressed.
+   * @param {boolean} [compressed=true] - Whether the public key should be compressed
    * @returns {Uint8Array} The derived public key
    * @throws {Error} If the private key is invalid
    */
   getPublicKey = (privateKey: Uint8Array, compressed = true): Uint8Array => {
-    return edwardsGetPublicKey(this.curve, privateKey, compressed);
+    return edwardsGetPublicKey(
+      this.curve,
+      this.keyByteLength,
+      privateKey,
+      compressed,
+    );
   };
 
   /**
@@ -99,6 +130,7 @@ export class Edwards implements Readonly<SignatureCurve> {
    * @param {SignParams} params - An object containing the message and private key.
    * @param {Uint8Array} params.message - The message to be signed as a Uint8Array.
    * @param {Uint8Array} params.privateKey - The private key as a Uint8Array.
+   * @param {boolean} [params.recovered=false] - Whether to request a recoverable signature (not supported)
    * @returns {Uint8Array} The signature as a Uint8Array.
    */
   sign = ({
@@ -106,7 +138,11 @@ export class Edwards implements Readonly<SignatureCurve> {
     privateKey,
     recovered = false,
   }: SignParams): Uint8Array => {
-    return edwardsSign(this.curve, { message, privateKey, recovered });
+    return edwardsSign(this.curve, this.keyByteLength, {
+      message,
+      privateKey,
+      recovered,
+    });
   };
 
   /**
@@ -126,8 +162,8 @@ export class Edwards implements Readonly<SignatureCurve> {
    * Attempts to recover a public key from a signature and message.
    * Note: Public key recovery is not supported for the Edwards curve.
    *
-   * @param {RecoverPublicKeyParams} _params - An object containing the signature and message.
-   * @throws {Error} Always throws an error as public key recovery is not supported.
+   * @param {RecoverPublicKeyParams} _params - The signature and message to attempt recovery from
+   * @throws {Error} Always throws because public key recovery is not supported for Edwards
    */
   recoverPublicKey = (_params: RecoverPublicKeyParams): Uint8Array => {
     throw new Error('Public key recovery is not supported');
@@ -141,7 +177,7 @@ export class Edwards implements Readonly<SignatureCurve> {
    * @throws {Error} If the private key is invalid
    */
   toJwkPrivateKey = (privateKey: Uint8Array): JwkPrivateKey => {
-    return edwardsToJwkPrivateKey(this.curve, privateKey);
+    return edwardsToJwkPrivateKey(this.curve, this.keyByteLength, privateKey);
   };
 
   /**
@@ -152,7 +188,7 @@ export class Edwards implements Readonly<SignatureCurve> {
    * @throws {Error} If the public key is invalid
    */
   toJwkPublicKey = (publicKey: Uint8Array): JwkPublicKey => {
-    return edwardsToJwkPublicKey(this.curve, publicKey);
+    return edwardsToJwkPublicKey(this.curve, this.keyByteLength, publicKey);
   };
 
   /**
@@ -163,7 +199,11 @@ export class Edwards implements Readonly<SignatureCurve> {
    * @throws {Error} If the JWK is invalid
    */
   toRawPrivateKey = (jwkPrivateKey: JwkPrivateKey): Uint8Array => {
-    return edwardsToRawPrivateKey(this.curve, jwkPrivateKey);
+    return edwardsToRawPrivateKey(
+      this.curve,
+      this.keyByteLength,
+      jwkPrivateKey,
+    );
   };
 
   /**
@@ -174,6 +214,6 @@ export class Edwards implements Readonly<SignatureCurve> {
    * @throws {Error} If the JWK is invalid
    */
   toRawPublicKey = (jwkPublicKey: JwkPublicKey): Uint8Array => {
-    return edwardsToRawPublicKey(this.curve, jwkPublicKey);
+    return edwardsToRawPublicKey(this.curve, this.keyByteLength, jwkPublicKey);
   };
 }

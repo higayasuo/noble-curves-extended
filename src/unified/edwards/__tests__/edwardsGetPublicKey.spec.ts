@@ -4,25 +4,26 @@ import { createEd25519 } from '@/curves/edwards/ed25519';
 import { randomBytes } from '@noble/hashes/utils';
 import tweetnacl from 'tweetnacl';
 
+const keyByteLength = 32;
 describe('edwardsGetPublicKey', () => {
   describe('valid private keys', () => {
     it('should generate a valid public key from a valid private key', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
-      const publicKey = edwardsGetPublicKey(curve, privateKey);
+      const publicKey = edwardsGetPublicKey(curve, keyByteLength, privateKey);
       expect(publicKey).toBeInstanceOf(Uint8Array);
-      expect(publicKey.length).toBe(32);
+      expect(publicKey.length).toBe(keyByteLength);
     });
 
     it('should generate a valid public key from a tweetnacl 64-byte private key', () => {
       const curve = createEd25519(randomBytes);
       const tweetnaclKeyPair = tweetnacl.sign.keyPair();
       const privateKey = new Uint8Array(tweetnaclKeyPair.secretKey);
-      expect(privateKey.length).toBe(64);
+      expect(privateKey.length).toBe(keyByteLength * 2);
 
-      const publicKey = edwardsGetPublicKey(curve, privateKey);
+      const publicKey = edwardsGetPublicKey(curve, keyByteLength, privateKey);
       expect(publicKey).toBeInstanceOf(Uint8Array);
-      expect(publicKey.length).toBe(32);
+      expect(publicKey.length).toBe(keyByteLength);
 
       // Verify that the generated public key matches tweetnacl's public key
       expect(publicKey).toEqual(tweetnaclKeyPair.publicKey);
@@ -33,8 +34,8 @@ describe('edwardsGetPublicKey', () => {
       const privateKey1 = curve.utils.randomPrivateKey();
       const privateKey2 = curve.utils.randomPrivateKey();
 
-      const publicKey1 = edwardsGetPublicKey(curve, privateKey1);
-      const publicKey2 = edwardsGetPublicKey(curve, privateKey2);
+      const publicKey1 = edwardsGetPublicKey(curve, keyByteLength, privateKey1);
+      const publicKey2 = edwardsGetPublicKey(curve, keyByteLength, privateKey2);
 
       expect(publicKey1).not.toEqual(publicKey2);
     });
@@ -44,25 +45,25 @@ describe('edwardsGetPublicKey', () => {
     it('should throw an error for private key with length 0', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = new Uint8Array(0);
-      expect(() => edwardsGetPublicKey(curve, privateKey)).toThrow(
-        'Failed to get public key',
-      );
+      expect(() =>
+        edwardsGetPublicKey(curve, keyByteLength, privateKey),
+      ).toThrow('Failed to get public key');
     });
 
     it('should throw an error for private key with length less than required', () => {
       const curve = createEd25519(randomBytes);
-      const privateKey = new Uint8Array(curve.CURVE.nByteLength - 1);
-      expect(() => edwardsGetPublicKey(curve, privateKey)).toThrow(
-        'Failed to get public key',
-      );
+      const privateKey = new Uint8Array(keyByteLength - 1);
+      expect(() =>
+        edwardsGetPublicKey(curve, keyByteLength, privateKey),
+      ).toThrow('Failed to get public key');
     });
 
     it('should throw an error for private key with length more than required', () => {
       const curve = createEd25519(randomBytes);
-      const privateKey = new Uint8Array(curve.CURVE.nByteLength + 1);
-      expect(() => edwardsGetPublicKey(curve, privateKey)).toThrow(
-        'Failed to get public key',
-      );
+      const privateKey = new Uint8Array(keyByteLength + 1);
+      expect(() =>
+        edwardsGetPublicKey(curve, keyByteLength, privateKey),
+      ).toThrow('Failed to get public key');
     });
   });
 
@@ -70,9 +71,9 @@ describe('edwardsGetPublicKey', () => {
     it('should throw an error for uncompressed public keys', () => {
       const curve = createEd25519(randomBytes);
       const privateKey = curve.utils.randomPrivateKey();
-      expect(() => edwardsGetPublicKey(curve, privateKey, false)).toThrow(
-        'Uncompressed public key is not supported',
-      );
+      expect(() =>
+        edwardsGetPublicKey(curve, keyByteLength, privateKey, false),
+      ).toThrow('Uncompressed public key is not supported');
     });
   });
 });
