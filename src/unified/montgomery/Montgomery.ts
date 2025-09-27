@@ -14,7 +14,13 @@ import { montgomeryToJwkPublicKey } from './montgomeryToJwkPublicKey';
 import { montgomeryToRawPrivateKey } from './montgomeryToRawPrivateKey';
 import { montgomeryToRawPublicKey } from './montgomeryToRawPublicKey';
 import { montgomeryGetSharedSecret } from './montgomeryGetSharedSecret';
-import { getMontgomeryCurveName } from '@/curves/montgomery';
+
+type MontgomeryParams = {
+  curve: CurveFn;
+  randomBytes: RandomBytes;
+  curveName: CurveName;
+  keyByteLength: number;
+};
 
 /**
  * Montgomery implementation for Elliptic Curve Diffie-Hellman (ECDH) key exchange.
@@ -23,7 +29,12 @@ import { getMontgomeryCurveName } from '@/curves/montgomery';
  *
  * @example
  * ```typescript
- * const montgomery = new Montgomery(curve, randomBytes);
+ * const montgomery = new Montgomery({
+ *   curve,
+ *   randomBytes,
+ *   curveName: 'X25519',
+ *   keyByteLength: 32,
+ * });
  * const privateKey = montgomery.randomPrivateKey();
  * const publicKey = montgomery.getPublicKey(privateKey);
  * const peerPublicKey = ...; // Uint8Array from peer
@@ -37,18 +48,30 @@ export class Montgomery implements Readonly<EcdhCurve> {
   readonly randomBytes: RandomBytes;
 
   /** Curve identifier for Montgomery */
-  curveName: CurveName;
+  readonly curveName: CurveName;
+
+  /** Key byte length for Montgomery */
+  readonly keyByteLength: number;
 
   /**
    * Creates a new Montgomery instance.
    *
-   * @param {CurveFn} curve - The curve implementation to use
-   * @param {RandomBytes} randomBytes - Function to generate random bytes
+   * @param {object} params - Constructor parameters
+   * @param {CurveFn} params.curve - The curve implementation to use
+   * @param {RandomBytes} params.randomBytes - Function to generate random bytes
+   * @param {CurveName} params.curveName - Curve name identifier (e.g. 'X25519')
+   * @param {number} params.keyByteLength - Expected byte length of keys (e.g. 32 for X25519)
    */
-  constructor(curve: CurveFn, randomBytes: RandomBytes) {
+  constructor({
+    curve,
+    randomBytes,
+    curveName,
+    keyByteLength,
+  }: MontgomeryParams) {
     this.curve = curve;
     this.randomBytes = randomBytes;
-    this.curveName = getMontgomeryCurveName(curve);
+    this.curveName = curveName;
+    this.keyByteLength = keyByteLength;
   }
 
   /**
@@ -106,7 +129,12 @@ export class Montgomery implements Readonly<EcdhCurve> {
    * @throws {Error} If the private key is invalid
    */
   toJwkPrivateKey(privateKey: Uint8Array): JwkPrivateKey {
-    return montgomeryToJwkPrivateKey(this.curve, privateKey);
+    return montgomeryToJwkPrivateKey(
+      this.curve,
+      this.keyByteLength,
+      this.curveName,
+      privateKey,
+    );
   }
 
   /**
@@ -117,7 +145,12 @@ export class Montgomery implements Readonly<EcdhCurve> {
    * @throws {Error} If the public key is invalid
    */
   toJwkPublicKey(publicKey: Uint8Array): JwkPublicKey {
-    return montgomeryToJwkPublicKey(this.curve, publicKey);
+    return montgomeryToJwkPublicKey(
+      this.curve,
+      this.keyByteLength,
+      this.curveName,
+      publicKey,
+    );
   }
 
   /**

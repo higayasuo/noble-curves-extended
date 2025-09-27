@@ -15,7 +15,7 @@ describe('montgomeryToJwkPublicKey', () => {
 
   describe('successful conversion tests', () => {
     it('should convert a valid public key to JWK format', () => {
-      const jwk = montgomeryToJwkPublicKey(curve, publicKey);
+      const jwk = montgomeryToJwkPublicKey(curve, 32, 'X25519', publicKey);
 
       expect(jwk).toEqual({
         kty: 'OKP',
@@ -25,7 +25,7 @@ describe('montgomeryToJwkPublicKey', () => {
     });
 
     it('should generate a JWK that can be imported by Web Crypto API', async () => {
-      const jwk = montgomeryToJwkPublicKey(curve, publicKey);
+      const jwk = montgomeryToJwkPublicKey(curve, 32, 'X25519', publicKey);
       const importedKey = await crypto.subtle.importKey(
         'jwk',
         jwk,
@@ -41,24 +41,24 @@ describe('montgomeryToJwkPublicKey', () => {
 
   describe('invalid input tests', () => {
     it('should throw an error for invalid public key length', () => {
-      const invalidKey = new Uint8Array(curve.GuBytes.length - 1); // Too short
-      expect(() => montgomeryToJwkPublicKey(curve, invalidKey)).toThrow(
-        'Failed to convert public key to JWK',
-      );
+      const invalidKey = new Uint8Array(32 - 1); // Too short
+      expect(() =>
+        montgomeryToJwkPublicKey(curve, 32, 'X25519', invalidKey),
+      ).toThrow('Failed to convert public key to JWK');
     });
 
     it('should throw an error for empty public key', () => {
       const emptyKey = new Uint8Array(0);
-      expect(() => montgomeryToJwkPublicKey(curve, emptyKey)).toThrow(
-        'Failed to convert public key to JWK',
-      );
+      expect(() =>
+        montgomeryToJwkPublicKey(curve, 32, 'X25519', emptyKey),
+      ).toThrow('Failed to convert public key to JWK');
     });
 
     it('should throw an error for oversized public key', () => {
-      const oversizedKey = new Uint8Array(curve.GuBytes.length + 1); // Too long
-      expect(() => montgomeryToJwkPublicKey(curve, oversizedKey)).toThrow(
-        'Failed to convert public key to JWK',
-      );
+      const oversizedKey = new Uint8Array(32 + 1); // Too long
+      expect(() =>
+        montgomeryToJwkPublicKey(curve, 32, 'X25519', oversizedKey),
+      ).toThrow('Failed to convert public key to JWK');
     });
   });
 });

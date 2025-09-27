@@ -10,7 +10,7 @@ describe('montgomeryToJwkPrivateKey', () => {
   describe('successful conversion tests', () => {
     it('should convert a valid private key to JWK format', () => {
       const privateKey = curve.utils.randomPrivateKey();
-      const jwk = montgomeryToJwkPrivateKey(curve, privateKey);
+      const jwk = montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey);
 
       // Check JWK structure
       expect(jwk).toEqual({
@@ -27,8 +27,8 @@ describe('montgomeryToJwkPrivateKey', () => {
       // Verify that x and d decode to correct length arrays
       const decodedX = decodeBase64Url(jwk.x);
       const decodedD = decodeBase64Url(jwk.d);
-      expect(decodedX.length).toBe(curve.GuBytes.length);
-      expect(decodedD.length).toBe(curve.GuBytes.length);
+      expect(decodedX.length).toBe(32);
+      expect(decodedD.length).toBe(32);
 
       // Verify that d matches the original private key
       expect(decodedD).toEqual(privateKey);
@@ -40,7 +40,7 @@ describe('montgomeryToJwkPrivateKey', () => {
 
     it('should generate a JWK that can be imported by Web Crypto API', async () => {
       const privateKey = curve.utils.randomPrivateKey();
-      const jwk = montgomeryToJwkPrivateKey(curve, privateKey);
+      const jwk = montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey);
       const importedKey = await crypto.subtle.importKey(
         'jwk',
         jwk,
@@ -56,24 +56,24 @@ describe('montgomeryToJwkPrivateKey', () => {
 
   describe('invalid input tests', () => {
     it('should throw an error for invalid private key length', () => {
-      const invalidKey = new Uint8Array(curve.GuBytes.length - 1); // Too short
-      expect(() => montgomeryToJwkPrivateKey(curve, invalidKey)).toThrow(
-        'Failed to convert private key to JWK',
-      );
+      const invalidKey = new Uint8Array(32 - 1); // Too short
+      expect(() =>
+        montgomeryToJwkPrivateKey(curve, 32, 'X25519', invalidKey),
+      ).toThrow('Failed to convert private key to JWK');
     });
 
     it('should throw an error for empty private key', () => {
       const emptyKey = new Uint8Array(0);
-      expect(() => montgomeryToJwkPrivateKey(curve, emptyKey)).toThrow(
-        'Failed to convert private key to JWK',
-      );
+      expect(() =>
+        montgomeryToJwkPrivateKey(curve, 32, 'X25519', emptyKey),
+      ).toThrow('Failed to convert private key to JWK');
     });
 
     it('should throw an error for oversized private key', () => {
-      const oversizedKey = new Uint8Array(curve.GuBytes.length + 1); // Too long
-      expect(() => montgomeryToJwkPrivateKey(curve, oversizedKey)).toThrow(
-        'Failed to convert private key to JWK',
-      );
+      const oversizedKey = new Uint8Array(32 + 1); // Too long
+      expect(() =>
+        montgomeryToJwkPrivateKey(curve, 32, 'X25519', oversizedKey),
+      ).toThrow('Failed to convert private key to JWK');
     });
   });
 
@@ -87,9 +87,9 @@ describe('montgomeryToJwkPrivateKey', () => {
         throw new Error('Public key generation failed');
       });
 
-      expect(() => montgomeryToJwkPrivateKey(curve, privateKey)).toThrow(
-        'Failed to convert private key to JWK',
-      );
+      expect(() =>
+        montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey),
+      ).toThrow('Failed to convert private key to JWK');
 
       // Restore original method
       curve.getPublicKey = originalGetPublicKey;

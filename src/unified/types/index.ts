@@ -224,8 +224,8 @@ export type RecoverPublicKey = ({
 /**
  * Base interface for unified cryptographic operations.
  * @interface UnifiedBase
- * @property {string} curveName - Curve name
- * @property {string} signatureAlgorithm - Signature algorithm
+ * @property {CurveName} curveName - Curve name
+ * @property {number} keyByteLength - Key byte length
  * @property {RandomPrivateKey} randomPrivateKey - Function to generate a random private key
  * @property {GetPublicKey} getPublicKey - Function to retrieve the public key from a private key
  * @property {RandomBytes} randomBytes - Function to generate random bytes
@@ -238,6 +238,7 @@ export type RecoverPublicKey = ({
  */
 export interface UnifiedBase {
   curveName: CurveName;
+  keyByteLength: number;
   randomPrivateKey: RandomPrivateKey;
   getPublicKey: GetPublicKey;
   randomBytes: RandomBytes;

@@ -36,9 +36,16 @@ describe('montgomeryGetSharedSecret', () => {
       // Convert keys to JWK format
       const aliceJwkPrivateKey = montgomeryToJwkPrivateKey(
         curve,
+        32,
+        'X25519',
         alicePrivateKey,
       );
-      const bobJwkPublicKey = montgomeryToJwkPublicKey(curve, bobPublicKey);
+      const bobJwkPublicKey = montgomeryToJwkPublicKey(
+        curve,
+        32,
+        'X25519',
+        bobPublicKey,
+      );
 
       // Import keys using Web Crypto API
       const aliceCryptoKey = await crypto.subtle.importKey(
@@ -122,9 +129,7 @@ describe('montgomeryGetSharedSecret', () => {
 
       // Mock the curve.getSharedSecret to return all zeros
       const originalGetSharedSecret = curve.getSharedSecret;
-      curve.getSharedSecret = vi
-        .fn()
-        .mockReturnValue(new Uint8Array(curve.GuBytes.length));
+      curve.getSharedSecret = vi.fn().mockReturnValue(new Uint8Array(32));
 
       expect(() =>
         montgomeryGetSharedSecret(curve, {
@@ -140,7 +145,7 @@ describe('montgomeryGetSharedSecret', () => {
 
   describe('invalid input tests', () => {
     it('should throw an error for private key with wrong length', () => {
-      const invalidPrivateKey = new Uint8Array(curve.GuBytes.length - 1); // Wrong length
+      const invalidPrivateKey = new Uint8Array(32 - 1); // Wrong length
       const publicKey = curve.getPublicKey(curve.utils.randomPrivateKey());
 
       expect(() =>
@@ -153,7 +158,7 @@ describe('montgomeryGetSharedSecret', () => {
 
     it('should throw an error for public key with wrong length', () => {
       const privateKey = curve.utils.randomPrivateKey();
-      const invalidPublicKey = new Uint8Array(curve.GuBytes.length - 1); // Wrong length
+      const invalidPublicKey = new Uint8Array(32 - 1); // Wrong length
 
       expect(() =>
         montgomeryGetSharedSecret(curve, {

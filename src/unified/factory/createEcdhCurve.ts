@@ -1,11 +1,10 @@
 import { RandomBytes } from '@/curves/types';
 import { EcdhCurve } from '../types';
-import { createX25519 } from '@/curves/montgomery/x25519';
-import { Montgomery } from '@/unified/montgomery/Montgomery';
 import { P256 } from '../weierstrass/P256';
 import { P521 } from '../weierstrass/P521';
 import { P384 } from '../weierstrass/P384';
 import { Secp256k1 } from '../weierstrass/Secp256k1';
+import { X25519 } from '../montgomery/X25519';
 
 /**
  * Creates an ECDH curve instance based on the specified curve name.
@@ -29,7 +28,7 @@ export const createEcdhCurve = (
     case 'secp256k1':
       return new Secp256k1(randomBytes);
     case 'X25519':
-      return new Montgomery(createX25519(randomBytes), randomBytes);
+      return new X25519(randomBytes);
     default:
       throw new Error(`Unsupported signature curve: ${curveName}`);
   }
