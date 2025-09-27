@@ -73,21 +73,17 @@ const publicKey = ed25519.getPublicKey(privateKey);
 ### High-Level Unified API (`@/unified`)
 
 ```typescript
-import {
-  createSignatureCurve,
-  createEcdhCurve,
-  Edwards,
-  Weierstrass,
-  Montgomery,
-} from 'noble-curves-extended';
+import { Ed25519 } from 'noble-curves-extended';
+import { P256, P384, P521, Secp256k1 } from 'noble-curves-extended';
+import { X25519 } from 'noble-curves-extended';
 
-// Create signature curves (Ed25519, P-256, P-384, P-521, secp256k1)
-const ed25519 = createSignatureCurve('Ed25519', randomBytes);
-const p256 = createSignatureCurve('P-256', randomBytes);
-
-// Create ECDH curves (P-256, P-384, P-521, secp256k1, X25519)
-const x25519 = createEcdhCurve('X25519', randomBytes);
-const secp256k1 = createEcdhCurve('secp256k1', randomBytes);
+// Create dedicated unified curve classes
+const ed25519 = new Ed25519(randomBytes);
+const p256 = new P256(randomBytes);
+const p384 = new P384(randomBytes);
+const p521 = new P521(randomBytes);
+const secp256k1 = new Secp256k1(randomBytes);
+const x25519 = new X25519(randomBytes);
 
 // Use unified API for signatures
 const privateKey = ed25519.randomPrivateKey();
@@ -119,6 +115,26 @@ const recoveredPrivateKey = ed25519.toRawPrivateKey(jwkPrivateKey);
 const recoveredPublicKey = ed25519.toRawPublicKey(jwkPublicKey);
 ```
 
+Alternatively, you can use factory functions when you want to obtain a curve by its name at runtime:
+
+```typescript
+import { createSignatureCurve, createEcdhCurve } from 'noble-curves-extended';
+
+// Create by curve name (runtime)
+const ed25519 = createSignatureCurve('Ed25519', randomBytes);
+const p256 = createSignatureCurve('P-256', randomBytes);
+const secp256k1 = createSignatureCurve('secp256k1', randomBytes);
+
+const x25519 = createEcdhCurve('X25519', randomBytes);
+
+// Use the same unified API
+const privateKey = ed25519.randomPrivateKey();
+const publicKey = ed25519.getPublicKey(privateKey);
+const message = new TextEncoder().encode('Hello, World!');
+const signature = ed25519.sign({ privateKey, message });
+const isValid = ed25519.verify({ publicKey, message, signature });
+```
+
 ## API
 
 ### RandomBytes Type
@@ -143,15 +159,25 @@ Each curve instance provides the same API as its counterpart in `@noble/curves`.
 
 ### High-Level Unified API (`@/unified`)
 
+#### Dedicated Classes
+
+- `new Ed25519(randomBytes: RandomBytes)`
+- `new P256(randomBytes: RandomBytes)`
+- `new P384(randomBytes: RandomBytes)`
+- `new P521(randomBytes: RandomBytes)`
+- `new Secp256k1(randomBytes: RandomBytes)`
+- `new X25519(randomBytes: RandomBytes)`
+
 #### Factory Functions
 
-- `createSignatureCurve(curveName: SignatureCurveName, randomBytes: RandomBytes)`: Creates a signature curve instance
-- `createEcdhCurve(curveName: EcdhCurveName, randomBytes: RandomBytes)`: Creates an ECDH curve instance
+- `createSignatureCurve(curveName: SignatureCurveName, randomBytes: RandomBytes)`
+- `createEcdhCurve(curveName: EcdhCurveName, randomBytes: RandomBytes)`
 
-#### Supported Curve Names
+#### Supported Unified Curves
 
-**Signature Curves:** `'P-256'`, `'P-384'`, `'P-521'`, `'secp256k1'`, `'Ed25519'`
-**ECDH Curves:** `'P-256'`, `'P-384'`, `'P-521'`, `'secp256k1'`, `'X25519'`
+Signature: `Ed25519`, `P-256`, `P-384`, `P-521`, `secp256k1`
+
+ECDH: `P-256`, `P-384`, `P-521`, `secp256k1`, `X25519`
 
 #### Unified Interface
 

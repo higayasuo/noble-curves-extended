@@ -16,11 +16,11 @@ describe('montgomeryGetSharedSecret', () => {
       const bobPrivateKey = curve.utils.randomPrivateKey();
       const bobPublicKey = curve.getPublicKey(bobPrivateKey);
 
-      const aliceSharedSecret = montgomeryGetSharedSecret(curve, {
+      const aliceSharedSecret = montgomeryGetSharedSecret(curve, 'X25519', {
         privateKey: alicePrivateKey,
         publicKey: bobPublicKey,
       });
-      const bobSharedSecret = montgomeryGetSharedSecret(curve, {
+      const bobSharedSecret = montgomeryGetSharedSecret(curve, 'X25519', {
         privateKey: bobPrivateKey,
         publicKey: alicePublicKey,
       });
@@ -81,7 +81,7 @@ describe('montgomeryGetSharedSecret', () => {
       );
 
       // Derive shared secret using montgomeryGetSharedSecret
-      const x25519SharedSecret = montgomeryGetSharedSecret(curve, {
+      const x25519SharedSecret = montgomeryGetSharedSecret(curve, 'X25519', {
         privateKey: alicePrivateKey,
         publicKey: bobPublicKey,
       });
@@ -115,7 +115,7 @@ describe('montgomeryGetSharedSecret', () => {
 
       for (const smallOrderPoint of smallOrderPoints) {
         expect(() =>
-          montgomeryGetSharedSecret(curve, {
+          montgomeryGetSharedSecret(curve, 'X25519', {
             privateKey,
             publicKey: smallOrderPoint,
           }),
@@ -132,7 +132,7 @@ describe('montgomeryGetSharedSecret', () => {
       curve.getSharedSecret = vi.fn().mockReturnValue(new Uint8Array(32));
 
       expect(() =>
-        montgomeryGetSharedSecret(curve, {
+        montgomeryGetSharedSecret(curve, 'X25519', {
           privateKey,
           publicKey,
         }),
@@ -149,7 +149,7 @@ describe('montgomeryGetSharedSecret', () => {
       const publicKey = curve.getPublicKey(curve.utils.randomPrivateKey());
 
       expect(() =>
-        montgomeryGetSharedSecret(curve, {
+        montgomeryGetSharedSecret(curve, 'X25519', {
           privateKey: invalidPrivateKey,
           publicKey,
         }),
@@ -161,7 +161,7 @@ describe('montgomeryGetSharedSecret', () => {
       const invalidPublicKey = new Uint8Array(32 - 1); // Wrong length
 
       expect(() =>
-        montgomeryGetSharedSecret(curve, {
+        montgomeryGetSharedSecret(curve, 'X25519', {
           privateKey,
           publicKey: invalidPublicKey,
         }),
@@ -181,7 +181,7 @@ describe('montgomeryGetSharedSecret', () => {
       });
 
       expect(() =>
-        montgomeryGetSharedSecret(curve, {
+        montgomeryGetSharedSecret(curve, 'X25519', {
           privateKey,
           publicKey,
         }),

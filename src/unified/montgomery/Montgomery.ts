@@ -118,7 +118,10 @@ export class Montgomery implements Readonly<EcdhCurve> {
     privateKey,
     publicKey,
   }: GetSharedSecretParams): Uint8Array {
-    return montgomeryGetSharedSecret(this.curve, { privateKey, publicKey });
+    return montgomeryGetSharedSecret(this.curve, this.curveName, {
+      privateKey,
+      publicKey,
+    });
   }
 
   /**
@@ -161,7 +164,12 @@ export class Montgomery implements Readonly<EcdhCurve> {
    * @throws {Error} If the JWK is invalid
    */
   toRawPrivateKey(jwkPrivateKey: JwkPrivateKey): Uint8Array {
-    return montgomeryToRawPrivateKey(this.curve, jwkPrivateKey);
+    return montgomeryToRawPrivateKey(
+      this.curve,
+      this.keyByteLength,
+      this.curveName,
+      jwkPrivateKey,
+    );
   }
 
   /**
@@ -172,6 +180,11 @@ export class Montgomery implements Readonly<EcdhCurve> {
    * @throws {Error} If the JWK is invalid
    */
   toRawPublicKey(jwkPublicKey: JwkPublicKey): Uint8Array {
-    return montgomeryToRawPublicKey(this.curve, jwkPublicKey);
+    return montgomeryToRawPublicKey(
+      this.curve,
+      this.keyByteLength,
+      this.curveName,
+      jwkPublicKey,
+    );
   }
 }

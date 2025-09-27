@@ -1,23 +1,32 @@
 import { CurveFn } from '@noble/curves/abstract/montgomery';
-import { JwkPrivateKey } from '../types';
+import { CurveName, JwkPrivateKey } from '../types';
 import { compareUint8Arrays, decodeBase64Url } from 'u8a-utils';
 import { montgomeryToRawPublicKeyInternal } from './montgomeryToRawPublicKey';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
- * Converts a JWK (JSON Web Key) to a raw Montgomery private key.
+ * Converts a JWK formatted Montgomery private key to a raw private key.
  *
- * @param {CurveFn} curve - The curve function used to validate the keys.
- * @param {JwkPrivateKey} jwkPrivateKey - The JWK to convert.
- * @returns {Uint8Array} The raw private key as a Uint8Array.
- * @throws {Error} Throws an error if the JWK is invalid or the private key is invalid.
+ * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {number} keyByteLength - The expected byte length of the key.
+ * @param {CurveName} curveName - The name of the curve to validate against.
+ * @param {JwkPrivateKey} jwkPrivateKey - The private key in JWK format.
+ * @returns {Uint8Array} The private key as a raw Uint8Array.
+ * @throws {Error} Throws an error if the JWK is invalid or if the conversion fails.
  */
 export const montgomeryToRawPrivateKey = (
   curve: CurveFn,
+  keyByteLength: number,
+  curveName: CurveName,
   jwkPrivateKey: JwkPrivateKey,
 ): Uint8Array => {
   try {
-    return montgomeryToRawPrivateKeyInternal(curve, jwkPrivateKey);
+    return montgomeryToRawPrivateKeyInternal(
+      curve,
+      keyByteLength,
+      curveName,
+      jwkPrivateKey,
+    );
   } catch (e) {
     console.log(getErrorMessage(e));
     throw new Error('Failed to convert JWK to raw private key');
@@ -28,6 +37,8 @@ export const montgomeryToRawPrivateKey = (
  * Internal function to convert a JWK formatted Montgomery private key to a raw private key.
  *
  * @param {CurveFn} curve - The curve function used for conversion.
+ * @param {number} keyByteLength - The expected byte length of the key.
+ * @param {CurveName} curveName - The name of the curve to validate against.
  * @param {JwkPrivateKey} jwkPrivateKey - The private key in JWK format.
  * @returns {Uint8Array} The private key as a raw Uint8Array.
  * @throws {Error} Throws an error if the JWK is invalid or if the decoding fails.
@@ -35,9 +46,16 @@ export const montgomeryToRawPrivateKey = (
  */
 export const montgomeryToRawPrivateKeyInternal = (
   curve: CurveFn,
+  keyByteLength: number,
+  curveName: CurveName,
   jwkPrivateKey: JwkPrivateKey,
 ): Uint8Array => {
-  const publicKey = montgomeryToRawPublicKeyInternal(curve, jwkPrivateKey);
+  const publicKey = montgomeryToRawPublicKeyInternal(
+    curve,
+    keyByteLength,
+    curveName,
+    jwkPrivateKey,
+  );
 
   if (jwkPrivateKey.d === undefined || jwkPrivateKey.d === null) {
     throw new Error('Missing required parameter for d');
@@ -54,9 +72,9 @@ export const montgomeryToRawPrivateKeyInternal = (
     throw new Error('Malformed encoding for d');
   }
 
-  if (decodedD.length !== curve.GuBytes.length) {
+  if (decodedD.length !== keyByteLength) {
     throw new Error(
-      `Invalid the length of the key data for d: ${decodedD.length}, expected ${curve.GuBytes.length}`,
+      `Invalid the length of the key data for d: ${decodedD.length}, expected ${keyByteLength}`,
     );
   }
 

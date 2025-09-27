@@ -15,15 +15,15 @@ describe('montgomeryToRawPrivateKey', () => {
     it('should convert a valid JWK to a raw private key', () => {
       const privateKey = curve.utils.randomPrivateKey();
       const jwk = montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey);
-      const rawPrivateKey = montgomeryToRawPrivateKey(curve, jwk);
+      const rawPrivateKey = montgomeryToRawPrivateKey(curve, 32, 'X25519', jwk);
       expect(rawPrivateKey).toEqual(privateKey);
     });
 
     it('should throw generic error for invalid JWK', () => {
       const invalidJwk = { kty: 'EC' } as JwkPrivateKey;
-      expect(() => montgomeryToRawPrivateKey(curve, invalidJwk)).toThrow(
-        'Failed to convert JWK to raw private key',
-      );
+      expect(() =>
+        montgomeryToRawPrivateKey(curve, 32, 'X25519', invalidJwk),
+      ).toThrow('Failed to convert JWK to raw private key');
     });
   });
 
@@ -32,7 +32,12 @@ describe('montgomeryToRawPrivateKey', () => {
       it('should convert a valid JWK to a raw private key', () => {
         const privateKey = curve.utils.randomPrivateKey();
         const jwk = montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey);
-        const rawPrivateKey = montgomeryToRawPrivateKeyInternal(curve, jwk);
+        const rawPrivateKey = montgomeryToRawPrivateKeyInternal(
+          curve,
+          32,
+          'X25519',
+          jwk,
+        );
         expect(rawPrivateKey).toEqual(privateKey);
       });
     });
@@ -45,6 +50,8 @@ describe('montgomeryToRawPrivateKey', () => {
         expect(() =>
           montgomeryToRawPrivateKeyInternal(
             curve,
+            32,
+            'X25519',
             jwkWithoutD as JwkPrivateKey,
           ),
         ).toThrow('Missing required parameter for d');
@@ -55,7 +62,7 @@ describe('montgomeryToRawPrivateKey', () => {
         const jwk = montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey);
         const jwkWithNullD = { ...jwk, d: null } as unknown as JwkPrivateKey;
         expect(() =>
-          montgomeryToRawPrivateKeyInternal(curve, jwkWithNullD),
+          montgomeryToRawPrivateKeyInternal(curve, 32, 'X25519', jwkWithNullD),
         ).toThrow('Missing required parameter for d');
       });
 
@@ -67,7 +74,12 @@ describe('montgomeryToRawPrivateKey', () => {
           d: 123,
         } as unknown as JwkPrivateKey;
         expect(() =>
-          montgomeryToRawPrivateKeyInternal(curve, jwkWithInvalidDType),
+          montgomeryToRawPrivateKeyInternal(
+            curve,
+            32,
+            'X25519',
+            jwkWithInvalidDType,
+          ),
         ).toThrow('Invalid parameter type for d');
       });
 
@@ -79,7 +91,12 @@ describe('montgomeryToRawPrivateKey', () => {
           d: 'invalid-base64url!',
         } as JwkPrivateKey;
         expect(() =>
-          montgomeryToRawPrivateKeyInternal(curve, jwkWithInvalidD),
+          montgomeryToRawPrivateKeyInternal(
+            curve,
+            32,
+            'X25519',
+            jwkWithInvalidD,
+          ),
         ).toThrow('Malformed encoding for d');
       });
 
@@ -92,10 +109,8 @@ describe('montgomeryToRawPrivateKey', () => {
           d: Buffer.from(invalidPrivateKey).toString('base64url'),
         } as JwkPrivateKey;
         expect(() =>
-          montgomeryToRawPrivateKeyInternal(curve, jwkWithWrongD),
-        ).toThrow(
-          'Invalid the length of the key data for d: 31, expected 32',
-        );
+          montgomeryToRawPrivateKeyInternal(curve, 32, 'X25519', jwkWithWrongD),
+        ).toThrow('Invalid the length of the key data for d: 31, expected 32');
       });
 
       it('should throw error for d that does not match public key', () => {
@@ -104,7 +119,12 @@ describe('montgomeryToRawPrivateKey', () => {
 
         // Create JWK with private key 1 but public key from private key 2
         const jwk = montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey1);
-        const jwk2 = montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey2);
+        const jwk2 = montgomeryToJwkPrivateKey(
+          curve,
+          32,
+          'X25519',
+          privateKey2,
+        );
         const jwkWithMismatchedD = {
           ...jwk,
           x: jwk2.x, // Use x from different key
@@ -113,6 +133,8 @@ describe('montgomeryToRawPrivateKey', () => {
         expect(() =>
           montgomeryToRawPrivateKeyInternal(
             curve,
+            32,
+            'X25519',
             jwkWithMismatchedD as JwkPrivateKey,
           ),
         ).toThrow(
@@ -127,7 +149,12 @@ describe('montgomeryToRawPrivateKey', () => {
         const jwk = montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey);
         const jwkWithWrongKty = { ...jwk, kty: 'EC' } as JwkPrivateKey;
         expect(() =>
-          montgomeryToRawPrivateKeyInternal(curve, jwkWithWrongKty),
+          montgomeryToRawPrivateKeyInternal(
+            curve,
+            32,
+            'X25519',
+            jwkWithWrongKty,
+          ),
         ).toThrow('Invalid key type: EC, expected OKP');
       });
     });
@@ -138,7 +165,12 @@ describe('montgomeryToRawPrivateKey', () => {
         const jwk = montgomeryToJwkPrivateKey(curve, 32, 'X25519', privateKey);
         const jwkWithWrongCrv = { ...jwk, crv: 'Ed25519' } as JwkPrivateKey;
         expect(() =>
-          montgomeryToRawPrivateKeyInternal(curve, jwkWithWrongCrv),
+          montgomeryToRawPrivateKeyInternal(
+            curve,
+            32,
+            'X25519',
+            jwkWithWrongCrv,
+          ),
         ).toThrow('Invalid curve: Ed25519, expected X25519');
       });
     });
@@ -151,6 +183,8 @@ describe('montgomeryToRawPrivateKey', () => {
         expect(() =>
           montgomeryToRawPrivateKeyInternal(
             curve,
+            32,
+            'X25519',
             jwkWithoutX as JwkPrivateKey,
           ),
         ).toThrow('Missing required parameter for x');
