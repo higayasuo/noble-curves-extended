@@ -135,12 +135,43 @@ const signature = ed25519.sign({ privateKey, message });
 const isValid = ed25519.verify({ publicKey, message, signature });
 ```
 
+### RNG-Disallowed Signature Curves
+
+When you need to forbid RNG usage (e.g., to enforce deterministic behavior or harden code paths), use the RNG-disallowed factory. It returns a signature curve with RNG operations disabled while keeping signing/verification available.
+
+```typescript
+// Helper factory:
+const curve = createSignatureCurveRngDisallowed('P-256');
+
+// Example flow using the RNG-allowed factory to obtain a private key,
+// then using the RNG-disallowed curve to sign/verify deterministically.
+import {
+  createSignatureCurve,
+  createSignatureCurveRngDisallowed,
+} from 'noble-curves-extended';
+import { randomBytes } from '@noble/hashes/utils';
+
+// Generate key material with RNG-allowed curve
+const allowed = createSignatureCurve('P-256', randomBytes);
+
+// Obtain an RNG-disallowed curve (no randomBytes/randomPrivateKey)
+const noRng = createSignatureCurveRngDisallowed('P-256');
+
+const privateKey = allowed.randomPrivateKey();
+const publicKey = noRng.getPublicKey(privateKey, false);
+
+// Deterministic sign (RFC 6979 for ECDSA; Ed25519 is deterministic by design)
+const message = new TextEncoder().encode('Hello, RNG-free world!');
+const signature = noRng.sign({ privateKey, message });
+const ok = noRng.verify({ publicKey, message, signature });
+```
+
 ## API
 
 ### RandomBytes Type
 
 ```typescript
-type RandomBytes = (bytesLength?: number) => Uint8Array;
+type RandomBytes = (byteLength?: number) => Uint8Array;
 ```
 
 ### Low-Level Curves (`@/curves`)
@@ -172,6 +203,9 @@ Each curve instance provides the same API as its counterpart in `@noble/curves`.
 
 - `createSignatureCurve(curveName: SignatureCurveName, randomBytes: RandomBytes)`
 - `createEcdhCurve(curveName: EcdhCurveName, randomBytes: RandomBytes)`
+- `createSignatureCurveRngDisallowed(curveName: SignatureCurveName)`
+
+  Returns a signature curve with RNG operations disabled (randomBytes and randomPrivateKey are omitted). Signing remains available and deterministic (ECDSA uses RFC 6979; Ed25519 is deterministic by design).
 
 #### Supported Unified Curves
 

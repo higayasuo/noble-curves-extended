@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.7] - 2025-09-27
+
+### Added
+
+- Added `createSignatureCurveRngDisallowed` factory to create signature curves with RNG operations disabled (omits `randomBytes` and `randomPrivateKey`) while keeping `sign`, `verify`, and recovery available.
+- Exported `createSignatureCurveRngDisallowed` from `src/unified/factory/index.ts` so it can be imported from the package root.
+- Added `createSignatureCurveRngDisallowed.spec.ts` tests verifying RNG usage throws, deterministic sign/verify works, and recovery behavior for Weierstrass curves (Ed25519 recovery remains unsupported).
+- Updated README with usage examples for RNG-disallowed signature curves.
+
 ## [0.2.6] - 2025-09-27
 
 ### Added
@@ -147,3 +156,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The only modification is the ability to inject a custom `randomBytes` function
 
 ## [Unreleased]
+
+## [0.2.7] - 2025-09-27
+
+### Added
+
+- Added `createSignatureCurveRngDisallowed` factory to create signature curves with RNG operations disabled (omits `randomBytes` and `randomPrivateKey`) while keeping `sign`, `verify`, and recovery available.
+- Exported `createSignatureCurveRngDisallowed` from `src/unified/factory/index.ts` so it can be imported from the package root.
+- Added `createSignatureCurveRngDisallowed.spec.ts` tests verifying RNG usage throws, deterministic sign/verify works, and recovery behavior for Weierstrass curves (Ed25519 recovery remains unsupported).
+- Updated README with usage examples for RNG-disallowed signature curves.
