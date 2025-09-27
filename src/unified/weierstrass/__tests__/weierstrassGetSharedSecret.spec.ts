@@ -10,10 +10,11 @@ import elliptic from 'elliptic';
 import { extractRawPrivateKeyFromPkcs8 } from '@/utils/extractRawPrivateKeyFromPkcs8';
 
 type WebCryptoCurve = {
-  name: string;
+  name: 'P-256' | 'P-384' | 'P-521';
   createCurve: (randomBytes: () => Uint8Array) => any;
   webCryptoCurve: 'P-256' | 'P-384' | 'P-521';
   keyLength: number;
+  keyByteLength: number;
 };
 
 type EllipticCurve = {
@@ -28,18 +29,21 @@ const webCryptoCurves: WebCryptoCurve[] = [
     createCurve: createP256,
     webCryptoCurve: 'P-256',
     keyLength: 256,
+    keyByteLength: 32,
   },
   {
     name: 'P-384',
     createCurve: createP384,
     webCryptoCurve: 'P-384',
     keyLength: 384,
+    keyByteLength: 48,
   },
   {
     name: 'P-521',
     createCurve: createP521,
     webCryptoCurve: 'P-521',
     keyLength: 528,
+    keyByteLength: 66,
   },
 ];
 
@@ -175,7 +179,13 @@ describe('weierstrassGetSharedSecret', () => {
   describe('Web Crypto API compatibility tests', () => {
     it.each(webCryptoCurves)(
       'should compute the same shared secret with Web Crypto API for $name',
-      async ({ createCurve, webCryptoCurve, keyLength }) => {
+      async ({
+        name,
+        createCurve,
+        webCryptoCurve,
+        keyLength,
+        keyByteLength,
+      }) => {
         const curve = createCurve(randomBytes);
         const alicePrivateKey = curve.utils.randomPrivateKey();
         const alicePublicKey = curve.getPublicKey(alicePrivateKey, false); // uncompressed
@@ -197,6 +207,9 @@ describe('weierstrassGetSharedSecret', () => {
         // Import keys into Web Crypto API
         const aliceJwkPrivateKey = weierstrassToJwkPrivateKey(
           curve,
+          keyByteLength,
+          name,
+          name === 'P-256' ? 'ES256' : name === 'P-384' ? 'ES384' : 'ES512',
           alicePrivateKey,
         );
 

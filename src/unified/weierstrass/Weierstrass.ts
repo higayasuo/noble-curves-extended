@@ -190,7 +190,13 @@ export class Weierstrass
    * @throws {Error} If the private key is invalid
    */
   toJwkPrivateKey = (privateKey: Uint8Array): JwkPrivateKey => {
-    return weierstrassToJwkPrivateKey(this.curve, privateKey);
+    return weierstrassToJwkPrivateKey(
+      this.curve,
+      this.keyByteLength,
+      this.curveName,
+      this.signatureAlgorithmName,
+      privateKey,
+    );
   };
 
   /**
@@ -201,7 +207,13 @@ export class Weierstrass
    * @throws {Error} If the public key is invalid
    */
   toJwkPublicKey = (publicKey: Uint8Array): JwkPublicKey => {
-    return weierstrassToJwkPublickKey(this.curve, publicKey);
+    return weierstrassToJwkPublickKey(
+      this.curve,
+      this.keyByteLength,
+      this.curveName,
+      this.signatureAlgorithmName,
+      publicKey,
+    );
   };
 
   /**

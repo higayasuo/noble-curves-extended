@@ -9,32 +9,45 @@ import { randomBytes } from '@noble/hashes/utils';
 import { weierstrassToJwkPrivateKey } from '../weierstrassToJwkPrivateKey';
 import elliptic from 'elliptic';
 import { sha256 } from '@noble/hashes/sha256';
+import type { CurveName, SignatureAlgorithmName } from '../../types';
+import type { CurveFn } from '@noble/curves/abstract/weierstrass';
 
 const message = new TextEncoder().encode('hello');
 
-const curves = [
+const curves: Array<{
+  name: CurveName;
+  createCurve: (rb: typeof randomBytes) => CurveFn;
+  webCryptoAlgorithm?: SignatureAlgorithmName;
+  hash?: 'SHA-256' | 'SHA-384' | 'SHA-512';
+  ellipticCurve?: 'secp256k1';
+  keyByteLength: number;
+}> = [
   {
     name: 'P-256',
     createCurve: createP256,
     webCryptoAlgorithm: 'ES256' as const,
     hash: 'SHA-256' as const,
+    keyByteLength: 32 as const,
   },
   {
     name: 'P-384',
     createCurve: createP384,
     webCryptoAlgorithm: 'ES384' as const,
     hash: 'SHA-384' as const,
+    keyByteLength: 48 as const,
   },
   {
     name: 'P-521',
     createCurve: createP521,
     webCryptoAlgorithm: 'ES512' as const,
     hash: 'SHA-512' as const,
+    keyByteLength: 66 as const,
   },
   {
     name: 'secp256k1',
     createCurve: createSecp256k1,
     ellipticCurve: 'secp256k1' as const,
+    keyByteLength: 32 as const,
   },
 ];
 
@@ -79,10 +92,23 @@ describe('weierstrassVerify', () => {
     describe('Web Crypto API compatibility', () => {
       it.each(curves.filter((c) => 'webCryptoAlgorithm' in c))(
         'should verify a signature created by Web Crypto API for $name',
-        async ({ createCurve, hash }) => {
+        async ({
+          name,
+          createCurve,
+          webCryptoAlgorithm,
+          hash,
+          keyByteLength,
+        }) => {
           const curve = createCurve(randomBytes);
           const privateKey = curve.utils.randomPrivateKey();
-          const jwkPrivateKey = weierstrassToJwkPrivateKey(curve, privateKey);
+          const alg = webCryptoAlgorithm!;
+          const jwkPrivateKey = weierstrassToJwkPrivateKey(
+            curve,
+            keyByteLength,
+            name,
+            alg,
+            privateKey,
+          );
           const publicKey = curve.getPublicKey(privateKey, false); // uncompressed for Web Crypto API
 
           // Import the private key into Web Crypto API
