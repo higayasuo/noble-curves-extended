@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2025-09-27
+
+### Added
+
+- Dedicated unified classes for all curves with explicit metadata (including `keyByteLength`): `Ed25519`, `P256`, `P384`, `P521`, `Secp256k1`, `X25519`
+
+### Changed
+
+- Stopped reading metadata from `curve.CURVE`; defined required metadata as class properties across all unified classes
+- Unified Weierstrass APIs: `weierstrassToJwkPublickKey`, `weierstrassToJwkPrivateKey`, `weierstrassToRawPublicKey`, and `weierstrassToRawPrivateKey` now take `keyByteLength`, `curveName`, and (where applicable) `signatureAlgorithmName`
+- Updated Weierstrass tests and Web Crypto usage to pass the new parameters
+- Montgomery JWK/public key tests updated to use explicit `32`-byte constants and new function signatures; removed `curve.GuBytes.length` usages
+- README updated to prefer dedicated unified classes (and retain factory functions as an option)
+
+### Removed
+
+- Removed `getWeierstrassCurveName` and `getWeierstrassSignatureAlgorithm` helpers and their tests
+
 ## [0.2.5] - 2025-09-22
 
 ### Added
