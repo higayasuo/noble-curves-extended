@@ -42,16 +42,17 @@ export const weierstrassToRawPublicKey = (
 /**
  * Internal conversion from a JWK formatted Weierstrass public key to raw uncompressed form.
  *
- * @param {CurveFn} curve - The curve implementation (unused in the current implementation).
+ * @param {CurveFn} _curve - The curve implementation (unused in the current implementation).
  * @param {number} keyByteLength - Expected coordinate byte length (length of x and y in bytes).
  * @param {CurveName} curveName - Expected `crv` value in the JWK (e.g. 'P-256').
  * @param {SignatureAlgorithmName} signatureAlgorithmName - Expected `alg` value in the JWK (e.g. 'ES256').
  * @param {JwkPublicKey} jwkPublicKey - The public key in JWK format.
  * @returns {Uint8Array} The raw uncompressed public key as a Uint8Array: [0x04 || x || y].
  * @throws {Error} If required parameters are missing, malformed, mismatched, or decoding fails.
+ * @internal
  */
 export const weierstrassToRawPublicKeyInternal = (
-  curve: CurveFn,
+  _curve: CurveFn,
   keyByteLength: number,
   curveName: CurveName,
   signatureAlgorithmName: SignatureAlgorithmName,

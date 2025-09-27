@@ -1,12 +1,11 @@
 import { RandomBytes } from '@/curves/types';
 import { EcdhCurve } from '../types';
-import { createP256 } from '@/curves/weierstrass/p256';
-import { createP384 } from '@/curves/weierstrass/p384';
-import { createP521 } from '@/curves/weierstrass/p521';
-import { createSecp256k1 } from '@/curves/weierstrass/secp256k1';
-import { Weierstrass } from '@/unified/weierstrass/Weierstrass';
 import { createX25519 } from '@/curves/montgomery/x25519';
 import { Montgomery } from '@/unified/montgomery/Montgomery';
+import { P256 } from '../weierstrass/P256';
+import { P521 } from '../weierstrass/P521';
+import { P384 } from '../weierstrass/P384';
+import { Secp256k1 } from '../weierstrass/Secp256k1';
 
 /**
  * Creates an ECDH curve instance based on the specified curve name.
@@ -22,13 +21,13 @@ export const createEcdhCurve = (
 ): EcdhCurve => {
   switch (curveName) {
     case 'P-256':
-      return new Weierstrass(createP256(randomBytes), randomBytes);
+      return new P256(randomBytes);
     case 'P-384':
-      return new Weierstrass(createP384(randomBytes), randomBytes);
+      return new P384(randomBytes);
     case 'P-521':
-      return new Weierstrass(createP521(randomBytes), randomBytes);
+      return new P521(randomBytes);
     case 'secp256k1':
-      return new Weierstrass(createSecp256k1(randomBytes), randomBytes);
+      return new Secp256k1(randomBytes);
     case 'X25519':
       return new Montgomery(createX25519(randomBytes), randomBytes);
     default:
