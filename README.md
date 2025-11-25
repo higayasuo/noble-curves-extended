@@ -237,6 +237,40 @@ All unified curve instances provide:
 
 - `getSharedSecret({ privateKey, publicKey }): Uint8Array`: Compute shared secret
 
+### Utilities
+
+#### Curve Name Resolution
+
+The library provides utility functions for resolving curve names from algorithm names or validating curve-algorithm pairs:
+
+- `algorithmToCurveName(algorithmName: string): string`: Converts an algorithm name to its corresponding curve name. Supports `ES256` → `P-256`, `ES384` → `P-384`, `ES512` → `P-521`, and `ES256K` → `secp256k1`. Throws an error for unsupported algorithms.
+
+- `resolveCurveName({ curveName?, algorithmName? }): string`: Resolves a curve name from either a curve name or an algorithm name. If both are provided, validates that they are consistent. If only `algorithmName` is provided, derives the curve name from it. If only `curveName` is provided, returns it as-is. Throws an error if neither is provided or if they don't match.
+
+Example:
+
+```typescript
+import { algorithmToCurveName, resolveCurveName } from 'noble-curves-extended';
+
+// Convert algorithm to curve name
+const curveName = algorithmToCurveName('ES256'); // Returns 'P-256'
+
+// Resolve curve name from algorithm
+const resolved = resolveCurveName({ algorithmName: 'ES384' }); // Returns 'P-384'
+
+// Resolve curve name from curve name
+const resolved2 = resolveCurveName({ curveName: 'P-256' }); // Returns 'P-256'
+
+// Validate consistency
+const validated = resolveCurveName({
+  curveName: 'P-256',
+  algorithmName: 'ES256',
+}); // Returns 'P-256' (validated)
+
+// Throws error if mismatch
+resolveCurveName({ curveName: 'P-256', algorithmName: 'ES384' }); // Throws error
+```
+
 ### BLS12-381 Specific
 
 The BLS12-381 implementation provides:

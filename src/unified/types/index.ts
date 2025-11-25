@@ -49,7 +49,7 @@ export type SignatureAlgorithmName =
  */
 export type JwkBase = {
   kty: string;
-  crv: string;
+  crv?: string;
   alg?: string;
   x: string;
   y?: string;
