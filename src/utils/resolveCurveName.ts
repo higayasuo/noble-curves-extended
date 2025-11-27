@@ -51,27 +51,33 @@ export const resolveCurveName = ({
   curveName,
   algorithmName,
 }: ResolveCurveNameParams): string => {
-  if (!curveName && !algorithmName) {
-    throw new Error('Either curveName or algorithmName must be provided');
+  if (curveName == null && algorithmName == null) {
+    throw new Error('Either curve name or algorithm name must be provided');
   }
 
-  const resolvedCurveName = algorithmName
-    ? algorithmToCurveName(algorithmName)
-    : undefined;
+  if (curveName != null) {
+    if (algorithmName != null) {
+      const resolvedCurveName = algorithmToCurveName(algorithmName);
 
-  if (curveName) {
-    if (resolvedCurveName && resolvedCurveName !== curveName) {
-      throw new Error(
-        `Curve name mismatch: ${curveName} !== ${resolvedCurveName}`,
-      );
+      if (resolvedCurveName != null && resolvedCurveName !== curveName) {
+        throw new Error(
+          `Curve name mismatch: ${curveName} does not match curve name resolved from algorithm name: ${resolvedCurveName}`,
+        );
+      }
     }
 
     return curveName;
   }
 
-  if (!resolvedCurveName) {
+  if (algorithmName == null) {
+    throw new Error('Missing curve name in JWK');
+  }
+
+  const resolvedCurveName = algorithmToCurveName(algorithmName);
+
+  if (resolvedCurveName == null) {
     throw new Error(
-      `Could not resolve curve name from algorithm: ${algorithmName}`,
+      `Missing curve name: could not resolve curve name from algorithm name '${algorithmName}'`,
     );
   }
 

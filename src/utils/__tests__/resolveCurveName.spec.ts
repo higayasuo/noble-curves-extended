@@ -78,13 +78,13 @@ describe('resolveCurveName', () => {
 
       it('should throw error for unsupported algorithm', () => {
         expect(() => resolveCurveName({ algorithmName: 'EdDSA' })).toThrow(
-          'Could not resolve curve name from algorithm: EdDSA',
+          "Missing curve name: could not resolve curve name from algorithm name 'EdDSA'",
         );
       });
 
       it('should throw error for unknown algorithm', () => {
         expect(() => resolveCurveName({ algorithmName: 'UNKNOWN' })).toThrow(
-          'Could not resolve curve name from algorithm: UNKNOWN',
+          "Missing curve name: could not resolve curve name from algorithm name 'UNKNOWN'",
         );
       });
     });
@@ -120,13 +120,17 @@ describe('resolveCurveName', () => {
       it('should throw error when curveName and algorithmName do not match', () => {
         expect(() =>
           resolveCurveName({ curveName: 'P-256', algorithmName: 'ES384' }),
-        ).toThrow('Curve name mismatch: P-256 !== P-384');
+        ).toThrow(
+          'Curve name mismatch: P-256 does not match curve name resolved from algorithm name: P-384',
+        );
       });
 
       it('should throw error when curveName and algorithmName do not match (different case)', () => {
         expect(() =>
           resolveCurveName({ curveName: 'P-384', algorithmName: 'ES256' }),
-        ).toThrow('Curve name mismatch: P-384 !== P-256');
+        ).toThrow(
+          'Curve name mismatch: P-384 does not match curve name resolved from algorithm name: P-256',
+        );
       });
 
       it('should return curveName when algorithmName cannot uniquely determine curve (Ed25519 and EdDSA)', () => {
@@ -145,14 +149,32 @@ describe('resolveCurveName', () => {
     describe('when neither curveName nor algorithmName is provided', () => {
       it('should throw error when both are undefined', () => {
         expect(() => resolveCurveName({})).toThrow(
-          'Either curveName or algorithmName must be provided',
+          'Either curve name or algorithm name must be provided',
         );
       });
 
-      it('should throw error when both are empty strings', () => {
+      it('should throw error when both are null', () => {
         expect(() =>
-          resolveCurveName({ curveName: '', algorithmName: '' }),
-        ).toThrow('Either curveName or algorithmName must be provided');
+          resolveCurveName({ curveName: null, algorithmName: null } as any),
+        ).toThrow('Either curve name or algorithm name must be provided');
+      });
+
+      it('should throw error when curveName is null and algorithmName is undefined', () => {
+        expect(() =>
+          resolveCurveName({
+            curveName: null,
+            algorithmName: undefined,
+          } as any),
+        ).toThrow('Either curve name or algorithm name must be provided');
+      });
+
+      it('should throw error when curveName is undefined and algorithmName is null', () => {
+        expect(() =>
+          resolveCurveName({
+            curveName: undefined,
+            algorithmName: null,
+          } as any),
+        ).toThrow('Either curve name or algorithm name must be provided');
       });
     });
   });
