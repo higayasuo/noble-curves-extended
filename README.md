@@ -271,6 +271,41 @@ const validated = resolveCurveName({
 resolveCurveName({ curveName: 'P-256', algorithmName: 'ES384' }); // Throws error
 ```
 
+#### Algorithm Name Resolution
+
+The library provides utility functions for resolving algorithm names from curve names or validating algorithm-curve pairs:
+
+- `curveToAlgorithmName(curveName: string): string | undefined`: Converts a curve name to its corresponding algorithm name. Supports `P-256` → `ES256`, `P-384` → `ES384`, `P-521` → `ES512`, `secp256k1` → `ES256K`, `Ed25519` → `EdDSA`, and `X25519` → `ES256K`. Returns `undefined` when the curve name cannot uniquely determine an algorithm name.
+
+- `resolveAlgorithmName({ algorithmName?, curveName? }): string`: Resolves an algorithm name from either an algorithm name or a curve name. If both are provided, validates that they are consistent. If only `curveName` is provided, derives the algorithm name from it. If only `algorithmName` is provided, returns it as-is. Throws an error if neither is provided or if they don't match.
+
+Example:
+
+```typescript
+import {
+  curveToAlgorithmName,
+  resolveAlgorithmName,
+} from 'noble-curves-extended';
+
+// Convert curve to algorithm name
+const algorithmName = curveToAlgorithmName('P-256'); // Returns 'ES256'
+
+// Resolve algorithm name from curve
+const resolved = resolveAlgorithmName({ curveName: 'P-384' }); // Returns 'ES384'
+
+// Resolve algorithm name from algorithm name
+const resolved2 = resolveAlgorithmName({ algorithmName: 'ES256' }); // Returns 'ES256'
+
+// Validate consistency
+const validated = resolveAlgorithmName({
+  algorithmName: 'ES256',
+  curveName: 'P-256',
+}); // Returns 'ES256' (validated)
+
+// Throws error if mismatch
+resolveAlgorithmName({ algorithmName: 'ES256', curveName: 'P-384' }); // Throws error
+```
+
 ### BLS12-381 Specific
 
 The BLS12-381 implementation provides:

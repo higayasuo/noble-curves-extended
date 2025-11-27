@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.10] - 2025-11-27
+
+### Added
+
+- Added `resolveAlgorithmName` utility function to resolve algorithm names from either an algorithm name or a curve name. If both are provided, validates that they are consistent.
+- Added `curveToAlgorithmName` utility function to convert curve names (P-256, P-384, P-521, secp256k1, Ed25519, X25519) to their corresponding algorithm names.
+- Added comprehensive tests for `resolveAlgorithmName` utility functions in `resolveAlgorithmName.spec.ts`.
+- Updated README with documentation for algorithm name resolution utilities.
+
 ## [0.2.9] - 2025-11-27
 
 ### Fixed
