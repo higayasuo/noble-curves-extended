@@ -12,12 +12,14 @@ interface ResolveCurveNameParams {
 /**
  * Converts an algorithm name to its corresponding curve name.
  * Supports ES256, ES384, ES512, and ES256K algorithms.
+ * Returns undefined when the algorithm cannot uniquely determine a curve name (e.g., EdDSA can map to Ed25519 or Ed448).
  * @typedef {Function} AlgorithmToCurveName
  * @param {string} algorithmName - The algorithm name (e.g., 'ES256', 'ES384', 'ES512', 'ES256K')
- * @returns {string} The corresponding curve name
- * @throws {Error} Throws an error if the algorithm name is not supported
+ * @returns {string|undefined} The corresponding curve name, or undefined if the curve name cannot be uniquely determined from the algorithm
  */
-export const algorithmToCurveName = (algorithmName: string): string => {
+export const algorithmToCurveName = (
+  algorithmName: string,
+): string | undefined => {
   switch (algorithmName) {
     case 'ES256':
       return 'P-256';
@@ -28,9 +30,7 @@ export const algorithmToCurveName = (algorithmName: string): string => {
     case 'ES256K':
       return 'secp256k1';
     default:
-      throw new Error(
-        `Could not resolve curve name from algorithm: ${algorithmName}`,
-      );
+      return undefined;
   }
 };
 
@@ -70,7 +70,9 @@ export const resolveCurveName = ({
   }
 
   if (!resolvedCurveName) {
-    throw new Error('Could not resolve curve name');
+    throw new Error(
+      `Could not resolve curve name from algorithm: ${algorithmName}`,
+    );
   }
 
   return resolvedCurveName;
