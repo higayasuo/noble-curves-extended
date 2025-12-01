@@ -306,6 +306,56 @@ const validated = resolveAlgorithmName({
 resolveAlgorithmName({ algorithmName: 'ES256', curveName: 'P-384' }); // Throws error
 ```
 
+#### JWK Thumbprint
+
+The library provides a utility function for computing JWK thumbprints according to [RFC 7638](https://tools.ietf.org/html/rfc7638):
+
+- `computeJwkThumbprint(jwk: JwkPublicKey): Uint8Array`: Computes the JWK thumbprint as a SHA-256 hash. The thumbprint is computed by first generating the canonical JSON representation of the key (containing only the required fields in a specific order), then computing the SHA-256 hash of the UTF-8 encoded JSON string. Supports EC (Elliptic Curve) and OKP (Octet Key Pair) key types. Additional fields (such as `alg`, `kid`, `key_ops`) are ignored when computing the thumbprint.
+
+Example:
+
+```typescript
+import { computeJwkThumbprint } from 'noble-curves-extended';
+import { encodeBase64Url } from 'u8a-utils';
+
+// EC key thumbprint
+const ecJwk = {
+  kty: 'EC',
+  crv: 'P-256',
+  x: 'MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4',
+  y: '4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM',
+};
+
+const thumbprint = computeJwkThumbprint(ecJwk);
+const thumbprintBase64Url = encodeBase64Url(thumbprint);
+// Returns: 'cn-I_WNMClehiVp51i_0VpOENW1upEerA8sEam5hn-s'
+
+// OKP key thumbprint
+const okpJwk = {
+  kty: 'OKP',
+  crv: 'Ed25519',
+  x: '11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo',
+};
+
+const okpThumbprint = computeJwkThumbprint(okpJwk);
+const okpThumbprintBase64Url = encodeBase64Url(okpThumbprint);
+// Returns: 'kPrK_qmxVWaYVA9wwBF6Iuo3vVzz7TxHCTwXBygrS4k'
+
+// Additional fields are ignored
+const jwkWithExtraFields = {
+  kty: 'EC',
+  crv: 'P-256',
+  alg: 'ES256',
+  x: 'MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4',
+  y: '4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM',
+  kid: 'test-key-id',
+  key_ops: ['verify'],
+};
+
+// Same thumbprint as ecJwk above (additional fields are ignored)
+const thumbprintWithExtra = computeJwkThumbprint(jwkWithExtraFields);
+```
+
 ### BLS12-381 Specific
 
 The BLS12-381 implementation provides:

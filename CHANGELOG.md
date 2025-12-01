@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.11] - 2025-12-01
+
+### Added
+
+- Added `computeJwkThumbprint` utility function to compute JWK thumbprints according to RFC 7638. The function computes a SHA-256 hash of the canonical JSON representation of the JWK public key. Supports EC (Elliptic Curve) and OKP (Octet Key Pair) key types. Additional fields (such as `alg`, `kid`, `key_ops`) are ignored when computing the thumbprint.
+- Added comprehensive tests for `computeJwkThumbprint` utility function in `computeJwkThumbprint.spec.ts`, including comparison tests with `jose.calculateJwkThumbprint` to verify RFC 7638 compliance.
+- Updated README with documentation for JWK thumbprint utility.
+
 ## [0.2.10] - 2025-11-27
 
 ### Added
