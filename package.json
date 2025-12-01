@@ -1,6 +1,6 @@
 {
   "name": "noble-curves-extended",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "This project extends @noble/curves to allow randomBytes to be specified externally",
   "type": "module",
   "main": "./dist/index.cjs",
